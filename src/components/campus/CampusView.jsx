@@ -15,6 +15,8 @@ import Details from './Details.jsx';
 import Site from './Site.jsx';
 import ParkingLayer from './ParkingLayer.jsx';
 import OffscreenMarker from './OffscreenMarker.jsx';
+import Hangouts from './Hangouts.jsx';
+import { LabelContext, LabelLayout, createLabelRegistry } from './labels.jsx';
 
 // Camera position for the default view. On screens narrower than the reference
 // image (phones), the camera moves back along the same line. Not all the way back
@@ -103,8 +105,11 @@ const MARKERS = OFFSCREEN_MARKERS.map((m) => {
 });
 
 export default function CampusView({ places, allPlaces, selectedPlace, onSelect, onBackgroundClick }) {
-  const { t } = useI18n();
+  const { t, localize } = useI18n();
   const [showParking, setShowParking] = useState(false);
+  const [showHangouts, setShowHangouts] = useState(true);
+  const [labelRegistry] = useState(createLabelRegistry);
+  const toolbarRef = useRef();
   const [showLabels, setShowLabels] = useState(LABELS.showByDefault);
   const controlsRef = useRef();
   const flyRef = useRef(() => {});
@@ -119,6 +124,17 @@ export default function CampusView({ places, allPlaces, selectedPlace, onSelect,
     if (places.length === allPlaces.length) return null;
     return new Set(places.flatMap((p) => [p.id, p.building].filter(Boolean)));
   }, [places, allPlaces]);
+
+  // Places that get a pin on the map, matching the current search/category filter:
+  // hangout spots ("Hangouts" button) and the cat area ("Labels" button).
+  // The 3D objects themselves (benches, fountain, paths...) are always drawn.
+  const pinSpots = useMemo(
+    () =>
+      places.filter(
+        (p) => p.position && ((p.category === 'hangout' && showHangouts) || (p.category === 'cats' && showLabels))
+      ),
+    [places, showHangouts, showLabels]
+  );
 
   // The building to highlight: the selected place itself, or the building it's in.
   const selectedId = selectedPlace ? selectedPlace.building || selectedPlace.id : null;
@@ -150,20 +166,33 @@ export default function CampusView({ places, allPlaces, selectedPlace, onSelect,
         <color attach="background" args={[COLORS.background]} />
         <hemisphereLight args={['#ffffff', '#8a8f7a', 1.6]} />
         <directionalLight position={[120, 200, -80]} intensity={1.6} />
+        <LabelContext.Provider value={{ registry: labelRegistry, portal: labelsRef }}>
         <Controls controlsRef={controlsRef} flyRef={flyRef} />
-        <Site labelsRef={labelsRef} />
+        <Site showLabels={showLabels} />
         <Details />
         <Buildings
           activeIds={activeIds}
           selectedId={selectedId}
           onSelect={selectById}
-          labelsRef={labelsRef}
           showLabels={showLabels}
         />
-        {showParking && <ParkingLayer onSelect={selectById} labelsRef={labelsRef} />}
+        <ParkingLayer onSelect={selectById} showLayer={showParking} />
+        <Hangouts spots={pinSpots} selectedId={selectedPlace?.id} onSelect={selectById} name={(p) => localize(p.name)} />
         {MARKERS.map((m, i) => (
-          <OffscreenMarker key={m.buildingId} point={m.point} elementRef={markerRefs.current[i].el} arrowRef={markerRefs.current[i].arrow} />
+          <OffscreenMarker
+            key={m.buildingId}
+            point={m.point}
+            elementRef={markerRefs.current[i].el}
+            arrowRef={markerRefs.current[i].arrow}
+            avoidRef={toolbarRef}
+          />
         ))}
+        {/* Decides which labels show; keeps them off the toolbar and the off-screen markers. */}
+        <LabelLayout
+          container={labelsRef}
+          obstacles={() => [toolbarRef.current, ...markerRefs.current.map((m) => m.el.current)]}
+        />
+        </LabelContext.Provider>
       </Canvas>
       <div className="campus-labels" ref={labelsRef} />
 
@@ -182,7 +211,8 @@ export default function CampusView({ places, allPlaces, selectedPlace, onSelect,
         </button>
       ))}
 
-      <div className="campus-buttons">
+      {/* Toolbar at the bottom of the 3D view, clear of the tall buildings' labels at the top. */}
+      <div className="campus-toolbar" ref={toolbarRef}>
         <button
           type="button"
           className={`campus-button ${showParking ? 'active' : ''}`}
@@ -190,6 +220,14 @@ export default function CampusView({ places, allPlaces, selectedPlace, onSelect,
           onClick={() => setShowParking((v) => !v)}
         >
           <span className="parking-p">P</span> {t('parking')}
+        </button>
+        <button
+          type="button"
+          className={`campus-button ${showHangouts ? 'active hangouts' : ''}`}
+          aria-pressed={showHangouts}
+          onClick={() => setShowHangouts((v) => !v)}
+        >
+          {t('hangouts')}
         </button>
         <button
           type="button"

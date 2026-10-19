@@ -380,5 +380,206 @@
     ],
     "latitude": 33.8924,
     "longitude": 35.4785
+  },
+  {
+    "id": "H-AKSOBCAF",
+    "name": "AKSOB Caf",
+    "campus": "beirut",
+    "category": "hangout",
+    "building": "",
+    "near": "AKSOB",
+    "floor": "",
+    "description": "Small outdoor café with benches, just inside the AKSOB Gate and close to the Adnan Kassar School of Business.",
+    "features": [
+      "benches",
+      "food"
+    ],
+    "hours": "",
+    "contact": "",
+    "link": "",
+    "keywords": [
+      "aksob caf",
+      "mini caf",
+      "cafe",
+      "coffee",
+      "snacks",
+      "kiosk",
+      "aksob"
+    ],
+    "position": [
+      -119,
+      -3
+    ],
+    "verified": false
+  },
+  {
+    "id": "H-FOUNTAIN",
+    "name": "Orme-Gray Fountain",
+    "campus": "beirut",
+    "category": "hangout",
+    "building": "",
+    "near": "OG",
+    "floor": "",
+    "description": "Fountain on a grassy lawn, almost inside the courtyard formed by the Orme-Gray buildings.",
+    "features": [
+      "fountain",
+      "grass",
+      "benches"
+    ],
+    "hours": "",
+    "contact": "",
+    "link": "",
+    "keywords": [
+      "fountain",
+      "water",
+      "orme-gray"
+    ],
+    "position": [
+      -79,
+      19
+    ],
+    "verified": false
+  },
+  {
+    "id": "H-GARDEN-TREE",
+    "name": "Tree of Life",
+    "campus": "beirut",
+    "category": "hangout",
+    "building": "",
+    "near": "SH",
+    "floor": "",
+    "description": "The Tree of Life: a very pretty large tree in the garden in front of Sage Hall.",
+    "features": [
+      "trees",
+      "shade"
+    ],
+    "hours": "",
+    "contact": "",
+    "link": "",
+    "keywords": [
+      "tree of life",
+      "garden",
+      "tree",
+      "sage"
+    ],
+    "position": [
+      -46,
+      15
+    ],
+    "verified": false
+  },
+  {
+    "id": "H-GARDEN-BENCHES",
+    "name": "Sage Hall Garden (Benches)",
+    "campus": "beirut",
+    "category": "hangout",
+    "building": "",
+    "near": "SH",
+    "floor": "",
+    "description": "Garden in front of Sage Hall on the Safadi Fine Arts side, with benches.",
+    "features": [
+      "benches",
+      "trees",
+      "shade"
+    ],
+    "hours": "",
+    "contact": "",
+    "link": "",
+    "keywords": [
+      "garden",
+      "benches",
+      "sage",
+      "safadi"
+    ],
+    "position": [
+      -24,
+      13
+    ],
+    "verified": false
+  },
+  {
+    "id": "CATS",
+    "name": "Cat Area",
+    "campus": "beirut",
+    "category": "cats",
+    "building": "",
+    "near": "SH",
+    "floor": "",
+    "description": "Patch of grass behind Sage Hall where the campus cats hang out, with a small cat house.",
+    "features": [
+      "cats",
+      "grass",
+      "cathouse"
+    ],
+    "hours": "",
+    "contact": "",
+    "link": "",
+    "keywords": [
+      "cats",
+      "cat",
+      "sage"
+    ],
+    "position": [
+      -40,
+      47.5
+    ],
+    "verified": false
+  },
+  {
+    "id": "H-AMPHI",
+    "name": "Amphitheater",
+    "campus": "beirut",
+    "category": "hangout",
+    "building": "",
+    "near": "NH",
+    "floor": "",
+    "description": "Outdoor amphitheater with tiered seating, just below the Upper Gate.",
+    "features": [
+      "seating"
+    ],
+    "hours": "",
+    "contact": "",
+    "link": "",
+    "keywords": [
+      "amphitheater",
+      "amphitheatre",
+      "seating",
+      "upper gate",
+      "stage"
+    ],
+    "position": [
+      -4,
+      54
+    ],
+    "verified": false
+  },
+  {
+    "id": "H-VINE",
+    "name": "Vine Benches",
+    "campus": "beirut",
+    "category": "hangout",
+    "building": "",
+    "near": "OG",
+    "floor": "",
+    "description": "Benches under a vine-covered pergola, between Sage Hall and Orme-Gray.",
+    "features": [
+      "benches",
+      "shade",
+      "vine"
+    ],
+    "hours": "",
+    "contact": "",
+    "link": "",
+    "keywords": [
+      "vine",
+      "pergola",
+      "benches",
+      "shade"
+    ],
+    "position": [
+      -67.5,
+      18
+    ],
+    "verified": false
   }
 ]

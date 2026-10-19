@@ -4,6 +4,7 @@
 import rawPlaces from './places.json';
 import { CATEGORIES } from './categories.js';
 import { CAMPUSES } from './campuses.js';
+import { toLatLng } from '../campus/geo.js';
 
 const REQUIRED = ['id', 'name', 'campus', 'category'];
 
@@ -28,6 +29,11 @@ function validate(places) {
     if (!CATEGORIES.some((c) => c.id === p.category)) console.warn(`${label}: unknown category "${p.category}"`);
     if (!CAMPUSES.some((c) => c.id === p.campus)) console.warn(`${label}: unknown campus "${p.campus}"`);
     if (p.building && !ids.has(p.building)) console.warn(`${label}: building "${p.building}" is not an id in places.json`);
+    if (p.near && !ids.has(p.near)) console.warn(`${label}: near "${p.near}" is not an id in places.json`);
+    if (p.position !== undefined && !(Array.isArray(p.position) && p.position.length === 2 && p.position.every((n) => typeof n === 'number'))) {
+      console.warn(`${label}: position must be [x, z] numbers – ignored`);
+      delete p.position;
+    }
     seen.add(p.id);
     return true;
   });
@@ -38,9 +44,10 @@ export const PLACES = validate(rawPlaces);
 /** Looks up a place by id (e.g. a building code like "SH"). */
 export const getPlace = (id) => PLACES.find((p) => p.id === id);
 
-/** Coordinates for directions: the place's own, or else its building's. */
+/** Coordinates for directions: the place's own, its 3D position, or else its building's. */
 export function placeCoordinates(place) {
   if (typeof place.latitude === 'number') return [place.latitude, place.longitude];
+  if (place.position) return toLatLng(...place.position);
   const building = place.building && getPlace(place.building);
   return building && typeof building.latitude === 'number' ? [building.latitude, building.longitude] : null;
 }

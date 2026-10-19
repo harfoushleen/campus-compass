@@ -11,6 +11,8 @@
 //   name      Full name (details, hover).
 //   label     Optional shorter name for the floating 3D label.
 //   labelOffset  Optional [x, z] metres to move the label, e.g. if it overlaps another one.
+//   labelPriority  1 = main (always shown), 2 = shown when zoomed in a bit, 3 = zoomed in more.
+//                  Default 2. See LABELS in site.js.
 //   style     Key into STYLES below (colours / materials).
 //   parts     One or more blocks. Each part has:
 //               footprint   corners [[x, z], ...] (any order around the edge)
@@ -104,6 +106,7 @@ const sageOffset = (along) => [
 export const BUILDINGS = [
   {
     id: 'WKSC',
+    labelPriority: 1,
     name: 'Wadad Sabbagh Khoury Student Center',
     label: 'Student Center',
     style: 'white',
@@ -162,6 +165,7 @@ export const BUILDINGS = [
   },
   {
     id: 'IH',
+    labelPriority: 1,
     name: 'Irwin Hall',
     style: 'brick',
     parts: [
@@ -175,6 +179,7 @@ export const BUILDINGS = [
   },
   {
     id: 'SH',
+    labelPriority: 1,
     name: 'Sage Hall',
     style: 'stone',
     parts: [
@@ -202,6 +207,7 @@ export const BUILDINGS = [
   },
   {
     id: 'OG',
+    labelPriority: 1,
     name: 'Orme-Gray',
     style: 'whiteOrange',
     parts: [
@@ -212,6 +218,7 @@ export const BUILDINGS = [
   },
   {
     id: 'AKSOB',
+    labelPriority: 1,
     name: 'Adnan Kassar School of Business',
     label: 'School of Business',
     style: 'white',
@@ -223,6 +230,7 @@ export const BUILDINGS = [
   },
   {
     id: 'RNL',
+    labelPriority: 1,
     name: 'Riyad Nassar Library',
     label: 'Library',
     style: 'white',
@@ -235,6 +243,7 @@ export const BUILDINGS = [
   },
   {
     id: 'UGP',
+    labelPriority: 3,
     name: 'Underground Parking',
     label: 'Parking (U)',
     style: 'parking',

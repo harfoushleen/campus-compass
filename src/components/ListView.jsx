@@ -21,6 +21,7 @@ export default function ListView({ places, onSelect }) {
                 <small>
                   {t(`category.${place.category}`)}
                   {place.building && ` · ${localize(getPlace(place.building)?.name)}`}
+                  {place.near && ` · ${t('near')} ${localize(getPlace(place.near)?.name)}`}
                 </small>
               </span>
             </button>

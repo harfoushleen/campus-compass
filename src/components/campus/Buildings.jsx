@@ -2,7 +2,7 @@
 // Hover highlights a building; tap/click selects it. Names float above as labels.
 import { useMemo, useState } from 'react';
 import * as THREE from 'three';
-import { Html } from '@react-three/drei';
+import { ManagedLabel } from './labels.jsx';
 import { BUILDINGS, STYLES, ROOFS, EXTRA_COLORS, WINDOWS } from '../../campus/buildings.js';
 import { COLORS, heightAt } from '../../campus/site.js';
 import { centroid, extrudeFootprint, partHeights } from '../../campus/geometry.js';
@@ -77,7 +77,7 @@ function buildGeometry() {
 // A drag that moves more than this (in pixels) is a camera move, not a tap.
 const TAP_TOLERANCE = 6;
 
-export default function Buildings({ activeIds, selectedId, onSelect, labelsRef, showLabels }) {
+export default function Buildings({ activeIds, selectedId, onSelect, showLabels }) {
   const buildings = useMemo(buildGeometry, []);
   const [hoveredId, setHoveredId] = useState(null);
 
@@ -122,12 +122,12 @@ export default function Buildings({ activeIds, selectedId, onSelect, labelsRef, 
         ))}
 
         {(showLabels || isHovered || isSelected) && (
-          <Html portal={labelsRef} position={b.labelPosition} center zIndexRange={[20, 10]} style={{ pointerEvents: 'none' }}>
+          <ManagedLabel position={b.labelPosition} priority={b.labelPriority ?? 2} pinned={isHovered || isSelected}>
             {/* Short label normally; the full name when hovered or selected. */}
             <div className={`campus-label ${isHovered || isSelected ? 'active' : ''}`}>
               {isHovered || isSelected ? b.name : b.label ?? b.name}
             </div>
-          </Html>
+          </ManagedLabel>
         )}
       </group>
     );

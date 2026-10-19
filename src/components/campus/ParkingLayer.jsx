@@ -1,6 +1,8 @@
-// Parking layer (toggled with the "Parking" button): lot outlines and P badges.
+// Parking lots. Surface lots are always drawn, so the map is complete.
+// The "Parking" button adds the P badges and the see-through outlines of the
+// underground lots (which can't be seen from above anyway).
 import { useEffect, useMemo, useRef } from 'react';
-import { Html } from '@react-three/drei';
+import { ManagedLabel } from './labels.jsx';
 import { PARKING, heightAt } from '../../campus/site.js';
 import { centroid, flatPolygon } from '../../campus/geometry.js';
 
@@ -33,12 +35,11 @@ function Badge({ lot, onSelect }) {
   );
 }
 
-export default function ParkingLayer({ onSelect, labelsRef }) {
+export default function ParkingLayer({ onSelect, showLayer }) {
   const lots = useMemo(
     () =>
       PARKING.map((lot) => {
         const [cx, cz] = centroid(lot.area);
-        // Surface lots lie on the ground; underground ones are shown as a see-through area.
         return { ...lot, geometry: flatPolygon(lot.area, heightAt(cx, cz) + 0.3) };
       }),
     []
@@ -48,12 +49,17 @@ export default function ParkingLayer({ onSelect, labelsRef }) {
     const [bx, bz] = lot.badge;
     return (
       <group key={lot.code}>
-        <mesh geometry={lot.geometry} raycast={() => null}>
-          <meshBasicMaterial color={lot.underground ? '#1f6feb' : '#2f2f2f'} transparent opacity={lot.underground ? 0.35 : 0.85} />
-        </mesh>
-        <Html portal={labelsRef} position={[bx, heightAt(bx, bz) + 14, bz]} center zIndexRange={[30, 20]}>
-          <Badge lot={lot} onSelect={onSelect} />
-        </Html>
+        {(!lot.underground || showLayer) && (
+          <mesh geometry={lot.geometry} raycast={() => null}>
+            <meshBasicMaterial color={lot.underground ? '#1f6feb' : '#2f2f2f'} transparent opacity={lot.underground ? 0.35 : 0.85} />
+          </mesh>
+        )}
+        {showLayer && (
+          // Pinned: parking badges always show while the layer is on.
+          <ManagedLabel position={[bx, heightAt(bx, bz) + 14, bz]} pinned zIndexRange={[30, 20]}>
+            <Badge lot={lot} onSelect={onSelect} />
+          </ManagedLabel>
+        )}
       </group>
     );
   });

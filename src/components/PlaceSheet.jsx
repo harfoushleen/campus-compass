@@ -15,6 +15,7 @@ export default function PlaceSheet({ place, onClose, onSelect }) {
   const { t, localize } = useI18n();
   const category = getCategory(place.category);
   const building = place.building ? getPlace(place.building) : null;
+  const near = place.near ? getPlace(place.near) : null; // hangout spots: the closest building
   // For a building: the offices, services etc. that list it as their "building".
   const inside = PLACES.filter((p) => p.building === place.id);
   const coords = placeCoordinates(place);
@@ -34,6 +35,24 @@ export default function PlaceSheet({ place, onClose, onSelect }) {
         <button type="button" className="link-button" onClick={() => onSelect(building)}>
           {localize(building.name)}
         </button>
+      ),
+    ],
+    [
+      'near',
+      near && (
+        <button type="button" className="link-button" onClick={() => onSelect(near)}>
+          {localize(near.name)}
+        </button>
+      ),
+    ],
+    [
+      'features',
+      place.features?.length > 0 && (
+        <span className="feature-list">
+          {place.features.map((f) => (
+            <span key={f} className="feature">{t(`feature.${f}`)}</span>
+          ))}
+        </span>
       ),
     ],
     ['floor', localize(place.floor)],
@@ -58,6 +77,7 @@ export default function PlaceSheet({ place, onClose, onSelect }) {
 
       <h2 id="sheet-title">{localize(place.name)}</h2>
       {place.description && <p className="sheet-desc">{localize(place.description)}</p>}
+      {place.verified === false && <p className="sheet-note">{t('notVerified')}</p>}
 
       <dl className="sheet-details">
         {rows.map(([key, value]) => (

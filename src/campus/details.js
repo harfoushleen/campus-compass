@@ -4,7 +4,7 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { BUILDINGS, FLOOR_HEIGHT, STYLES, WINDOWS } from './buildings.js';
-import { heightAt, CAMERA, TREES, TERRACES, AMPHITHEATER } from './site.js';
+import { heightAt, CAMERA, TREES, TERRACES, AMPHITHEATER, HANGOUT_DECOR, PATHS, STAIRS } from './site.js';
 import { centroid, insidePolygon, partHeights } from './geometry.js';
 
 // ── Shape helpers ──
@@ -213,12 +213,36 @@ function random(seed) {
 const insideAnyBuilding = (x, z) =>
   BUILDINGS.some((b) => b.parts.some((p) => insidePolygon(p.footprint, x, z)));
 
+// Every point where a hangout decoration stands (trees are kept away from these).
+const decorPoints = Object.values(HANGOUT_DECOR).flatMap((d) => [
+  ...(d.benches ?? []).map(([x, z]) => [x, z]),
+  ...(d.shrubs ?? []),
+  ...[d.kiosk, d.fountain, d.featureTree, d.grass, d.catHouse, d.pergola].filter(Boolean).map((o) => o.at),
+]);
+const nearDecor = (x, z, r = 4.5) => decorPoints.some(([dx, dz]) => Math.hypot(x - dx, z - dz) < r);
+
+// Paths and stairs as line segments, so trees can keep clear of them.
+const walkways = [
+  ...PATHS.map((p) => ({ width: p.width, points: p.points })),
+  ...STAIRS.map((st) => ({ width: st.width, points: [st.from, st.to] })),
+];
+function nearWalkway(x, z) {
+  return walkways.some(({ width, points }) =>
+    points.slice(0, -1).some(([ax, az], i) => {
+      const [bx, bz] = points[i + 1];
+      const dx = bx - ax, dz = bz - az;
+      const t = Math.max(0, Math.min(1, ((x - ax) * dx + (z - az) * dz) / (dx * dx + dz * dz || 1)));
+      return Math.hypot(x - (ax + t * dx), z - (az + t * dz)) < width / 2 + 1.5;
+    })
+  );
+}
+
 /** Tree positions and sizes from the clusters and rows in site.js. */
 export function buildTreeInstances() {
   const rand = random(7);
   const trees = [];
   const add = (x, z) => {
-    if (insideAnyBuilding(x, z)) return;
+    if (insideAnyBuilding(x, z) || nearDecor(x, z) || nearWalkway(x, z)) return;
     const size = 0.8 + rand() * 0.5;
     trees.push({ position: [x, heightAt(x, z), z], size, shade: rand() });
   };
@@ -277,6 +301,104 @@ export function buildAmphitheater() {
     parts.push(g);
   }
   return mergeGeometries(parts);
+}
+
+// ── Hangout spot decorations ──
+
+/** Box helper: a box of size (w, h, d) whose bottom centre sits at (x, y, z). */
+function box(w, h, d, x = 0, y = 0, z = 0) {
+  const g = new THREE.BoxGeometry(w, h, d);
+  g.translate(x, y + h / 2, z);
+  return g;
+}
+
+/** One bench (seat, backrest, two legs) as a single geometry, facing +z. */
+export function benchGeometry() {
+  return mergeGeometries([
+    box(1.8, 0.1, 0.5, 0, 0.42, 0),       // seat
+    box(1.8, 0.45, 0.08, 0, 0.55, -0.22), // backrest
+    box(0.1, 0.42, 0.45, -0.75, 0, 0),    // legs
+    box(0.1, 0.42, 0.45, 0.75, 0, 0),
+  ]);
+}
+
+/**
+ * All hangout decorations from HANGOUT_DECOR, grouped by kind:
+ *   benches / shrubs: instance lists (one InstancedMesh each)
+ *   kiosk, awning, stone, water, trunk, crown: merged geometries (one mesh each)
+ */
+export function buildHangoutDecor() {
+  const benches = [], shrubs = [];
+  const kiosk = [], awning = [], stone = [], water = [], trunk = [], crowns = [];
+  const grass = [], catHouse = [], catRoof = [], wood = [], vine = [];
+  for (const d of Object.values(HANGOUT_DECOR)) {
+    for (const [x, z, angle = 0] of d.benches ?? []) {
+      benches.push({ position: [x, heightAt(x, z), z], rotationY: (-angle * Math.PI) / 180 });
+    }
+    for (const [x, z] of d.shrubs ?? []) shrubs.push({ position: [x, heightAt(x, z), z] });
+
+    if (d.kiosk) {
+      const [x, z] = d.kiosk.at, y = heightAt(x, z), a = (-(d.kiosk.angle ?? 0) * Math.PI) / 180;
+      const place = (g) => g.rotateY(a).translate(x, y, z);
+      kiosk.push(place(box(3.2, 2.6, 2.4)));
+      const roof = box(3.8, 0.15, 1.6, 0, 0, 0);
+      roof.rotateX(0.35);
+      roof.translate(0, 2.6, 1.5);
+      awning.push(place(roof));
+      awning.push(place(box(3.4, 0.2, 2.6, 0, 2.6, 0))); // flat top
+    }
+    if (d.fountain) {
+      const [x, z] = d.fountain.at, y = heightAt(x, z), r = d.fountain.radius;
+      stone.push(new THREE.CylinderGeometry(r, r, 0.3, 28).translate(x, y + 0.15, z));                  // basin floor
+      stone.push(new THREE.TorusGeometry(r - 0.1, 0.18, 8, 28).rotateX(Math.PI / 2).translate(x, y + 0.4, z)); // rim
+      stone.push(new THREE.CylinderGeometry(0.25, 0.35, 1.4, 10).translate(x, y + 0.85, z));            // pedestal
+      stone.push(new THREE.CylinderGeometry(0.9, 0.6, 0.25, 16).translate(x, y + 1.55, z));             // upper bowl
+      water.push(new THREE.CylinderGeometry(r - 0.15, r - 0.15, 0.06, 28).translate(x, y + 0.36, z));    // water in the basin
+      water.push(new THREE.CylinderGeometry(0.75, 0.75, 0.05, 16).translate(x, y + 1.7, z));             // water in the bowl
+    }
+    if (d.grass) {
+      const [x, z] = d.grass.at;
+      const g = new THREE.CircleGeometry(1, 28);
+      g.rotateX(-Math.PI / 2);
+      g.scale(d.grass.size[0], 1, d.grass.size[1]);
+      g.translate(x, heightAt(x, z) + 0.12, z);
+      grass.push(g);
+    }
+    if (d.catHouse) {
+      const [x, z] = d.catHouse.at, y = heightAt(x, z), a = (-(d.catHouse.angle ?? 0) * Math.PI) / 180;
+      catHouse.push(box(1.5, 0.9, 1.2).rotateY(a).translate(x, y, z));
+      catRoof.push(new THREE.ConeGeometry(1.25, 0.7, 4).rotateY(Math.PI / 4).translate(0, 1.25, 0).rotateY(a).translate(x, y, z));
+    }
+    if (d.pergola) {
+      const [x, z] = d.pergola.at, [L, W] = d.pergola.size, y = heightAt(x, z);
+      const a = (-(d.pergola.angle ?? 0) * Math.PI) / 180, H = 2.6;
+      const place = (g) => g.rotateY(a).translate(x, y, z);
+      for (const sx of [-1, 1]) for (const sz of [-1, 1]) wood.push(place(box(0.22, H, 0.22, sx * (L / 2 - 0.15), 0, sz * (W / 2 - 0.15)))); // posts
+      for (const sz of [-1, 1]) wood.push(place(box(L, 0.18, 0.2, 0, H, sz * (W / 2 - 0.15))));                                           // long beams
+      const n = Math.round(L / 0.8);
+      for (let i = 0; i <= n; i++) wood.push(place(box(0.1, 0.08, W + 0.5, -L / 2 + (L * i) / n, H + 0.18, 0)));                             // cross slats
+      vine.push(place(box(L - 0.4, 0.3, W - 0.4, 0, H + 0.26, 0)));                                                                         // leafy cover
+      for (const [fx, fz, r] of [[-L * 0.3, -W * 0.3, 0.9], [0, W * 0.3, 1], [L * 0.3, -W * 0.2, 0.9]]) {
+        vine.push(place(new THREE.IcosahedronGeometry(r, 0).translate(fx, H + 0.7, fz)));
+      }
+      for (const sx of [-1, 1]) vine.push(place(box(0.3, 1.3, W - 0.6, sx * (L / 2 - 0.2), H - 1.2, 0)));                                  // hanging vine
+    }
+    if (d.featureTree) {
+      const [x, z] = d.featureTree.at, y = heightAt(x, z), s = d.featureTree.size;
+      trunk.push(new THREE.CylinderGeometry(0.35 * s, 0.55 * s, 4 * s, 7).translate(x, y + 2 * s, z));
+      // Three overlapping rounded crowns make a wide, full canopy.
+      for (const [dx, dy, dz, r] of [[0, 5.2, 0, 2.6], [1.8, 4.5, 0.8, 2], [-1.6, 4.6, -0.9, 2.1]]) {
+        crowns.push(new THREE.IcosahedronGeometry(r * s, 1).translate(x + dx * s, y + dy * s, z + dz * s));
+      }
+    }
+  }
+  const merge = (list) => (list.length ? mergeGeometries(list) : null);
+  return {
+    benches, shrubs,
+    kiosk: merge(kiosk), awning: merge(awning), stone: merge(stone), water: merge(water),
+    trunk: merge(trunk), crown: merge(crowns), pergola: merge(wood), vine: merge(vine),
+    grass: merge(grass), catHouse: merge(catHouse), catRoof: merge(catRoof),
+  };
 }
 
 /** Roof/ground height of the tallest part of a building (for labels and "top" extras). */

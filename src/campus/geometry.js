@@ -3,7 +3,7 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { BUILDINGS, FLOOR_HEIGHT } from './buildings.js';
-import { heightAt, BOUNDS, CAMPUS_OUTLINE, COLORS, SURROUNDINGS } from './site.js';
+import { heightAt, BOUNDS, CAMPUS_OUTLINE, COLORS, SURROUNDINGS, PATHS, STAIRS } from './site.js';
 import osm from './osm-surroundings.json';
 
 /** Average of a footprint's corners: [x, z]. */
@@ -65,10 +65,10 @@ export function buildTerrain(step = 4) {
   return geometry;
 }
 
-/** All streets as flat ribbons following the slope, merged into one geometry. */
-export function buildStreets(step = 4) {
+/** Flat ribbons ({ width, points }) following the slope, merged into one geometry. `lift` = metres above the ground. */
+function buildRibbons(items, lift, step = 4) {
   const positions = [];
-  for (const street of osm.streets) {
+  for (const street of items) {
     const half = street.width / 2;
     // Split long segments so the ribbon follows the hill.
     const pts = [];
@@ -86,7 +86,7 @@ export function buildStreets(step = 4) {
       const nx = (-(bz - az) / len) * half, nz = ((bx - ax) / len) * half; // sideways offset
       // Extend each piece slightly so joints at corners don't show gaps.
       const ex = ((bx - ax) / len) * half * 0.5, ez = ((bz - az) / len) * half * 0.5;
-      const ya = heightAt(ax, az) + 0.08, yb = heightAt(bx, bz) + 0.08;
+      const ya = heightAt(ax, az) + lift, yb = heightAt(bx, bz) + lift;
       const a1 = [ax - ex + nx, ya, az - ez + nz], a2 = [ax - ex - nx, ya, az - ez - nz];
       const b1 = [bx + ex + nx, yb, bz + ez + nz], b2 = [bx + ex - nx, yb, bz + ez - nz];
       positions.push(...a1, ...b1, ...a2, ...a2, ...b1, ...b2);
@@ -138,4 +138,32 @@ export function flatPolygon(points, y) {
   geometry.rotateX(-Math.PI / 2);
   geometry.translate(0, y, 0);
   return geometry;
+}
+
+/** All streets (from OpenStreetMap). */
+export const buildStreets = (step = 4) => buildRibbons(osm.streets, 0.08, step);
+
+/** Campus paths (PATHS in site.js), drawn just above the ground and the streets. */
+export const buildPaths = (step = 4) => buildRibbons(PATHS, 0.15, step);
+
+/** Stairs (STAIRS in site.js): one box per step, merged into one geometry. */
+export function buildStairs() {
+  const boxes = [];
+  for (const st of STAIRS) {
+    const [fx, fz] = st.from, [tx, tz] = st.to;
+    const len = Math.hypot(tx - fx, tz - fz), dx = (tx - fx) / len, dz = (tz - fz) / len;
+    const h0 = heightAt(fx, fz);
+    const rise = st.rise ?? heightAt(tx, tz) - h0;
+    const tread = len / st.steps;
+    for (let i = 0; i < st.steps; i++) {
+      const along = (i + 0.5) * tread, x = fx + dx * along, z = fz + dz * along;
+      const top = h0 + (rise * (i + 1)) / st.steps + 0.25;
+      const bottom = Math.min(heightAt(x, z), top - 0.3) - 0.3;
+      const g = new THREE.BoxGeometry(st.width, top - bottom, tread);
+      g.rotateY(Math.atan2(dx, dz)); // the box's length now runs from -> to
+      g.translate(x, (top + bottom) / 2, z);
+      boxes.push(g);
+    }
+  }
+  return mergeGeometries(boxes);
 }

@@ -65,8 +65,104 @@ export const TERRACES = { x: [-16, 11], z: [6, 40], steps: 4, grass: '#6f8f4a', 
 export const AMPHITHEATER = { center: [-4, 50], radius: 10, tiers: 5, color: '#b9a58a' };
 
 // ── Labels ──
-// Building labels are shown by default; users can hide them with the "Labels" button.
-export const LABELS = { showByDefault: true };
+// Every label has a priority: 1 = main, 2 = secondary, 3 = minor. On small or
+// zoomed-out views only main labels show; the others appear as the user zooms in.
+// "Zoom" is measured as screen width (px) divided by camera distance (m):
+// a phone at the default view is about 0.8, a laptop at the default view about 3.5.
+// Labels that would overlap a more important label or a button are hidden.
+export const LABELS = {
+  showByDefault: true, // the "Labels" button turns building and gate labels off/on
+  zoomForPriority2: 1.0, // a phone shows these after zooming in a little (~1.3×)
+  zoomForPriority3: 1.8, // …and these after zooming in more (~2.3×)
+  gatePriority: 2,
+  hangoutPriority: 4,  // 4 = never shown as text: pins are icons, and show their name only when tapped
+};
+
+// ── Hangout spots: 3D touches ──
+// The spots themselves (name, position, features) are in places.json. This adds
+// small 3D details around them, keyed by place id. They are always drawn, whatever
+// the toolbar buttons say; the buttons only control the pins and labels.
+//   benches     [[x, z, angleDegrees], ...]
+//   kiosk       { at: [x, z], angle }              small café kiosk
+//   fountain    { at: [x, z], radius }
+//   featureTree { at: [x, z], size, color }        a large standout tree
+//   shrubs      [[x, z], ...]                      low bushes
+//   grass       { at: [x, z], size: [rx, rz] }     flat patch of grass
+//   catHouse    { at: [x, z], angle }              small cat house
+//   pergola     { at: [x, z], size: [length, depth], angle }   vine-covered pergola
+// All positions are approximate (verified: false in places.json).
+export const HANGOUT_DECOR = {
+  'H-AKSOBCAF': {
+    kiosk: { at: [-120, -3], angle: 0 },
+    benches: [[-114, -4, 90], [-114, 1, 90], [-120, 2, 0]],
+  },
+  'H-FOUNTAIN': {
+    // Inside the courtyard formed by the Orme-Gray buildings, standing on a lawn.
+    fountain: { at: [-79, 19], radius: 3 },
+    grass: { at: [-79, 19], size: [5.8, 5.8] },
+    benches: [[-79, 13.6, 0], [-79, 24.4, 180]],
+  },
+  'H-VINE': {
+    // Benches under a vine-covered pergola, where the fountain was first placed.
+    pergola: { at: [-67.5, 18], size: [7, 3.2], angle: 0 },
+    benches: [[-67.5, 16.9, 0], [-67.5, 19.1, 180]],
+  },
+  'H-GARDEN-TREE': {
+    featureTree: { at: [-46, 15], size: 2.2, color: '#7fb04a' }, // the Tree of Life
+  },
+  'H-GARDEN-BENCHES': {
+    benches: [[-28, 13, 0], [-22, 13, 0], [-25, 19, 180]],
+  },
+  CATS: {
+    grass: { at: [-40, 47.5], size: [5, 2.3] },
+    catHouse: { at: [-36.5, 47.5], angle: 0 },
+    shrubs: [[-45, 50], [-34, 50.3]],
+  },
+};
+export const HANGOUT_COLORS = {
+  bench: '#8a6a4f',
+  kiosk: '#f2e6d0',
+  awning: '#d6336c',
+  fountainStone: '#cfc6b4',
+  water: '#2f8fe0',
+  wood: '#7a5a40',
+  vine: '#4f8a3a',
+  shrub: '#4f7a3a',
+  grass: '#74a64a',
+  catHouse: '#c98f5a',
+  catRoof: '#8b3a2b',
+};
+
+// ── Paths and stairs ──
+// Paths: lines of [x, z] points laid on the ground, `width` in metres.
+// Stairs: from one point to another; the height gained follows the hill unless
+// you give `rise` (metres). `steps` is the number of steps.
+// Trees never grow on paths or stairs. Positions are approximate.
+export const PATHS = [
+  // Lower Gate up through the middle of the campus to the front of Sage Hall
+  { id: 'lowerGate', width: 3, points: [[-50, -46], [-42, -38], [-33, -28], [-30, -14], [-31, 0], [-35, 10], [-38, 16]] },
+  // Along the front of Irwin Hall
+  { id: 'irwinFront', width: 3, points: [[-42, -38], [-26, -41], [-8, -41], [10, -40], [20, -39]] },
+  // East–west garden path: Orme-Gray fountain, Tree of Life, garden benches, below the terraces, plaza
+  { id: 'gardens', width: 3, points: [[-70, 18], [-60, 13], [-52, 8], [-44, 7], [-34, 9], [-24, 9], [-19, 5.5], [-12, 3.8], [4, 4.8], [22, 5], [32, 8]] },
+  // Plaza: foot and top of the Nicol stairs
+  // Fountain, on the lawn inside the Orme-Gray courtyard
+  { id: 'fountain', width: 3, points: [[-70, 18], [-74, 19]] },
+  { id: 'plazaLow', width: 3, points: [[22, 5], [22, 10]] },
+  { id: 'plazaTop', width: 3, points: [[22, 30], [22, 32], [34, 34]] },
+  // From the top of the terraces, around the amphitheater, to the Upper Gate
+  { id: 'upperGate', width: 3, points: [[9, 41], [10, 50], [7, 60], [-2, 65], [-8, 66]] },
+  // Fountain, behind Orme-Gray, to the Middle Gate
+  { id: 'middleGate', width: 3, points: [[-70, 18], [-72, 32], [-76, 46], [-100, 46], [-108, 45]] },
+  // AKSOB Gate, past the AKSOB Caf, up to the Middle Gate
+  { id: 'aksobGate', width: 3, points: [[-116, -9], [-118, -3], [-117, 12], [-114, 28], [-112, 42], [-108, 45]] },
+];
+
+export const STAIRS = [
+  { id: 'terraceWest', from: [-19, 7], to: [-19, 28], width: 3, steps: 16 },   // beside the terraces
+  { id: 'nicol', from: [22, 10], to: [22, 30], width: 5, steps: 16 },          // plaza up to Nicol Hall
+  { id: 'sageFront', from: [-38, 16], to: [-38, 24.5], width: 6, steps: 9 },   // Sage Hall entrance
+];
 
 // ── Gezairi marker ──
 // When the Gezairi Building is off-screen, a small "Gezairi →" marker sits at the
@@ -88,6 +184,9 @@ export const GATES = [
   { id: 'upper', name: 'Upper Gate', position: [-8, 68], labelHeight: 9 },
   { id: 'middle', name: 'Middle Gate', position: [-108, 44], labelHeight: 28 },
   { id: 'lower', name: 'Lower Gate', position: [-50, -51], labelHeight: 9 },
+  // Not on the official map. OSM tags an entrance here as "LAU Middle Gate (secondary)".
+  // Name to be confirmed.
+  { id: 'aksob', name: 'AKSOB Gate', position: [-116, -9], labelHeight: 9, verified: false },
 ];
 
 // ── Parking layer ── (shown with the "Parking" toggle)
@@ -157,4 +256,6 @@ export const COLORS = {
   highlight: '#ffcf70',
   selected: '#ffb84d',
   dimmed: '#9fa3a1',
+  path: '#a6a9a7',   // concrete grey
+  stairs: '#c2c5c3', // lighter concrete grey
 };

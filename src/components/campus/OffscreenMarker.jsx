@@ -7,7 +7,8 @@ import { useFrame } from '@react-three/fiber';
 
 const MARGIN = 56; // px kept free at the edges of the view
 
-export default function OffscreenMarker({ point, elementRef, arrowRef }) {
+// `avoidRef`: an element at the bottom of the view (the toolbar) the marker must stay above.
+export default function OffscreenMarker({ point, elementRef, arrowRef, avoidRef }) {
   const v = useRef(new THREE.Vector3());
 
   // Runs whenever the scene redraws (i.e. whenever the camera moves).
@@ -27,7 +28,10 @@ export default function OffscreenMarker({ point, elementRef, arrowRef }) {
     const mx = 1 - (2 * MARGIN) / size.width, my = 1 - (2 * MARGIN) / size.height;
     const k = Math.max(Math.abs(x) / mx, Math.abs(y) / my, 1e-6);
     x /= k; y /= k;
-    const px = ((x + 1) / 2) * size.width, py = ((1 - y) / 2) * size.height;
+    const px = ((x + 1) / 2) * size.width;
+    // Keep clear of the toolbar at the bottom.
+    const bottomLimit = size.height - (avoidRef?.current?.offsetHeight ?? 0) - 40;
+    const py = Math.min(((1 - y) / 2) * size.height, bottomLimit);
     el.style.transform = `translate(${px}px, ${py}px) translate(-50%, -50%)`;
     if (arrowRef.current) arrowRef.current.style.transform = `rotate(${Math.atan2(-y, x)}rad)`;
   });

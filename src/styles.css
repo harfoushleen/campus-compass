@@ -69,30 +69,38 @@ button { cursor: pointer; }
   touch-action: none; /* let the 3D view handle pinch and drag */
 }
 
-.campus-buttons {
+/* Toolbar centred at the bottom of the 3D view (labels of the tall buildings sit at the top). */
+.campus-toolbar {
   position: absolute;
-  top: 10px;
-  inset-inline-end: 10px;
+  bottom: max(14px, env(safe-area-inset-bottom));
+  left: 50%;
+  transform: translateX(-50%);
   display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 8px;
+  gap: 6px;
+  max-width: calc(100% - 16px);
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding: 4px;
   z-index: 30;
 }
+.campus-toolbar::-webkit-scrollbar { display: none; }
 
 .campus-button {
+  flex: none;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
   border: 0;
   border-radius: 999px;
-  padding: 7px 12px;
-  background: rgb(255 255 255 / 0.92);
+  padding: 7px 11px;
+  background: rgb(255 255 255 / 0.94);
   box-shadow: var(--shadow);
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   font-weight: 600;
+  white-space: nowrap;
 }
 .campus-button.active { background: #0b5cad; color: #fff; }
+.campus-button.active.hangouts { background: #d6336c; }
 
 .parking-p {
   display: inline-grid;
@@ -109,8 +117,8 @@ button { cursor: pointer; }
 
 .campus-attribution {
   position: absolute;
-  bottom: 4px;
-  inset-inline-start: 6px;
+  top: 4px;
+  inset-inline-end: 8px;
   margin: 0;
   font-size: 0.65rem;
   color: rgb(255 255 255 / 0.8);
@@ -463,3 +471,50 @@ button { cursor: pointer; }
   pointer-events: none;
 }
 .campus-labels .parking-badge { pointer-events: auto; }
+
+/* Managed labels (see components/campus/labels.jsx). */
+.managed-label.label-hidden { visibility: hidden; }
+.managed-label.label-compact .label-text { display: none; }
+
+/* Hangout spot pins: pink, with a bench icon; shrink to just the icon when zoomed out. */
+.hangout-pin {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 9px 3px 3px;
+  border: 2px solid #fff;
+  border-radius: 999px;
+  background: var(--pin-color, #d6336c);
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 600;
+  white-space: nowrap;
+  box-shadow: var(--shadow);
+  pointer-events: auto;
+  cursor: pointer;
+}
+.label-compact .hangout-pin { padding: 3px; }
+.hangout-pin .label-icon {
+  display: inline-grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: rgb(255 255 255 / 0.25);
+}
+.hangout-pin.active { filter: brightness(0.8); outline: 3px solid rgb(0 0 0 / 0.25); }
+
+/* Details sheet: features and "not verified" note. */
+.feature-list { display: flex; flex-wrap: wrap; gap: 6px; }
+.feature {
+  padding: 2px 9px;
+  border-radius: 999px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  font-size: 0.8rem;
+}
+.sheet-note {
+  margin: -6px 0 12px;
+  font-size: 0.8rem;
+  color: #9a6700;
+}

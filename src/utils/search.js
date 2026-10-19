@@ -16,6 +16,8 @@ export function filterPlaces(places, { campus, category, query, localize, t }) {
       [
         localize(p.name),
         p.building && `${p.building} ${nameOf(p.building)}`, // building code and name
+        p.near && `${p.near} ${nameOf(p.near)}`,             // nearby building (hangout spots)
+        ...(p.features ?? []).map((f) => t(`feature.${f}`)),
         localize(p.description),
         t(`category.${p.category}`),
         ...(p.keywords ?? []).map(localize),
