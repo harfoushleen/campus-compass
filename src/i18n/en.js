@@ -18,7 +18,10 @@ export default {
   directions: 'Directions',
   insideBuilding: 'In this building',
   parking: 'Parking',
-  resetView: 'Reset view',
+  resetView: 'Default view',
+  labels: 'Labels',
+  loading3d: 'Loading 3D campus…',
+  'marker.gezairi': 'Gezairi',
   // Plurals: add ".one", ".other" etc. (Arabic also uses ".zero", ".two", ".few", ".many").
   'resultsCount.one': '{count} place',
   'resultsCount.other': '{count} places',

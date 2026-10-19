@@ -28,8 +28,13 @@ export default function Site({ labelsRef }) {
         const y = heightAt(x, z);
         return (
           <group key={gate.id} position={[x, y, z]}>
-            <mesh position={[0, 2, 0]} raycast={() => null}>
-              <boxGeometry args={[5, 4, 5]} />
+            {/* Small gatehouse with a red pyramid roof. */}
+            <mesh position={[0, 1.75, 0]} raycast={() => null}>
+              <boxGeometry args={[4.5, 3.5, 4.5]} />
+              <meshLambertMaterial color="#d8cbb4" />
+            </mesh>
+            <mesh position={[0, 4.6, 0]} rotation={[0, Math.PI / 4, 0]} raycast={() => null}>
+              <coneGeometry args={[3.9, 2.2, 4]} />
               <meshLambertMaterial color="#c4502e" />
             </mesh>
             <Html portal={labelsRef} position={[0, gate.labelHeight, 0]} center zIndexRange={[20, 10]} style={{ pointerEvents: 'none' }}>

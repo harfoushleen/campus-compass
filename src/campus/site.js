@@ -34,8 +34,52 @@ export const SURROUNDINGS = {
   height: 6,             // metres, used for every neighbouring building…
   useRealLevels: false,  // …unless true: then OSM "building:levels" is used where known
   floorHeight: 3.2,
-  maxDistance: 35,       // only buildings within this many metres of the campus are drawn
+  maxDistance: 35,       // only buildings within this many metres of the campus are drawn…
+  alsoNear: ['GB'],      // …or of these LAU buildings outside the campus
 };
+
+// ── Landscaping ──
+// Trees: random positions inside each cluster (the same every load), or evenly
+// along a row. Trees that would land inside a building are skipped.
+export const TREES = {
+  clusters: [
+    { center: [-15, 14], radius: 14, count: 16 }, // between Irwin and Sage
+    { center: [-2, 30], radius: 10, count: 9 },   // on the terraces
+    { center: [-36, -34], radius: 8, count: 7 },  // Shannon / Lower Gate
+    { center: [-66, 16], radius: 9, count: 6 },   // between Shannon and Orme-Gray
+    { center: [8, 56], radius: 6, count: 4 },     // by the amphitheater
+    { center: [30, 30], radius: 8, count: 5 },    // in front of Nicol
+  ],
+  rows: [
+    { from: [-6, -41], to: [24, -38], count: 8 },   // hedge of trees in front of Irwin
+    { from: [-168, -6], to: [-132, -6], count: 7 }, // along the Library front
+  ],
+  colors: ['#2f5a3a', '#3d6e44'], // two greens, mixed at random
+  trunk: '#6b4f3a',
+};
+
+// Stepped green terraces climbing from the plaza toward the amphitheater.
+export const TERRACES = { x: [-16, 11], z: [6, 40], steps: 4, grass: '#6f8f4a', wall: '#a08268' };
+
+// Amphitheater below the Upper Gate, open to the north.
+export const AMPHITHEATER = { center: [-4, 50], radius: 10, tiers: 5, color: '#b9a58a' };
+
+// ── Labels ──
+// Building labels are shown by default; users can hide them with the "Labels" button.
+export const LABELS = { showByDefault: true };
+
+// ── Gezairi marker ──
+// When the Gezairi Building is off-screen, a small "Gezairi →" marker sits at the
+// edge of the view, pointing to it. Tapping it flies the camera there.
+export const OFFSCREEN_MARKERS = [
+  {
+    buildingId: 'GB',
+    labelKey: 'marker.gezairi', // marker text, in src/i18n/en.js
+    // Camera distance (m) when flying to the building.
+    viewDistance: 300,
+  },
+];
+export const FLY_DURATION = 1.2; // seconds
 
 // ── Gates ──
 // `position`: where the gatehouse stands. `labelHeight`: how high its label floats

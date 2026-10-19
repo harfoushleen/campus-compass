@@ -8,7 +8,9 @@
 //
 // Each building:
 //   id        Official code. Must match the place "id" in src/data/places.json.
-//   name      Shown on hover.
+//   name      Full name (details, hover).
+//   label     Optional shorter name for the floating 3D label.
+//   labelOffset  Optional [x, z] metres to move the label, e.g. if it overlaps another one.
 //   style     Key into STYLES below (colours / materials).
 //   parts     One or more blocks. Each part has:
 //               footprint   corners [[x, z], ...] (any order around the edge)
@@ -16,24 +18,62 @@
 //               floorHeight optional, metres per floor (default FLOOR_HEIGHT)
 //               roof        'flat' | 'hip' | 'sawtooth' | 'courts' (detail added in stage 3)
 //               style       optional, overrides the building's style for this part
+//   extras    optional small details (glass bays, towers, roof boxes), see EXTRAS below
 //   underground  true = drawn only as an entrance (Underground Parking)
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const FLOOR_HEIGHT = 3.5;
 
-// Colours per facade type. Change a colour here and every building using it updates.
+// Facade types. Change a value here and every building using it updates.
+//   wall     wall colour
+//   roof     colour of flat roofs
+//   windows  'grid' (a window per bay and floor), 'ribbon' (a glass strip per floor) or 'none'
+//   window   window glass colour (optional, default WINDOWS.color)
+//   accent   colour of the floor bands, drawn when bands: true
 export const STYLES = {
-  white:       { wall: '#eceeed', roof: '#d4d8d7' },
-  whiteOrange: { wall: '#efe9df', roof: '#d4d8d7', accent: '#e0a35a' },
-  stone:       { wall: '#8e5e4e', roof: '#c4502e' },
-  brick:       { wall: '#8a5a45', roof: '#e6e6e2' },
-  stoneLight:  { wall: '#9b7058', roof: '#d9d9d4' },
-  safadi:      { wall: '#f1f1ef', roof: '#f7f7f5', accent: '#d9a15a' },
-  gym:         { wall: '#9a9e9b', roof: '#4c7d3c' },
-  parking:     { wall: '#2b2b2b', roof: '#2b2b2b' },
-  // Gezairi: placeholder look until real photos are available. Restyle it here.
-  gezairi:     { wall: '#d8cdb8', roof: '#c9bfab', accent: '#5f7480' },
+  white:       { wall: '#eceeed', roof: '#d4d8d7', windows: 'grid' },
+  whiteOrange: { wall: '#efe9df', roof: '#d4d8d7', windows: 'grid', accent: '#e0a35a', bands: true },
+  stone:       { wall: '#8e5e4e', roof: '#d9d9d4', windows: 'grid', window: '#3b2f2b' },
+  brick:       { wall: '#8a5a45', roof: '#e6e6e2', windows: 'grid', window: '#3b2f2b' },
+  stoneLight:  { wall: '#9b7058', roof: '#d9d9d4', windows: 'grid', window: '#3b2f2b' },
+  safadi:      { wall: '#f1f1ef', roof: '#f7f7f5', windows: 'grid', accent: '#d9a15a', bands: true },
+  gym:         { wall: '#9a9e9b', roof: '#4c7d3c', windows: 'none' },
+  parking:     { wall: '#2b2b2b', roof: '#2b2b2b', windows: 'none' },
+  // Gezairi: placeholder look (light beige with window strips) until photos are available.
+  // Restyle it here, e.g. windows: 'grid' or different colours.
+  gezairi:     { wall: '#d8cdb8', roof: '#c9bfab', windows: 'ribbon', window: '#5f7480' },
 };
+
+// Windows. All buildings share one instanced mesh, so thousands of them stay cheap.
+export const WINDOWS = {
+  color: '#4d6470',
+  spacing: 3.2, // metres between window centres along a wall
+  width: 1.3,
+  height: 1.8,
+  minWall: 3,   // walls shorter than this get no windows
+};
+
+// Colours of the shaped roofs.
+export const ROOFS = {
+  hip: '#c4502e',      // red tiles
+  sawtooth: '#f7f7f5', // Safadi skylights
+};
+
+// Named colours that extras can use instead of a hex code.
+export const EXTRA_COLORS = {
+  glass: '#9db8bf',
+  cream: '#e6c787',
+  plant: '#c9cccb',
+};
+
+// EXTRAS: small shapes added to a building. Each one has:
+//   shape   'box' or 'cylinder'
+//   at      [x, z] centre
+//   size    box: [length, depth]; cylinder: radius
+//   angle   box rotation in degrees (from east toward south), optional
+//   base    'ground' (stands on the ground) or 'top' (sits on the roof of the tallest part)
+//   height  metres, or 'full' = from the ground up to the roof plus `above` metres
+//   color   hex code or a name from EXTRA_COLORS
 
 /**
  * Builds a rectangle footprint from a centre point, size and rotation.
@@ -65,6 +105,7 @@ export const BUILDINGS = [
   {
     id: 'WKSC',
     name: 'Wadad Sabbagh Khoury Student Center',
+    label: 'Student Center',
     style: 'white',
     parts: [
       {
@@ -73,6 +114,8 @@ export const BUILDINGS = [
         roof: 'flat',
       },
     ],
+    // Cream curved roof shell over the back corner, as on the official map.
+    extras: [{ shape: 'box', at: [44, 79], size: [24, 12], angle: 20, base: 'top', height: 2.5, color: 'cream' }],
   },
   {
     id: 'NH',
@@ -99,6 +142,8 @@ export const BUILDINGS = [
   {
     id: 'GYM',
     name: 'Joseph G. Jabbra Gymnasium',
+    label: 'Gymnasium',
+    labelOffset: [12, 14], // keeps it clear of the University Services label
     style: 'gym',
     // Mostly underground: only a low deck shows, with the tennis courts on top.
     parts: [{ footprint: [[26.3, -3.6], [28.5, -36.6], [50.1, -34.6], [60.5, -34], [59.1, -1.4], [38.6, -2.7]], floors: 1, floorHeight: 4, roof: 'courts' }],
@@ -125,6 +170,8 @@ export const BUILDINGS = [
       // Rear block: red hip roof.
       { footprint: [[-1.9, -23], [-4.4, -0.4], [15.5, 1.9], [18, -20.5]], floors: 5, roof: 'hip', style: 'stone' },
     ],
+    // Glass bay across the middle of the front facade.
+    extras: [{ shape: 'box', at: [9.8, -36.4], size: [18, 2], angle: 6.5, base: 'ground', height: 7, color: 'glass' }],
   },
   {
     id: 'SH',
@@ -150,6 +197,8 @@ export const BUILDINGS = [
         roof: 'flat',
       },
     ],
+    // Small rooftop box (stairs / plant room).
+    extras: [{ shape: 'box', at: [-50, -17], size: [6, 5], angle: 77, base: 'top', height: 3, color: 'plant' }],
   },
   {
     id: 'OG',
@@ -164,21 +213,30 @@ export const BUILDINGS = [
   {
     id: 'AKSOB',
     name: 'Adnan Kassar School of Business',
+    label: 'School of Business',
     style: 'white',
     parts: [{ footprint: [[-167.5, 19.6], [-167.6, 36.9], [-125.8, 37.1], [-125.7, 19.8]], floors: 11, roof: 'flat' }],
+    extras: [
+      { shape: 'box', at: [-126.5, 20.8], size: [3, 3], base: 'ground', height: 'full', above: 0.5, color: 'glass' }, // glass corner
+      { shape: 'box', at: [-150, 28], size: [16, 10], base: 'top', height: 3.5, color: 'plant' },                   // rooftop setback
+    ],
   },
   {
     id: 'RNL',
     name: 'Riyad Nassar Library',
+    label: 'Library',
     style: 'white',
     parts: [
       { footprint: [[-167.4, -2.6], [-167.5, 19.6], [-151.5, 19.6], [-151.4, -2.6]], floors: 8, roof: 'flat' },
       { footprint: [[-151.4, -2.6], [-151.5, 14.1], [-139.4, 14.1], [-133.9, 11.2], [-131.3, 6.7], [-130.7, -2.5]], floors: 8, roof: 'flat' },
     ],
+    // Glass cylinder at the rounded corner.
+    extras: [{ shape: 'cylinder', at: [-135.5, 8.5], size: 5.5, base: 'ground', height: 'full', above: 2, color: 'glass' }],
   },
   {
     id: 'UGP',
     name: 'Underground Parking',
+    label: 'Parking (U)',
     style: 'parking',
     underground: true,
     // Only the street entrance is drawn. The parking layer also outlines the area below.
@@ -198,5 +256,6 @@ export const BUILDINGS = [
         roof: 'flat',
       },
     ],
+    extras: [{ shape: 'box', at: [-96, -142], size: [8, 6], base: 'top', height: 3, color: 'plant' }],
   },
 ];

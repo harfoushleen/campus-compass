@@ -2,7 +2,7 @@
 // Everything here is built once and cached; nothing is recreated per frame.
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
-import { FLOOR_HEIGHT } from './buildings.js';
+import { BUILDINGS, FLOOR_HEIGHT } from './buildings.js';
 import { heightAt, BOUNDS, CAMPUS_OUTLINE, COLORS, SURROUNDINGS } from './site.js';
 import osm from './osm-surroundings.json';
 
@@ -113,7 +113,15 @@ function distanceToPolygon(points, x, z) {
 
 /** Neighbouring city buildings near the campus as plain blocks, merged into one geometry. */
 export function buildSurroundings() {
-  const nearby = osm.buildings.filter((b) => distanceToPolygon(CAMPUS_OUTLINE, ...centroid(b.points)) <= SURROUNDINGS.maxDistance);
+  // Areas to draw neighbours around: the campus, plus LAU buildings outside it (Gezairi).
+  const areas = [
+    CAMPUS_OUTLINE,
+    ...BUILDINGS.filter((b) => SURROUNDINGS.alsoNear.includes(b.id)).flatMap((b) => b.parts.map((p) => p.footprint)),
+  ];
+  const nearby = osm.buildings.filter((b) => {
+    const [x, z] = centroid(b.points);
+    return areas.some((area) => distanceToPolygon(area, x, z) <= SURROUNDINGS.maxDistance);
+  });
   const parts = nearby.map((b) => {
     const height = SURROUNDINGS.useRealLevels && b.levels ? b.levels * SURROUNDINGS.floorHeight : SURROUNDINGS.height;
     const ground = Math.min(...b.points.map(([x, z]) => heightAt(x, z)));

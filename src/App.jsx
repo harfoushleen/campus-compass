@@ -1,5 +1,5 @@
 // Top-level component: holds the app state and lays out the screen.
-import { useMemo, useState } from 'react';
+import { lazy, Suspense, useMemo, useState } from 'react';
 import { PLACES } from './data/places.js';
 import { DEFAULT_CAMPUS } from './data/campuses.js';
 import { useI18n } from './i18n/index.jsx';
@@ -8,7 +8,9 @@ import CampusSwitcher from './components/CampusSwitcher.jsx';
 import SearchBar from './components/SearchBar.jsx';
 import CategoryChips from './components/CategoryChips.jsx';
 import ViewToggle from './components/ViewToggle.jsx';
-import CampusView from './components/campus/CampusView.jsx';
+// The 3D view (and the Three.js library) is loaded separately, so the search bar,
+// chips and list show up right away while it downloads.
+const CampusView = lazy(() => import('./components/campus/CampusView.jsx'));
 import ListView from './components/ListView.jsx';
 import PlaceSheet from './components/PlaceSheet.jsx';
 
@@ -56,13 +58,22 @@ export default function App() {
       <main className="content">
         {view === 'map' ? (
           // Only Beirut has a 3D model so far; Byblos is "coming soon" in the switcher.
-          <CampusView
-            places={visiblePlaces}
-            allPlaces={campusPlaces}
-            selectedPlace={selectedPlace}
-            onSelect={selectPlace}
-            onBackgroundClick={() => setSelectedId(null)}
-          />
+          <Suspense
+            fallback={
+              <div className="campus-loading" role="status">
+                <span className="spinner" aria-hidden="true" />
+                {t('loading3d')}
+              </div>
+            }
+          >
+            <CampusView
+              places={visiblePlaces}
+              allPlaces={campusPlaces}
+              selectedPlace={selectedPlace}
+              onSelect={selectPlace}
+              onBackgroundClick={() => setSelectedId(null)}
+            />
+          </Suspense>
         ) : (
           <ListView places={visiblePlaces} onSelect={selectPlace} />
         )}

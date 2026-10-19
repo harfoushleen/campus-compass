@@ -87,7 +87,10 @@ If you make a mistake (missing field, coordinates in quotes), the app skips that
 ## Adjusting the 3D campus
 
 - **Buildings**: `src/campus/buildings.js`, one entry per building. Change `floors`, the footprint corners (metres east/south of the campus centre), `roof`, or the `style`. Colours live in `STYLES` at the top of that file; the Gezairi Building has its own `gezairi` style, ready to restyle from photos.
-- **Gates, parking lots, hill, camera, colours**: `src/campus/site.js`.
+- **Facades and roofs**: in `buildings.js`, `STYLES` sets each facade type's colours and windows (`grid`, `ribbon` or `none`), `WINDOWS` the window size and spacing, and `ROOFS` the red tile and skylight colours. A part's `roof` can be `flat`, `hip`, `sawtooth` or `courts`.
+- **Small details** (Irwin's glass bay, the Library's glass cylinder, rooftop boxes): the `extras` list on a building. The format is explained above `BUILDINGS`.
+- **Labels**: `label` gives a shorter name for the floating label, and `labelOffset` moves a label that overlaps another one.
+- **Gates, parking lots, trees, terraces, amphitheater, hill, camera, the Gezairi marker, colours**: `src/campus/site.js`.
 - **Neighbouring streets and buildings**: run `npm run osm` to re-download them from OpenStreetMap.
 
 Building outlines and streets come from OpenStreetMap (© OpenStreetMap contributors, ODbL). The credit line in the corner of the 3D view is required by that licence, so keep it.
