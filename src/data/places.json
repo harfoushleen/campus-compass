@@ -1,0 +1,384 @@
+[
+  {
+    "id": "WKSC",
+    "name": "Wadad Sabbagh Khoury Student Center",
+    "campus": "beirut",
+    "category": "services",
+    "building": "",
+    "floor": "",
+    "description": "Student center with the main cafeteria, student activities and services.",
+    "hours": "",
+    "contact": "",
+    "link": "",
+    "keywords": [
+      "WKSC",
+      "student center",
+      "cafeteria",
+      "clubs"
+    ],
+    "latitude": 33.892331,
+    "longitude": 35.478503
+  },
+  {
+    "id": "NH",
+    "name": "Nicol Hall",
+    "campus": "beirut",
+    "category": "academic",
+    "building": "",
+    "floor": "",
+    "description": "Academic building with classrooms and offices.",
+    "hours": "",
+    "contact": "",
+    "link": "",
+    "keywords": [
+      "NH",
+      "classes"
+    ],
+    "latitude": 33.892556,
+    "longitude": 35.478481
+  },
+  {
+    "id": "SFA",
+    "name": "Safadi Fine Arts",
+    "campus": "beirut",
+    "category": "academic",
+    "building": "",
+    "floor": "",
+    "description": "Fine arts building with studios and the sawtooth skylight roof.",
+    "hours": "",
+    "contact": "",
+    "link": "",
+    "keywords": [
+      "SFA",
+      "art",
+      "design",
+      "studio"
+    ],
+    "latitude": 33.892892,
+    "longitude": 35.478629
+  },
+  {
+    "id": "GYM",
+    "name": "Joseph G. Jabbra Gymnasium",
+    "campus": "beirut",
+    "category": "services",
+    "building": "",
+    "floor": "",
+    "description": "University gymnasium with tennis courts on the roof.",
+    "hours": "",
+    "contact": "",
+    "link": "",
+    "keywords": [
+      "GYM",
+      "sports",
+      "tennis",
+      "gym",
+      "fitness"
+    ],
+    "latitude": 33.89317,
+    "longitude": 35.478575
+  },
+  {
+    "id": "US",
+    "name": "University Services",
+    "campus": "beirut",
+    "category": "offices",
+    "building": "",
+    "floor": "",
+    "description": "University Services building with administrative offices.",
+    "hours": "",
+    "contact": "",
+    "link": "",
+    "keywords": [
+      "US",
+      "administration"
+    ],
+    "latitude": 33.893396,
+    "longitude": 35.478569
+  },
+  {
+    "id": "IH",
+    "name": "Irwin Hall",
+    "campus": "beirut",
+    "category": "academic",
+    "building": "",
+    "floor": "",
+    "description": "Academic building with an auditorium and classrooms.",
+    "hours": "",
+    "contact": "",
+    "link": "",
+    "keywords": [
+      "IH",
+      "auditorium",
+      "classes"
+    ],
+    "latitude": 33.893176,
+    "longitude": 35.478185
+  },
+  {
+    "id": "SH",
+    "name": "Sage Hall",
+    "campus": "beirut",
+    "category": "academic",
+    "building": "",
+    "floor": "",
+    "description": "Historic stone building with red tiled roofs.",
+    "hours": "",
+    "contact": "",
+    "link": "",
+    "keywords": [
+      "SH",
+      "classes",
+      "historic"
+    ],
+    "latitude": 33.892693,
+    "longitude": 35.477676
+  },
+  {
+    "id": "ShH",
+    "name": "Shannon Hall",
+    "campus": "beirut",
+    "category": "academic",
+    "building": "",
+    "floor": "",
+    "description": "Academic building near the Lower Gate.",
+    "hours": "",
+    "contact": "",
+    "link": "",
+    "keywords": [
+      "ShH",
+      "classes"
+    ],
+    "latitude": 33.893171,
+    "longitude": 35.477538
+  },
+  {
+    "id": "OG",
+    "name": "Orme-Gray",
+    "campus": "beirut",
+    "category": "academic",
+    "building": "",
+    "floor": "",
+    "description": "Academic building at the Middle Gate.",
+    "hours": "",
+    "contact": "",
+    "link": "",
+    "keywords": [
+      "OG",
+      "classes"
+    ],
+    "latitude": 33.892832,
+    "longitude": 35.477097
+  },
+  {
+    "id": "AKSOB",
+    "name": "Adnan Kassar School of Business",
+    "campus": "beirut",
+    "category": "academic",
+    "building": "",
+    "floor": "",
+    "description": "Home of the Adnan Kassar School of Business.",
+    "hours": "",
+    "contact": "",
+    "link": "",
+    "keywords": [
+      "AKSOB",
+      "business",
+      "school of business"
+    ],
+    "latitude": 33.892744,
+    "longitude": 35.476513
+  },
+  {
+    "id": "RNL",
+    "name": "Riyad Nassar Library",
+    "campus": "beirut",
+    "category": "study",
+    "building": "",
+    "floor": "",
+    "description": "Main campus library with study floors, group rooms and computer stations.",
+    "hours": "Mon–Fri 8:00–22:00, Sat 9:00–17:00",
+    "contact": "library@lau.edu.lb",
+    "link": "https://libraries.lau.edu.lb",
+    "keywords": [
+      "RNL",
+      "library",
+      "books",
+      "quiet",
+      "study",
+      "computers"
+    ],
+    "latitude": 33.892932,
+    "longitude": 35.476503
+  },
+  {
+    "id": "UGP",
+    "name": "Underground Parking",
+    "campus": "beirut",
+    "category": "parking",
+    "building": "",
+    "floor": "",
+    "description": "Underground parking for faculty and staff.",
+    "hours": "",
+    "contact": "",
+    "link": "",
+    "keywords": [
+      "UGP",
+      "parking",
+      "car",
+      "garage"
+    ],
+    "latitude": 33.893045,
+    "longitude": 35.476368
+  },
+  {
+    "id": "GB",
+    "name": "Gezairi Building",
+    "campus": "beirut",
+    "category": "offices",
+    "building": "",
+    "floor": "",
+    "description": "LAU building on Sadat Street, outside the gates. Reached from the Lower Gate.",
+    "hours": "",
+    "contact": "",
+    "link": "",
+    "keywords": [
+      "GB",
+      "gezairi",
+      "sadat"
+    ],
+    "latitude": 33.894274,
+    "longitude": 35.477054
+  },
+  {
+    "id": "P-M",
+    "name": "Middle Gate Parking (Students/Faculty/Staff)",
+    "campus": "beirut",
+    "category": "parking",
+    "building": "",
+    "floor": "",
+    "description": "Parking for students, faculty/staff.",
+    "hours": "",
+    "contact": "",
+    "link": "",
+    "keywords": [
+      "parking",
+      "car",
+      "M"
+    ],
+    "latitude": 33.892383,
+    "longitude": 35.477029
+  },
+  {
+    "id": "P-L",
+    "name": "Lower Gate Parking (LAU Vehicles/Authorized)",
+    "campus": "beirut",
+    "category": "parking",
+    "building": "",
+    "floor": "",
+    "description": "Parking for lau vehicles, authorized.",
+    "hours": "",
+    "contact": "",
+    "link": "",
+    "keywords": [
+      "parking",
+      "car",
+      "L"
+    ],
+    "latitude": 33.893413,
+    "longitude": 35.477287
+  },
+  {
+    "id": "P-G",
+    "name": "Gezairi Parking (Faculty/Staff)",
+    "campus": "beirut",
+    "category": "parking",
+    "building": "GB",
+    "floor": "",
+    "description": "Parking for faculty, staff.",
+    "hours": "",
+    "contact": "",
+    "link": "",
+    "keywords": [
+      "parking",
+      "car",
+      "G"
+    ],
+    "latitude": 33.894274,
+    "longitude": 35.477044
+  },
+  {
+    "id": "beirut-registrar",
+    "name": "Registrar's Office",
+    "campus": "beirut",
+    "category": "offices",
+    "building": "SH",
+    "floor": "1",
+    "description": "Registration, transcripts, enrollment certificates and graduation requests.",
+    "hours": "Mon–Fri 8:00–16:00",
+    "contact": "registrar@lau.edu.lb",
+    "link": "https://www.lau.edu.lb",
+    "keywords": [
+      "transcript",
+      "registration",
+      "enrollment",
+      "graduation"
+    ]
+  },
+  {
+    "id": "beirut-health-clinic",
+    "name": "Health Clinic",
+    "campus": "beirut",
+    "category": "services",
+    "building": "WKSC",
+    "floor": "Ground",
+    "description": "First aid, nurse consultations and health referrals for students.",
+    "hours": "Mon–Fri 8:00–17:00",
+    "contact": "+961 1 000 000",
+    "link": "",
+    "keywords": [
+      "nurse",
+      "doctor",
+      "medical",
+      "first aid"
+    ]
+  },
+  {
+    "id": "beirut-cafeteria",
+    "name": "Main Cafeteria",
+    "campus": "beirut",
+    "category": "food",
+    "building": "WKSC",
+    "floor": "Lower ground",
+    "description": "Hot meals, sandwiches, coffee and snacks.",
+    "hours": "Mon–Fri 7:30–18:00",
+    "contact": "",
+    "link": "",
+    "keywords": [
+      "coffee",
+      "lunch",
+      "food",
+      "snacks"
+    ]
+  },
+  {
+    "id": "beirut-elevator-main-gate",
+    "name": "Accessible Elevator (Main Gate)",
+    "campus": "beirut",
+    "category": "accessibility",
+    "building": "",
+    "floor": "All levels",
+    "description": "Wheelchair-accessible elevator connecting the street level to the upper campus.",
+    "hours": "Open during campus hours",
+    "contact": "",
+    "link": "",
+    "keywords": [
+      "elevator",
+      "wheelchair",
+      "lift",
+      "accessible"
+    ],
+    "latitude": 33.8924,
+    "longitude": 35.4785
+  }
+]

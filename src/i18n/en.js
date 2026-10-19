@@ -1,0 +1,40 @@
+// English UI text. To add Arabic: copy this file to ar.js, translate the values
+// (keep the keys the same), and register it in src/i18n/index.jsx.
+export default {
+  appName: 'Campus Compass',
+  searchPlaceholder: 'Search places, e.g. library, printer…',
+  noResults: 'No places match your search.',
+  all: 'All',
+  mapView: 'Campus',
+  listView: 'List',
+  close: 'Close',
+  comingSoon: 'Coming soon',
+  campus: 'Campus',
+  building: 'Building',
+  floor: 'Floor',
+  hours: 'Opening hours',
+  contact: 'Contact',
+  link: 'More info',
+  directions: 'Directions',
+  insideBuilding: 'In this building',
+  parking: 'Parking',
+  resetView: 'Reset view',
+  // Plurals: add ".one", ".other" etc. (Arabic also uses ".zero", ".two", ".few", ".many").
+  'resultsCount.one': '{count} place',
+  'resultsCount.other': '{count} places',
+
+  'campus.beirut': 'Beirut',
+  'campus.byblos': 'Byblos',
+
+  'category.academic': 'Academic buildings',
+  'category.offices': 'Offices',
+  'category.services': 'Student services',
+  'category.study': 'Study & libraries',
+  'category.labs': 'Labs',
+  'category.food': 'Food',
+  'category.printing': 'Printing',
+  'category.prayer': 'Prayer rooms',
+  'category.accessibility': 'Accessibility',
+  'category.parking': 'Parking',
+  'category.other': 'Other',
+};
