@@ -16,7 +16,7 @@ export default defineConfig({
         short_name: 'Campus Compass',
         description: 'Find LAU facilities and resources on a map.',
         theme_color: '#00573f',
-        background_color: '#ffffff',
+        background_color: '#e9efeb',
         display: 'standalone',
         start_url: '/',
         icons: [

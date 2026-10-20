@@ -2,6 +2,10 @@
 // (keep the keys the same), and register it in src/i18n/index.jsx.
 export default {
   appName: 'Campus Compass',
+  openMenu: 'Open menu',
+  closeMenu: 'Close menu',
+  themeToLight: 'Switch to light mode',
+  themeToDark: 'Switch to dark mode',
   searchPlaceholder: 'Search places, e.g. library, printer…',
   noResults: 'No places match your search.',
   all: 'All',

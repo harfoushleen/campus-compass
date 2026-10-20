@@ -392,7 +392,8 @@ export function buildHangoutDecor() {
       }
     }
   }
-  const merge = (list) => (list.length ? mergeGeometries(list) : null);
+  // Boxes are "indexed" and icosahedrons are not; merging needs them all the same.
+  const merge = (list) => (list.length ? mergeGeometries(list.map((g) => (g.index ? g.toNonIndexed() : g))) : null);
   return {
     benches, shrubs,
     kiosk: merge(kiosk), awning: merge(awning), stone: merge(stone), water: merge(water),

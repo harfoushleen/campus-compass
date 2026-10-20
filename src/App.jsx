@@ -8,6 +8,8 @@ import CampusSwitcher from './components/CampusSwitcher.jsx';
 import SearchBar from './components/SearchBar.jsx';
 import CategoryChips from './components/CategoryChips.jsx';
 import ViewToggle from './components/ViewToggle.jsx';
+import Sidebar from './components/Sidebar.jsx';
+import { useTheme } from './theme.js';
 // The 3D view (and the Three.js library) is loaded separately, so the search bar,
 // chips and list show up right away while it downloads.
 const CampusView = lazy(() => import('./components/campus/CampusView.jsx'));
@@ -22,6 +24,11 @@ export default function App() {
   const [query, setQuery] = useState('');
   const [view, setView] = useState('map'); // 'map' | 'list'
   const [selectedId, setSelectedId] = useState(null);
+
+  // Side panel: open by default on wide screens, closed on phones (it would cover the map).
+  const isNarrow = () => window.matchMedia('(max-width: 719px)').matches;
+  const [sidebarOpen, setSidebarOpen] = useState(() => !isNarrow());
+  const [theme, toggleTheme] = useTheme();
 
   // Places that match the current campus, category chip and search text.
   const visiblePlaces = useMemo(
@@ -39,21 +46,31 @@ export default function App() {
   };
 
   return (
-    <div className="app">
-      <header className="topbar">
-        <div className="topbar-row">
-          <CampusSwitcher value={campus} onChange={changeCampus} />
-          <ViewToggle value={view} onChange={setView} />
-        </div>
+    <div className={`app ${sidebarOpen ? 'sidebar-open' : ''}`}>
+      <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} theme={theme} onToggleTheme={toggleTheme}>
+        <CampusSwitcher value={campus} onChange={changeCampus} />
+        <ViewToggle value={view} onChange={setView} />
         <SearchBar
           value={query}
           onChange={setQuery}
-          // Show a results dropdown on the map view only; the list view is already a result list.
+          // Show matching places under the search box on the map view only; the list view is already a result list.
           results={view === 'map' && query ? visiblePlaces : null}
-          onSelect={selectPlace}
+          onSelect={(place) => {
+            selectPlace(place);
+            if (isNarrow()) setSidebarOpen(false); // on phones, make room for the details sheet
+          }}
         />
         <CategoryChips value={category} onChange={setCategory} />
-      </header>
+      </Sidebar>
+
+      {/* Opens the side panel again once it has been closed. */}
+      {!sidebarOpen && (
+        <button type="button" className="menu-button" onClick={() => setSidebarOpen(true)} aria-label={t('openMenu')} aria-controls="sidebar" title={t('openMenu')}>
+          <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
+            <path d="M4 7h16M4 12h16M4 17h16" />
+          </svg>
+        </button>
+      )}
 
       <main className="content">
         {view === 'map' ? (

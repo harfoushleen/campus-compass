@@ -8,19 +8,37 @@
 */
 
 :root {
+  /* Light theme: soft sage tones that match the green-grey of the 3D map. */
+  color-scheme: light;
   --brand: #00573f;
   --brand-ink: #ffffff;
-  --bg: #ffffff;
-  --surface: #f4f6f5;
+  --link: #00573f;
+  --bg: #e9efeb;
+  --surface: #dbe5df;
+  --border: #c5d1ca;
   --text: #1c2321;
-  --muted: #5d6b66;
-  --border: #dde3e0;
-  --shadow: 0 4px 20px rgb(0 0 0 / 0.15);
+  --muted: #55655e;
+  --warn: #8a5a00;
+  --shadow: 0 4px 20px rgb(0 0 0 / 0.18);
   --radius: 14px;
+  --sidebar-w: 340px;
   font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Noto Sans Arabic', sans-serif;
   color: var(--text);
   background: var(--bg);
   -webkit-tap-highlight-color: transparent;
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --brand: #2a8a68;
+  --link: #6fd1a8;
+  --bg: #222b28;
+  --surface: #2f3b37;
+  --border: #3d4b46;
+  --text: #e6ece8;
+  --muted: #9fb0a8;
+  --warn: #e0b04a;
+  --shadow: 0 4px 20px rgb(0 0 0 / 0.45);
 }
 
 * { box-sizing: border-box; }
@@ -31,32 +49,74 @@ button { cursor: pointer; }
 /* ---------- Layout ---------- */
 
 .app {
-  height: 100dvh; /* dvh = visible height on mobile, ignoring the browser toolbar */
-  display: flex;
-  flex-direction: column;
-}
-
-.topbar {
-  padding: 10px 12px 6px;
-  padding-top: max(10px, env(safe-area-inset-top));
-  background: var(--bg);
-  border-bottom: 1px solid var(--border);
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  z-index: 1000; /* above the Leaflet map panes */
-}
-
-.topbar-row {
-  display: flex;
-  justify-content: space-between;
-  gap: 8px;
-}
-
-.content {
-  flex: 1;
-  min-height: 0; /* lets the child scroll instead of growing the page */
   position: relative;
+  height: 100dvh; /* dvh = visible height on mobile, ignoring the browser toolbar */
+  overflow: hidden;
+  background: var(--bg);
+}
+
+/* The map (or list) fills the whole screen. */
+.content {
+  position: absolute;
+  inset: 0;
+}
+
+/* Side panel: slides in from the start edge. Closed = moved off-screen. */
+.sidebar {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  inset-inline-start: 0;
+  width: min(88vw, var(--sidebar-w));
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 12px;
+  padding-top: max(12px, env(safe-area-inset-top));
+  overflow-y: auto;
+  background: var(--bg);
+  border-inline-end: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  transform: translateX(-104%);
+  visibility: hidden;
+  transition: transform 0.22s ease, visibility 0s linear 0.22s;
+}
+[dir='rtl'] .sidebar { transform: translateX(104%); }
+.app.sidebar-open .sidebar {
+  transform: none;
+  visibility: visible;
+  transition: transform 0.22s ease, visibility 0s;
+}
+
+.sidebar-header { display: flex; align-items: center; gap: 6px; }
+.sidebar-title { flex: 1; margin: 0; font-size: 1.15rem; }
+
+.icon-button,
+.menu-button {
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--surface);
+  color: var(--text);
+}
+.icon-button:hover { background: var(--border); }
+[dir='rtl'] .chevron { transform: scaleX(-1); }
+
+/* Opens the side panel again; floats over the map. */
+.menu-button {
+  position: absolute;
+  top: max(10px, env(safe-area-inset-top));
+  inset-inline-start: 10px;
+  z-index: 1001;
+  width: 44px;
+  height: 44px;
+  background: var(--bg);
+  box-shadow: var(--shadow);
 }
 
 /* ---------- 3D campus ---------- */
@@ -64,7 +124,7 @@ button { cursor: pointer; }
 .campus {
   position: absolute;
   inset: 0;
-  z-index: 0; /* keeps the 3D labels below the top bar and the bottom sheet */
+  z-index: 0; /* keeps the 3D labels below the side panel and the bottom sheet */
   background: #3d4a45;
   touch-action: none; /* let the 3D view handle pinch and drag */
 }
@@ -93,7 +153,8 @@ button { cursor: pointer; }
   border: 0;
   border-radius: 999px;
   padding: 7px 11px;
-  background: rgb(255 255 255 / 0.94);
+  background: var(--bg);
+  color: var(--text);
   box-shadow: var(--shadow);
   font-size: 0.8rem;
   font-weight: 600;
@@ -192,6 +253,7 @@ button { cursor: pointer; }
   border: 0;
   border-radius: 6px;
   background: #fff;
+  color: #1c2321;
   box-shadow: var(--shadow);
 }
 .parking-code {
@@ -208,13 +270,15 @@ button { cursor: pointer; }
 /* ---------- Segmented controls (campus switcher, map/list toggle) ---------- */
 
 .segmented {
-  display: inline-flex;
+  display: flex;
   background: var(--surface);
   border-radius: 999px;
   padding: 3px;
 }
 
 .segmented button {
+  flex: 1;
+  justify-content: center;
   border: 0;
   background: transparent;
   padding: 6px 12px;
@@ -263,18 +327,14 @@ button { cursor: pointer; }
 }
 
 .search-results {
-  position: absolute;
-  inset-inline: 0;
-  top: calc(100% + 6px);
-  margin: 0;
+  margin: 8px 0 0;
   padding: 6px;
   list-style: none;
   background: var(--bg);
+  border: 1px solid var(--border);
   border-radius: var(--radius);
-  box-shadow: var(--shadow);
-  max-height: 50vh;
+  max-height: 40vh;
   overflow-y: auto;
-  z-index: 1100;
 }
 
 .search-results .empty { padding: 12px; color: var(--muted); }
@@ -303,14 +363,9 @@ button { cursor: pointer; }
 
 .chips {
   display: flex;
+  flex-wrap: wrap;
   gap: 6px;
-  overflow-x: auto;
-  scrollbar-width: none;
-  margin-inline: -12px; /* let chips scroll edge to edge */
-  padding-inline: 12px;
-  padding-bottom: 2px;
 }
-.chips::-webkit-scrollbar { display: none; }
 
 .chip {
   --chip-color: var(--brand);
@@ -321,7 +376,7 @@ button { cursor: pointer; }
   padding: 6px 12px;
   border: 1px solid var(--border);
   border-radius: 999px;
-  background: var(--bg);
+  background: var(--surface);
   font-size: 0.85rem;
   white-space: nowrap;
 }
@@ -346,7 +401,8 @@ button { cursor: pointer; }
 .list {
   height: 100%;
   overflow-y: auto;
-  padding: 8px 12px 24px;
+  padding: 64px 12px 24px;
+  background: var(--bg);
 }
 .list ul { list-style: none; margin: 0; padding: 0; }
 .list li + li { border-top: 1px solid var(--border); }
@@ -411,13 +467,13 @@ button { cursor: pointer; }
 }
 .sheet-details dt { flex: 0 0 110px; color: var(--muted); font-size: 0.9rem; }
 .sheet-details dd { margin: 0; }
-.sheet-details a { color: var(--brand); }
+.sheet-details a { color: var(--link); }
 
 .link-button {
   border: 0;
   padding: 0;
   background: none;
-  color: var(--brand);
+  color: var(--link);
   text-decoration: underline;
   text-align: start;
 }
@@ -443,8 +499,8 @@ button { cursor: pointer; }
   text-align: center;
   padding: 10px 16px;
   border-radius: 999px;
-  border: 1px solid var(--brand);
-  color: var(--brand);
+  border: 1px solid var(--link);
+  color: var(--link);
   text-decoration: none;
   font-weight: 600;
 }
@@ -453,6 +509,9 @@ button { cursor: pointer; }
 /* ---------- Wider screens ---------- */
 
 @media (min-width: 720px) {
+  /* The map moves over to make room for the open side panel (on phones it covers the map). */
+  .app.sidebar-open .content { inset-inline-start: var(--sidebar-w); }
+
   /* Show the sheet as a floating card instead of full width. */
   .sheet {
     inset-inline: auto 16px;
@@ -516,5 +575,5 @@ button { cursor: pointer; }
 .sheet-note {
   margin: -6px 0 12px;
   font-size: 0.8rem;
-  color: #9a6700;
+  color: var(--warn);
 }
