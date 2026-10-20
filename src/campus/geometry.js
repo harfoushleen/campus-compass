@@ -3,7 +3,7 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { BUILDINGS, FLOOR_HEIGHT } from './buildings.js';
-import { heightAt, BOUNDS, CAMPUS_OUTLINE, COLORS, SURROUNDINGS, PATHS, STAIRS } from './site.js';
+import { heightAt, BOUNDS, CAMPUS_OUTLINE, COLORS, SURROUNDINGS, PATHS, STAIRS, PATCHES } from './site.js';
 import osm from './osm-surroundings.json';
 
 /** Average of a footprint's corners: [x, z]. */
@@ -166,4 +166,42 @@ export function buildStairs() {
     }
   }
   return mergeGeometries(boxes);
+}
+
+/**
+ * A flat shape draped over the hill. It is cut into small triangles so that its
+ * corners follow the ground; `lift` = metres above the ground. Returns flat [x, y, z, ...].
+ */
+export function terrainPolygon(points, lift = 0.1, maxEdge = 2.5) {
+  const contour = points.map(([x, z]) => new THREE.Vector2(x, z));
+  const stack = THREE.ShapeUtils.triangulateShape(contour, []).map((f) => f.map((i) => points[i]));
+  const positions = [];
+  const dist = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1]);
+  while (stack.length) {
+    const t = stack.pop();
+    const edges = [dist(t[0], t[1]), dist(t[1], t[2]), dist(t[2], t[0])];
+    const longest = Math.max(...edges);
+    if (longest > maxEdge) {
+      const i = edges.indexOf(longest);
+      const a = t[i], b = t[(i + 1) % 3], c = t[(i + 2) % 3];
+      const mid = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
+      stack.push([a, mid, c], [mid, b, c]);
+      continue;
+    }
+    let v = t.map(([x, z]) => [x, heightAt(x, z) + lift, z]);
+    // make sure the triangle faces up
+    const n = (v[1][2] - v[0][2]) * (v[2][0] - v[0][0]) - (v[1][0] - v[0][0]) * (v[2][2] - v[0][2]);
+    if (n < 0) v = [v[0], v[2], v[1]];
+    for (const p of v) positions.push(...p);
+  }
+  return positions;
+}
+
+/** All garden patches (PATCHES in site.js), merged into one geometry. */
+export function buildPatches() {
+  const positions = PATCHES.flatMap((p) => terrainPolygon(p.points, 0.1));
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+  geometry.computeVertexNormals();
+  return geometry;
 }

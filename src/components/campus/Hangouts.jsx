@@ -46,6 +46,7 @@ function Decor() {
     mesh(d.kiosk, HANGOUT_COLORS.kiosk);
     mesh(d.awning, HANGOUT_COLORS.awning);
     mesh(d.grass, HANGOUT_COLORS.grass);
+    mesh(d.rock, HANGOUT_COLORS.rock);
     mesh(d.pergola, HANGOUT_COLORS.wood);
     mesh(d.vine, HANGOUT_COLORS.vine);
     mesh(d.catHouse, HANGOUT_COLORS.catHouse);

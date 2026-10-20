@@ -312,17 +312,41 @@
     "name": "Registrar's Office",
     "campus": "beirut",
     "category": "offices",
-    "building": "SH",
-    "floor": "1",
-    "description": "Registration, transcripts, enrollment certificates and graduation requests.",
-    "hours": "Mon–Fri 8:00–16:00",
-    "contact": "registrar@lau.edu.lb",
-    "link": "https://www.lau.edu.lb",
+    "building": "IH",
+    "floor": "Ground",
+    "description": "Student records: grades, transcripts, diplomas and graduation. Through the double door at the front of Irwin Hall.",
+    "hours": "Mon–Fri 8:30–12:00 and 13:00–15:00 (summer 8:30–13:00)",
+    "contact": "registrar.beirut@lau.edu.lb",
+    "link": "https://registrar.lau.edu.lb",
     "keywords": [
+      "registrar",
       "transcript",
-      "registration",
-      "enrollment",
-      "graduation"
+      "grades",
+      "diploma",
+      "graduation",
+      "student records",
+      "ext 1318"
+    ]
+  },
+  {
+    "id": "beirut-business-office",
+    "name": "Business Office (Cashier)",
+    "campus": "beirut",
+    "category": "offices",
+    "building": "IH",
+    "floor": "Ground",
+    "description": "Payment of fees, deposits, deferred payment and application fees, at the cashier. Through the double door at the front of Irwin Hall.",
+    "hours": "Cashier: 9:00–12:00 and 13:00–15:00 (summer 9:00–13:30)",
+    "contact": "businessoffice.beirut@lau.edu.lb",
+    "link": "https://lau.edu.lb/parents/offices.php",
+    "keywords": [
+      "business office",
+      "cashier",
+      "payment",
+      "fees",
+      "tuition",
+      "deposit",
+      "ext 1203"
     ]
   },
   {
@@ -451,7 +475,9 @@
     "description": "The Tree of Life: a very pretty large tree in the garden in front of Sage Hall.",
     "features": [
       "trees",
-      "shade"
+      "shade",
+      "benches",
+      "grass"
     ],
     "hours": "",
     "contact": "",

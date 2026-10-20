@@ -4,7 +4,7 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { BUILDINGS, FLOOR_HEIGHT, STYLES, WINDOWS } from './buildings.js';
-import { heightAt, CAMERA, TREES, TERRACES, AMPHITHEATER, HANGOUT_DECOR, PATHS, STAIRS } from './site.js';
+import { heightAt, CAMERA, TREES, TERRACES, AMPHITHEATER, HANGOUT_DECOR, PATHS, STAIRS, PATCHES } from './site.js';
 import { centroid, insidePolygon, partHeights } from './geometry.js';
 
 // ── Shape helpers ──
@@ -217,7 +217,7 @@ const insideAnyBuilding = (x, z) =>
 const decorPoints = Object.values(HANGOUT_DECOR).flatMap((d) => [
   ...(d.benches ?? []).map(([x, z]) => [x, z]),
   ...(d.shrubs ?? []),
-  ...[d.kiosk, d.fountain, d.featureTree, d.grass, d.catHouse, d.pergola].filter(Boolean).map((o) => o.at),
+  ...[d.kiosk, d.fountain, d.featureTree, d.grass, d.catHouse, d.pergola, d.waterfall].filter(Boolean).map((o) => o.at),
 ]);
 const nearDecor = (x, z, r = 4.5) => decorPoints.some(([dx, dz]) => Math.hypot(x - dx, z - dz) < r);
 
@@ -226,13 +226,13 @@ const walkways = [
   ...PATHS.map((p) => ({ width: p.width, points: p.points })),
   ...STAIRS.map((st) => ({ width: st.width, points: [st.from, st.to] })),
 ];
-function nearWalkway(x, z) {
+function nearWalkway(x, z, margin = 1.5) {
   return walkways.some(({ width, points }) =>
     points.slice(0, -1).some(([ax, az], i) => {
       const [bx, bz] = points[i + 1];
       const dx = bx - ax, dz = bz - az;
       const t = Math.max(0, Math.min(1, ((x - ax) * dx + (z - az) * dz) / (dx * dx + dz * dz || 1)));
-      return Math.hypot(x - (ax + t * dx), z - (az + t * dz)) < width / 2 + 1.5;
+      return Math.hypot(x - (ax + t * dx), z - (az + t * dz)) < width / 2 + margin;
     })
   );
 }
@@ -242,7 +242,7 @@ export function buildTreeInstances() {
   const rand = random(7);
   const trees = [];
   const add = (x, z) => {
-    if (insideAnyBuilding(x, z) || nearDecor(x, z) || nearWalkway(x, z)) return;
+    if (insideAnyBuilding(x, z) || nearDecor(x, z) || nearWalkway(x, z) || insideAnyPatch(x, z)) return;
     const size = 0.8 + rand() * 0.5;
     trees.push({ position: [x, heightAt(x, z), z], size, shade: rand() });
   };
@@ -330,7 +330,7 @@ export function benchGeometry() {
 export function buildHangoutDecor() {
   const benches = [], shrubs = [];
   const kiosk = [], awning = [], stone = [], water = [], trunk = [], crowns = [];
-  const grass = [], catHouse = [], catRoof = [], wood = [], vine = [];
+  const grass = [], catHouse = [], catRoof = [], wood = [], vine = [], rock = [];
   for (const d of Object.values(HANGOUT_DECOR)) {
     for (const [x, z, angle = 0] of d.benches ?? []) {
       benches.push({ position: [x, heightAt(x, z), z], rotationY: (-angle * Math.PI) / 180 });
@@ -383,6 +383,19 @@ export function buildHangoutDecor() {
       }
       for (const sx of [-1, 1]) vine.push(place(box(0.3, 1.3, W - 0.6, sx * (L / 2 - 0.2), H - 1.2, 0)));                                  // hanging vine
     }
+    if (d.waterfall) {
+      // Local axes: the pool and the falling water are toward +z.
+      const [x, z] = d.waterfall.at, y = heightAt(x, z), a = (-(d.waterfall.angle ?? 0) * Math.PI) / 180;
+      const put = (g) => g.rotateY(a).translate(x, y, z);
+      for (const [rx, ry, rz, r, sx, sy] of [
+        [-1.0, 0.6, -0.7, 1.1, 1.3, 0.9], [0.9, 0.55, -0.8, 1.0, 1.2, 0.85], [0, 1.25, -0.9, 0.9, 1.1, 0.9],
+        [-1.9, 0.3, 0.6, 0.5, 1, 0.7], [1.9, 0.3, 0.9, 0.45, 1, 0.7], [-1.1, 0.25, 2.9, 0.4, 1, 0.7], [1.2, 0.25, 3.0, 0.4, 1, 0.7],
+      ]) {
+        rock.push(put(new THREE.IcosahedronGeometry(r, 0).scale(sx, sy, 1).translate(rx, ry, rz)));
+      }
+      water.push(put(new THREE.CylinderGeometry(1.9, 1.9, 0.06, 20).translate(0, 0.2, 1.6))); // pool
+      water.push(put(box(0.9, 1.6, 0.14, 0.1, 0.3, 0.3)));                                    // falling water
+    }
     if (d.featureTree) {
       const [x, z] = d.featureTree.at, y = heightAt(x, z), s = d.featureTree.size;
       trunk.push(new THREE.CylinderGeometry(0.35 * s, 0.55 * s, 4 * s, 7).translate(x, y + 2 * s, z));
@@ -397,7 +410,7 @@ export function buildHangoutDecor() {
   return {
     benches, shrubs,
     kiosk: merge(kiosk), awning: merge(awning), stone: merge(stone), water: merge(water),
-    trunk: merge(trunk), crown: merge(crowns), pergola: merge(wood), vine: merge(vine),
+    trunk: merge(trunk), crown: merge(crowns), pergola: merge(wood), vine: merge(vine), rock: merge(rock),
     grass: merge(grass), catHouse: merge(catHouse), catRoof: merge(catRoof),
   };
 }
@@ -408,3 +421,42 @@ export function buildingTop(building) {
 }
 
 export { centroid };
+
+// ── Garden patches: bushes and flowers ──
+const FLOWER_COLORS = ['#e0455a', '#f2c230', '#f5f5f0', '#a259d1'];
+
+/** True if the point is inside (or just next to) one of the garden patches. */
+function insideAnyPatch(x, z) {
+  return PATCHES.some((p) => insidePolygon(p.points, x, z));
+}
+
+/** Bushes and flower clumps for every patch (same places on every load). */
+export function buildPatchPlants() {
+  const rand = random(21);
+  const shrubs = [], flowers = [];
+  for (const patch of PATCHES) {
+    const xs = patch.points.map((p) => p[0]), zs = patch.points.map((p) => p[1]);
+    const x0 = Math.min(...xs), x1 = Math.max(...xs), z0 = Math.min(...zs), z1 = Math.max(...zs);
+    // A random spot inside the patch, off the paths.
+    const spot = () => {
+      for (let tries = 0; tries < 80; tries++) {
+        const x = x0 + rand() * (x1 - x0), z = z0 + rand() * (z1 - z0);
+        if (insidePolygon(patch.points, x, z) && !nearWalkway(x, z, 0.8)) return [x, z];
+      }
+      return null;
+    };
+    for (let i = 0; i < (patch.shrubs ?? 0); i++) {
+      const p = spot();
+      if (p) shrubs.push({ position: [p[0], heightAt(p[0], p[1]), p[1]], size: 0.7 + rand() * 0.5, shade: rand() });
+    }
+    for (let i = 0; i < (patch.flowers ?? 0); i++) {
+      const p = spot();
+      if (!p) continue;
+      const color = FLOWER_COLORS[Math.floor(rand() * FLOWER_COLORS.length)];
+      for (let k = 0; k < 3; k++) {
+        flowers.push({ position: [p[0] + (rand() - 0.5) * 0.9, heightAt(p[0], p[1]) + 0.3, p[1] + (rand() - 0.5) * 0.9], color });
+      }
+    }
+  }
+  return { shrubs, flowers };
+}

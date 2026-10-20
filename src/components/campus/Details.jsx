@@ -4,8 +4,9 @@
 import { useMemo } from 'react';
 import * as THREE from 'three';
 import { WINDOWS } from '../../campus/buildings.js';
-import { TREES, TERRACES, AMPHITHEATER } from '../../campus/site.js';
-import { buildAmphitheater, buildFacadeInstances, buildTerraces, buildTreeInstances } from '../../campus/details.js';
+import { COLORS, TREES, TERRACES, AMPHITHEATER } from '../../campus/site.js';
+import { buildPatches } from '../../campus/geometry.js';
+import { buildAmphitheater, buildFacadeInstances, buildPatchPlants, buildTerraces, buildTreeInstances } from '../../campus/details.js';
 
 const noRaycast = () => null;
 const tmp = new THREE.Object3D();
@@ -29,6 +30,7 @@ export default function Details() {
   const meshes = useMemo(() => {
     const { windows, bands } = buildFacadeInstances();
     const trees = buildTreeInstances();
+    const { shrubs, flowers } = buildPatchPlants();
     const white = new THREE.MeshLambertMaterial({ color: '#ffffff' }); // tinted per instance
 
     return [
@@ -46,6 +48,12 @@ export default function Details() {
         o.position.set(t.position[0], t.position[1] + 5 * t.size, t.position[2]);
         o.scale.setScalar(t.size);
       }, (t) => TREES.colors[t.shade < 0.5 ? 0 : 1]),
+      // Bushes and flowers in the garden patches.
+      instanced(new THREE.IcosahedronGeometry(1, 0).scale(1, 0.7, 1).translate(0, 0.6, 0), white, shrubs, (b, o) => {
+        o.position.set(...b.position);
+        o.scale.setScalar(b.size);
+      }, (b) => (b.shade < 0.5 ? '#4f7a3a' : '#3f6b34')),
+      instanced(new THREE.IcosahedronGeometry(0.32, 0), white, flowers, (fl, o) => o.position.set(...fl.position), (fl) => fl.color),
       instanced(new THREE.CylinderGeometry(0.3, 0.45, 3, 5), new THREE.MeshLambertMaterial({ color: TREES.trunk }), trees, (t, o) => {
         o.position.set(t.position[0], t.position[1] + 1.5 * t.size, t.position[2]);
         o.scale.setScalar(t.size);
@@ -54,6 +62,7 @@ export default function Details() {
   }, []);
 
   const terraces = useMemo(buildTerraces, []);
+  const patches = useMemo(buildPatches, []);
   const amphitheater = useMemo(buildAmphitheater, []);
   const terraceMaterials = useMemo(
     () => [new THREE.MeshLambertMaterial({ color: TERRACES.grass }), new THREE.MeshLambertMaterial({ color: TERRACES.wall })],
@@ -62,6 +71,10 @@ export default function Details() {
 
   return (
     <group>
+      {/* Green garden patches along the main path */}
+      <mesh geometry={patches} raycast={noRaycast}>
+        <meshLambertMaterial color={COLORS.patch} />
+      </mesh>
       {meshes.map((mesh, i) => (
         <primitive key={i} object={mesh} />
       ))}

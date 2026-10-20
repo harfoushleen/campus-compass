@@ -92,7 +92,7 @@ If you make a mistake (missing field, coordinates in quotes), the app skips that
 - **Labels**: `label` gives a shorter name for the floating label, and `labelOffset` moves a label that overlaps another one.
 - **Gates, parking lots, trees, terraces, amphitheater, hill, camera, the Gezairi marker, colours**: `src/campus/site.js`.
 - **Hangout spots**: entries in `places.json` with `"category": "hangout"`, a `position` (`[x, z]` in metres, same coordinates as `buildings.js`), `near` (closest building code), `features` (`benches`, `food`, `fountain`, `trees`, `shade`, `cats`) and `verified`. Places with `"verified": false` show an "approximate location" note. Their 3D touches (benches, kiosk, fountain, big tree, shrubs) are in `HANGOUT_DECOR` in `site.js`.
-- **Paths and stairs**: `PATHS` and `STAIRS` in `site.js` (lists of [x, z] points; trees keep clear of them).
+- **Paths and stairs**: `PATHS` and `STAIRS` in `site.js` (lists of [x, z] points; trees keep clear of them). `PATCHES` are the green garden patches with bushes and flowers.
 - **Always on the map**: buildings, paths, benches, the fountain, trees, the cat house and surface parking are always drawn. The toolbar buttons only show or hide labels, pins and the parking badges.
 - **Label crowding**: `labelPriority` on each building (1 = always shown, 2/3 = shown as you zoom in) and the zoom thresholds in `LABELS` in `site.js`.
 - **Neighbouring streets and buildings**: run `npm run osm` to re-download them from OpenStreetMap.

@@ -66,6 +66,8 @@ export const EXTRA_COLORS = {
   glass: '#9db8bf',
   cream: '#e6c787',
   plant: '#c9cccb',
+  door: '#4a3426',
+  doorFrame: '#e4e2dc',
 };
 
 // EXTRAS: small shapes added to a building. Each one has:
@@ -102,6 +104,13 @@ const sageOffset = (along) => [
   SAGE.cx + Math.cos((SAGE.angle * Math.PI) / 180) * along,
   SAGE.cz + Math.sin((SAGE.angle * Math.PI) / 180) * along,
 ];
+
+// A point on the front of Irwin Hall's glass bay (centre [9.8, -36.4], tilted 6.5 degrees):
+// `along` metres sideways from the bay's centre, `out` metres in front of the glass.
+const bayPoint = (along, out) => {
+  const a = (6.5 * Math.PI) / 180;
+  return [9.8 + Math.cos(a) * along + Math.sin(a) * out, -36.4 + Math.sin(a) * along - Math.cos(a) * out].map((v) => +v.toFixed(2));
+};
 
 export const BUILDINGS = [
   {
@@ -174,8 +183,14 @@ export const BUILDINGS = [
       // Rear block: red hip roof.
       { footprint: [[-1.9, -23], [-4.4, -0.4], [15.5, 1.9], [18, -20.5]], floors: 5, roof: 'hip', style: 'stone' },
     ],
-    // Glass bay across the middle of the front facade.
-    extras: [{ shape: 'box', at: [9.8, -36.4], size: [18, 2], angle: 6.5, base: 'ground', height: 7, color: 'glass' }],
+    extras: [
+      // Glass bay across the middle of the front facade.
+      { shape: 'box', at: [9.8, -36.4], size: [18, 2], angle: 6.5, base: 'ground', height: 7, color: 'glass' },
+      // Double door in the bay: Registrar's Office and Business Office (cashier). Door centre is 1 m along from the bay centre.
+      { shape: 'box', at: bayPoint(1, 1.15), size: [3.8, 0.4], angle: 6.5, base: 'ground', height: 3.7, color: 'doorFrame' }, // frame
+      { shape: 'box', at: bayPoint(0.2, 1.25), size: [1.6, 0.3], angle: 6.5, base: 'ground', height: 3.4, color: 'door' },      // left leaf
+      { shape: 'box', at: bayPoint(1.8, 1.25), size: [1.6, 0.3], angle: 6.5, base: 'ground', height: 3.4, color: 'door' },      // right leaf
+    ],
   },
   {
     id: 'SH',
