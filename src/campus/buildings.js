@@ -112,7 +112,7 @@ export const BUILDINGS = [
     style: 'white',
     parts: [
       {
-        footprint: [[14, 68], [14.5, 74], [37, 87], [53, 86.5], [57.5, 84.5], [58, 70], [46.7, 70], [46.6, 65.5], [22.7, 65.9], [22.8, 68]],
+        footprint: [[14.2, 69.6], [14.5, 74], [37, 87], [53, 86.5], [57.5, 84.5], [58, 70], [46.7, 70], [45.1, 70], [45.1, 67], [24.2, 67], [24.2, 69.6]], // 1.5 m slot between the Student Center and Nicol Hall: it runs round the front block and all the way west, out toward the Upper Gate. Numbers: 45.1 / 24.2 / 67 / 69.6 (OSM has the two touching)
         floors: 6,
         roof: 'flat',
       },
