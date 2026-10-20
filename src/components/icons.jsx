@@ -31,6 +31,14 @@ export const CloseIcon = make(<path d="M6 6l12 12M18 6L6 18" />);
 export const ChevronIcon = make(<path d="M7 10l5 5 5-5" />);
 export const BackIcon = make(<path d="M15 5l-7 7 7 7" />, 'flip-rtl'); // flips in right-to-left languages
 export const ForwardIcon = make(<path d="M9 5l7 7-7 7" />, 'flip-rtl');
+export const CollapseIcon = make(<path d="M11 6l-6 6 6 6M18 6l-6 6 6 6" />, 'flip-rtl'); // « (closes the sidebar)
+export const PinIcon = make(
+  <>
+    <path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11z" />
+    <circle cx="12" cy="10" r="2.3" />
+  </>
+);
+export const CityIcon = make(<path d="M4 21V6l7-3v18M11 9h9v12M4 21h16M7 9h1M7 13h1M7 17h1M14 13h2M14 17h2" />);
 export const SunIcon = make(
   <>
     <circle cx="12" cy="12" r="4" />

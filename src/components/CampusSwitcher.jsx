@@ -1,6 +1,7 @@
 // A small segmented toggle to pick a campus. Inactive campuses are shown as "Coming soon".
 import { CAMPUSES } from '../data/campuses.js';
 import { useI18n } from '../i18n/index.jsx';
+import { CityIcon, PinIcon } from './icons.jsx';
 
 export default function CampusSwitcher({ value, onChange }) {
   const { t } = useI18n();
@@ -16,6 +17,7 @@ export default function CampusSwitcher({ value, onChange }) {
           disabled={!c.active}
           onClick={() => onChange(c.id)}
         >
+          {c.id === 'beirut' ? <PinIcon size={18} /> : <CityIcon size={18} />}
           {t(`campus.${c.id}`)}
           {!c.active && <span className="soon">{t('comingSoon')}</span>}
         </button>

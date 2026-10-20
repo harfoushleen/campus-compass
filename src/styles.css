@@ -124,17 +124,17 @@ html.theme-fade *::after {
 @media (min-width: 720px) {
   /* The map moves over to make room for the open sidebar (on phones it is a drawer over the map). */
   .app.sidebar-open .content { inset-inline-start: var(--sidebar-w); }
-  .sb-close { display: none; }
 }
 
 /* Sidebar header */
 .sb-header { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
-.brand h1 { margin: 0; font-size: 1.2rem; font-weight: 700; letter-spacing: -0.01em; }
+.brand h1 { margin: 0; font-size: 1.3rem; font-weight: 700; letter-spacing: -0.01em; line-height: 1.15; }
+.tagline { margin: 2px 0 0; color: var(--muted); font-size: 0.82rem; }
 .brand-mark {
   flex: none;
-  width: 30px;
-  height: 30px;
+  width: 42px;
+  height: 42px;
   border-radius: 10px;
   background: radial-gradient(circle at center, #fff 0 14%, transparent 15% 36%, #fff 37% 46%, transparent 47%), var(--brand);
 }
@@ -162,7 +162,8 @@ html.theme-fade *::after {
   gap: 2px;
   padding: 3px;
   border-radius: 999px;
-  background: var(--surface);
+  background: var(--card);
+  border: 1px solid var(--border);
 }
 .segmented button {
   flex: 1;
@@ -202,30 +203,28 @@ html.theme-fade *::after {
 
 /* ---------- Accordion of categories ---------- */
 
-.acc { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+/* A flat list: no box around each category, just thin dividers. An open category becomes one soft panel. */
+.acc { list-style: none; margin: 0; padding: 0; }
 .acc-item {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
+  border-bottom: 1px solid var(--border);
   overflow: hidden;
-  transition: border-color var(--t) ease, box-shadow var(--t) ease;
+  transition: background-color var(--t) ease, border-radius var(--t) ease;
 }
-.acc-item.open {
-  border-color: color-mix(in srgb, var(--cat-color) 55%, var(--border));
-  box-shadow: 0 4px 16px rgb(0 0 0 / 0.08);
-}
+.acc-item.open { background: var(--surface); border-bottom-color: transparent; border-radius: 16px; }
 .acc-head {
   width: 100%;
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 11px 14px;
+  gap: 14px;
+  padding: 11px 8px;
   border: 0;
   background: none;
   text-align: start;
-  font-size: 0.98rem;
+  font-size: 1rem;
   font-weight: 600;
 }
+.acc-head .cat-badge { width: 32px; height: 32px; }
+.acc-item.open > .acc-head { padding-inline: 12px; }
 .acc-name { flex: 1; min-width: 0; }
 .acc-count {
   min-width: 26px;
@@ -256,8 +255,30 @@ html.theme-fade *::after {
 }
 .acc-inner { min-height: 0; overflow: hidden; }
 
-.place-list { list-style: none; margin: 0; padding: 0 8px 8px; }
-.place-list > li + li,
+.acc-item.open .acc-count { background: var(--border); }
+/* Inside the open panel the icons are small and quiet; the coloured circles stay on the category rows. */
+.acc-panel .place-row .cat-badge { width: 22px; height: 22px; background: none; color: var(--muted); }
+.acc-panel .place-row .cat-badge svg { width: 18px; height: 18px; }
+.acc-panel .place-row .cat-badge.code { border: 1.5px solid currentColor; border-radius: 7px; width: 24px; height: 24px; font-size: 0.74rem; }
+
+.more-row {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 10px 12px 12px;
+  border: 0;
+  border-top: 1px solid var(--border);
+  background: none;
+  color: var(--link);
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+.more-row .chev { color: inherit; }
+.more-row.open .chev { transform: rotate(180deg); }
+.place-list { list-style: none; margin: 0; padding: 0 12px; }
+.place-list > li,
 .level-group li + li { border-top: 1px solid var(--border); }
 
 .place-row {

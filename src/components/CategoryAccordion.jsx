@@ -31,13 +31,35 @@ function PlaceRow({ place, selected, onSelect }) {
   );
 }
 
+const SHOWN = 4; // places shown before the "More" row (a list of just one more is shown in full)
+
+/** A list that shows the first few items, then a "More (n)" row that reveals the rest. */
+function ShortList({ items, renderItem }) {
+  const { t } = useI18n();
+  const [all, setAll] = useState(false);
+  const collapsible = items.length > SHOWN + 1;
+  const visible = collapsible && !all ? items.slice(0, SHOWN) : items;
+  return (
+    <>
+      <ul className="place-list">{visible.map(renderItem)}</ul>
+      {collapsible && (
+        <button type="button" className={`more-row ${all ? 'open' : ''}`} aria-expanded={all} onClick={() => setAll(!all)}>
+          {all ? t('less') : `${t('more')} (${items.length - SHOWN})`}
+          <ChevronIcon className="chev" size={16} />
+        </button>
+      )}
+    </>
+  );
+}
+
 /** The buildings, each opening to its places grouped by level. */
 function BuildingList({ buildings, selectedId, onSelect }) {
   const { t, localize } = useI18n();
   const [openBuilding, setOpenBuilding] = useState(null);
   return (
-    <ul className="place-list">
-      {buildings.map((b) => {
+    <ShortList
+      items={buildings}
+      renderItem={(b) => {
         const open = openBuilding === b.id;
         const groups = placesByLevel(b.id);
         return (
@@ -81,8 +103,8 @@ function BuildingList({ buildings, selectedId, onSelect }) {
             </div>
           </li>
         );
-      })}
-    </ul>
+      }}
+    />
   );
 }
 
@@ -98,7 +120,7 @@ export default function CategoryAccordion({ places, openId, onToggle, selectedId
         return (
           <li key={id} className={`acc-item ${open ? 'open' : ''}`} style={{ '--cat-color': cat.color, '--cat-ink': cat.ink }}>
             <button type="button" className="acc-head" aria-expanded={open} onClick={() => onToggle(id)}>
-              <CategoryBadge id={id} size={16} />
+              <CategoryBadge id={id} size={18} />
               <span className="acc-name">{t(`category.${id}`)}</span>
               <span className="acc-count">{items.length}</span>
               <ChevronIcon className="chev" size={18} />
@@ -108,13 +130,14 @@ export default function CategoryAccordion({ places, openId, onToggle, selectedId
                 {id === 'buildings' ? (
                   <BuildingList buildings={items} selectedId={selectedId} onSelect={onSelect} />
                 ) : (
-                  <ul className="place-list">
-                    {items.map((p) => (
+                  <ShortList
+                    items={items}
+                    renderItem={(p) => (
                       <li key={p.id}>
                         <PlaceRow place={p} selected={selectedId === p.id} onSelect={onSelect} />
                       </li>
-                    ))}
-                  </ul>
+                    )}
+                  />
                 )}
               </div>
             </div>

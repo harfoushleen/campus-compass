@@ -2,6 +2,9 @@
 // (keep the keys the same), and register it in src/i18n/index.jsx.
 export default {
   appName: 'Campus Compass',
+  tagline: 'Explore · Find · Belong',
+  more: 'More',
+  less: 'Show less',
   search: 'Search',
   closeSearch: 'Close search',
   back: 'Back to the list',

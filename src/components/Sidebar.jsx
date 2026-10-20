@@ -6,7 +6,7 @@ import { useI18n } from '../i18n/index.jsx';
 import CampusSwitcher from './CampusSwitcher.jsx';
 import CategoryAccordion from './CategoryAccordion.jsx';
 import PlaceDetails from './PlaceDetails.jsx';
-import { CloseIcon } from './icons.jsx';
+import { CollapseIcon } from './icons.jsx';
 
 export default function Sidebar({ open, onClose, campus, onCampus, places, openCategory, onToggleCategory, selectedPlace, onSelect, onBack }) {
   const { t } = useI18n();
@@ -21,10 +21,13 @@ export default function Sidebar({ open, onClose, campus, onCampus, places, openC
       <header className="sb-header">
         <div className="brand">
           <span className="brand-mark" aria-hidden="true" />
-          <h1>{t('appName')}</h1>
+          <div>
+            <h1>{t('appName')}</h1>
+            <p className="tagline">{t('tagline')}</p>
+          </div>
         </div>
         <button type="button" className="round-btn sb-close" onClick={onClose} aria-label={t('closeMenu')} title={t('closeMenu')}>
-          <CloseIcon />
+          <CollapseIcon />
         </button>
       </header>
 
