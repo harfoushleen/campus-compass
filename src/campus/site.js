@@ -121,6 +121,11 @@ export const HANGOUT_DECOR = {
     catHouse: { at: [-36.5, 47.5], angle: 0 },
     shrubs: [[-45, 50], [-34, 50.3]],
   },
+  'H-VINE-GYM': {
+    // Vine-covered pergola with benches in front of the Gymnasium entrance, between it and University Services.
+    pergola: { at: [46, -34.4], size: [7, 3.2], angle: 0 },
+    benches: [[46, -35.4, 0], [46, -33.4, 180]],
+  },
   // Little waterfall with a pool, in the green patch west of Irwin Hall (not a place you can tap).
   WATERFALL: {
     waterfall: { at: [-12.7, -7.7], angle: 135 },
@@ -195,6 +200,10 @@ export const PATHS = [
   // Along the front of Irwin Hall, and up to the stairs at its west end
   { id: 'irwinFront', width: 3, points: [[-42, -38], [-26, -41], [-8, -41], [10, -40], [20, -39]] },
   { id: 'irwinStairsApproach', width: 2.5, points: [[-17, -41], [-16.5, -35.5]] },
+  // Gymnasium: from the front path, between Irwin Hall and the Gym, to the entrance under the tennis field
+  { id: 'gymApproach', width: 3, points: [[20, -39], [24, -37.4], [28, -35.2], [30.5, -32]] },
+  { id: 'gymEntrance', width: 3, points: [[30.5, -16], [30.5, -31], [38, -31.8], [44, -31.6]] },
+  { id: 'gymStairsTop', width: 3, points: [[30.5, -4], [31, 2], [32, 8]] },
   // East–west garden path: Orme-Gray fountain, Tree of Life, garden benches, below the terraces, plaza
   { id: 'gardens', width: 3, points: [[-70, 18], [-60, 13], [-52, 8], [-44, 7], [-34, 9], [-24, 9], [-19, 5.5], [-12, 3.8], [4, 4.8], [22, 5], [32, 8]] },
   // Fountain, on the lawn inside the Orme-Gray courtyard
@@ -215,6 +224,7 @@ export const STAIRS = [
   { id: 'terraceWest', from: [-19, 7], to: [-19, 28], width: 3, steps: 16 },   // beside the terraces
   { id: 'nicol', from: [22, 10], to: [22, 30], width: 5, steps: 16 },          // plaza up to Nicol Hall
   { id: 'sageFront', from: [-38, 16], to: [-38, 24.5], width: 6, steps: 9 },   // Sage Hall entrance
+  { id: 'gym', from: [30.5, -16], to: [30.5, -4], width: 4, steps: 18 },       // down between Irwin Hall and the Gymnasium, to the entrance
   { id: 'irwinWest', from: [-16.5, -35.3], to: [-9.2, -30], width: 3, steps: 12, rise: 1.4 }, // up to Irwin Hall's west side
 ];
 

@@ -39,7 +39,7 @@ export const STYLES = {
   brick:       { wall: '#8a5a45', roof: '#e6e6e2', windows: 'grid', window: '#3b2f2b' },
   stoneLight:  { wall: '#9b7058', roof: '#d9d9d4', windows: 'grid', window: '#3b2f2b' },
   safadi:      { wall: '#f1f1ef', roof: '#f7f7f5', windows: 'grid', accent: '#d9a15a', bands: true },
-  gym:         { wall: '#9a9e9b', roof: '#4c7d3c', windows: 'none' },
+  gym:         { wall: '#9a9e9b', roof: '#b3b6b2', windows: 'none' }, // grey concrete deck; the green tennis field is a separate raised slab
   parking:     { wall: '#2b2b2b', roof: '#2b2b2b', windows: 'none' },
   // Gezairi: placeholder look (light beige with window strips) until photos are available.
   // Restyle it here, e.g. windows: 'grid' or different colours.
@@ -155,10 +155,18 @@ export const BUILDINGS = [
     id: 'GYM',
     name: 'Joseph G. Jabbra Gymnasium',
     label: 'Gymnasium',
-    labelOffset: [12, 14], // keeps it clear of the University Services label
     style: 'gym',
-    // Mostly underground: only a low deck shows, with the tennis courts on top.
-    parts: [{ footprint: [[26.3, -3.6], [28.5, -36.6], [50.1, -34.6], [60.5, -34], [59.1, -1.4], [38.6, -2.7]], floors: 1, floorHeight: 4, roof: 'courts' }],
+    // Mostly underground: only a low deck shows, with a smaller, raised tennis field on top (roof: 'courts';
+    // the size and height of the field are the defaults of courtsLayout in details.js).
+    // The footprint is pulled back from Irwin Hall (x 34, leaving a passage for the stairs) and from
+    // University Services (z -30, leaving room for the entrance square) compared with the OSM outline.
+    parts: [{ footprint: [[34, -30], [60.2, -30], [59.1, -1.4], [38.6, -2.7], [34, -3.2]], floors: 1, floorHeight: 4, roof: 'courts' }],
+    extras: [
+      // Double door under the tennis field: the way to the Gymnasium and the pool.
+      { shape: 'box', at: [46, -30.2], size: [3.8, 0.4], base: 'ground', height: 4.1, color: 'doorFrame' }, // frame
+      { shape: 'box', at: [45.2, -30.35], size: [1.6, 0.3], base: 'ground', height: 3.8, color: 'door' },   // left leaf
+      { shape: 'box', at: [46.8, -30.35], size: [1.6, 0.3], base: 'ground', height: 3.8, color: 'door' },   // right leaf
+    ],
   },
   {
     id: 'US',

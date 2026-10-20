@@ -491,6 +491,36 @@
     "verified": false
   },
   {
+    "id": "H-VINE-GYM",
+    "name": "Vine Benches (Gym entrance)",
+    "campus": "beirut",
+    "category": "hangout",
+    "building": "",
+    "near": "GYM",
+    "description": "Benches under a vine-covered pergola in front of the Gymnasium entrance, between the tennis field and University Services.",
+    "features": [
+      "benches",
+      "shade",
+      "vine"
+    ],
+    "hours": "",
+    "contact": "",
+    "link": "",
+    "keywords": [
+      "vine",
+      "pergola",
+      "benches",
+      "gym",
+      "gymnasium",
+      "shade"
+    ],
+    "position": [
+      46,
+      -34.4
+    ],
+    "verified": false
+  },
+  {
     "id": "registrar",
     "name": "Registrar's Office",
     "campus": "beirut",
@@ -1525,7 +1555,7 @@
     "building": "GYM",
     "level": "Level 3",
     "room": "",
-    "description": "Indoor court in the Joseph G. Jabbra Gymnasium. Volleyball is also played here (not confirmed by LAU).",
+    "description": "Indoor court in the Joseph G. Jabbra Gymnasium. Volleyball is also played here (not confirmed by LAU). Entrance under the tennis field; the stairs down beside Irwin Hall lead to it.",
     "hours": "Mon–Thu 11:00–13:00 (everyone); Fri 12:00–15:00 (faculty & staff)",
     "contact": "athletics@lau.edu.lb",
     "link": "https://athletics.lau.edu.lb/facility/basketball-indoor-court/",
@@ -1550,7 +1580,7 @@
     "building": "GYM",
     "level": "Level 2",
     "room": "",
-    "description": "Indoor pool in the Gymnasium (reported as heated, 20 m × 12 m; not confirmed by LAU).",
+    "description": "Indoor pool in the Gymnasium (reported as heated, 20 m × 12 m; not confirmed by LAU). Entrance under the tennis field; the stairs down beside Irwin Hall lead to it.",
     "hours": "Mon 8:00–14:00 · Tue 8:00–10:00 (women), 17:00–18:00 · Wed 8:00–12:00 · Thu 8:00–12:00, 17:00–18:00 · Fri 8:00–10:00 and 16:00–17:30 (women)",
     "contact": "athletics@lau.edu.lb",
     "link": "https://athletics.lau.edu.lb/facility/swimming-pool/",
