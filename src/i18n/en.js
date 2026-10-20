@@ -2,6 +2,15 @@
 // (keep the keys the same), and register it in src/i18n/index.jsx.
 export default {
   appName: 'Campus Compass',
+  search: 'Search',
+  closeSearch: 'Close search',
+  back: 'Back to the list',
+  showDetails: 'Details',
+  clearSelection: 'Clear selection',
+  levelNotListed: 'Level not listed',
+  showPlacesInside: 'Show the places inside',
+  'placesInside.one': '{count} place inside',
+  'placesInside.other': '{count} places inside',
   level: 'Level',
   room: 'Room',
   notListed: 'Not listed',

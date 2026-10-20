@@ -46,8 +46,10 @@ src/
     en.js               All English UI text
     index.jsx           Translation helper (t, localize) + language/RTL setup
   utils/search.js       Search and filter logic
-  components/           UI pieces (list, bottom sheet, search, chips, switchers)
-    campus/             The 3D view: canvas and camera, buildings, site, parking layer
+  components/           UI pieces: sidebar (campus switcher, category accordion, place details),
+                        floating top buttons (sidebar, search, light/dark), selected-place bar
+    campus/             The 3D view: canvas and camera, buildings, site, parking layer, light/dark scene
+  theme.js              Light/dark mode (follows the system until the user picks one, then remembers it)
   App.jsx               Holds the app state and puts the components together
   styles.css            All styles
 vite.config.js          Build config + PWA (offline / install) settings
@@ -77,7 +79,8 @@ Open `src/data/places.json` and add an object to the list:
 - **Optional:** everything else. Empty fields are just hidden.
 - **`building`**: the code of the building the place is in. Tapping that building in 3D then lists the place, and the place highlights the building. Codes: `SH` Sage Hall, `NH` Nicol Hall, `IH` Irwin Hall, `ShH` Shannon Hall, `US` University Services, `OG` Orme-Gray, `SFA` Safadi Fine Arts, `GYM` Gymnasium, `WKSC` Student Center, `AKSOB` Adnan Kassar School of Business, `RNL` Riyad Nassar Library, `UGP` Underground Parking, `GB` Gezairi Building.
 - **Buildings are places too:** each building has an entry whose `id` is its code. That entry holds the description shown when the building is tapped.
-- **Categories:** `acadsvc` (Academic services), `student` (Student life & support), `food`, `study` (Study & library), `sports` (Sports & fitness), `techid` (Tech & ID services), `venues`, `hangout` (Hangout spots), `cats`, `buildings`, `parking`. A place can also show up under another chip with `"alsoCategories": ["food"]`. Chips with no places are hidden automatically.
+- **Categories:** `acadsvc` (Academic services), `student` (Student life & support), `food`, `study` (Study & library), `sports` (Sports & fitness), `techid` (Tech & ID services), `venues`, `hangout` (Hangout spots), `cats`, `buildings`, `parking`. A place can also show up under another category with `"alsoCategories": ["food"]`. Each category is a row in the sidebar accordion; rows with no places are hidden automatically. Row order is `ORDER` in `src/components/CategoryAccordion.jsx`.
+- **Parking** is a category like the others. Each lot is a place with `"category": "parking"`, a `code` (the letter on its pin: M, U, L, G) and either a `building` or a `position`. A parking place with neither has no pin, so give every lot one of them. `subtitle` is the short line under the name in the sidebar. Other places can set `subtitle` too; otherwise it is built from the building and level.
 - **`latitude` / `longitude`** (optional) are only used by the Directions button. Places inside a building use the building's coordinates automatically. To get coordinates: in Google Maps, long-press the spot and copy the two numbers (latitude first). Write them as numbers, without quotes.
 - `contact` becomes a tappable link if it's an email or phone number.
 - `keywords` are extra search words that don't appear in the name, for example "coffee" for a cafeteria.
@@ -93,7 +96,8 @@ If you make a mistake (missing field, coordinates in quotes), the app skips that
 - **Gates, parking lots, trees, terraces, amphitheater, hill, camera, the Gezairi marker, colours**: `src/campus/site.js`.
 - **Hangout spots**: entries in `places.json` with `"category": "hangout"`, a `position` (`[x, z]` in metres, same coordinates as `buildings.js`), `near` (closest building code), `features` (`benches`, `food`, `fountain`, `trees`, `shade`, `cats`) and `verified`. Places with `"verified": false` show an "approximate location" note. Their 3D touches (benches, kiosk, fountain, big tree, shrubs) are in `HANGOUT_DECOR` in `site.js`.
 - **Paths and stairs**: `PATHS` and `STAIRS` in `site.js` (lists of [x, z] points; trees keep clear of them). `PATCHES` are the green garden patches with bushes and flowers.
-- **Always on the map**: buildings, paths, benches, the fountain, trees, the cat house and surface parking are always drawn. The toolbar buttons only show or hide labels, pins and the parking badges.
+- **Always on the map**: buildings, paths, benches, the fountain, trees, the cat house and surface parking are always drawn. The toolbar buttons only show or hide the labels and reset the camera. Underground parking outlines appear when the Parking category is open.
+- **Light and dark scene**: `SCENE` in `site.js` (background, sky, ground and light strengths for each theme).
 - **Label crowding**: `labelPriority` on each building (1 = always shown, 2/3 = shown as you zoom in) and the zoom thresholds in `LABELS` in `site.js`.
 - **Neighbouring streets and buildings**: run `npm run osm` to re-download them from OpenStreetMap.
 
@@ -115,7 +119,7 @@ Facilities (offices, services, food, library zones, sports, venues...) are norma
 | `note` | Conflicts or doubts, shown in small print (e.g. "LAU's pages disagree about the level"). |
 | `verified` | `false` until someone has checked the place on campus. |
 
-**Pins appear only on demand.** Nothing is pinned by default. Picking a place (search, list, map) shows one pin above its building and flies the camera there. Turning a category chip on shows a pin for every place in it, and frames them. Several places in one building share a pin with a count; tapping it opens the building, which lists them by level and room. Hangout spots and the cat area work the same way.
+**Pins appear only on demand.** Nothing is pinned by default. Picking a place (search, sidebar, map) shows one pin above its building and flies the camera there; its details open in the sidebar (the back arrow returns to the list). Opening a category in the sidebar shows a pin for every place in it, and frames them; opening another category (only one is open at a time) or closing it clears them. Several places in one building share a pin with a count; tapping it opens the building, which lists them by level and room. Hangout spots and the cat area work the same way.
 
 ### Opening hours that update themselves
 

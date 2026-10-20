@@ -1,110 +1,135 @@
 // Top-level component: holds the app state and lays out the screen.
-import { lazy, Suspense, useMemo, useState } from 'react';
+//
+//   sidebar      campus switcher + accordion of categories (and the details of a picked place)
+//   map          the 3D campus, with pins for the open category or the picked place
+//   top buttons  sidebar, search and light/dark buttons floating over the map
+import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import { PLACES } from './data/places.js';
 import { DEFAULT_CAMPUS } from './data/campuses.js';
+import { inCategory } from './data/categories.js';
 import { useI18n } from './i18n/index.jsx';
 import { filterPlaces } from './utils/search.js';
-import CampusSwitcher from './components/CampusSwitcher.jsx';
-import SearchBar from './components/SearchBar.jsx';
-import CategoryChips from './components/CategoryChips.jsx';
-import ViewToggle from './components/ViewToggle.jsx';
-import Sidebar from './components/Sidebar.jsx';
 import { useTheme } from './theme.js';
-// The 3D view (and the Three.js library) is loaded separately, so the search bar,
-// chips and list show up right away while it downloads.
+import Sidebar from './components/Sidebar.jsx';
+import TopControls from './components/TopControls.jsx';
+import SelectedBar from './components/SelectedBar.jsx';
+
+// The 3D view (and the Three.js library) is loaded separately, so the sidebar
+// shows up right away while it downloads.
 const CampusView = lazy(() => import('./components/campus/CampusView.jsx'));
-import ListView from './components/ListView.jsx';
-import PlaceSheet from './components/PlaceSheet.jsx';
+
+const isNarrow = () => window.matchMedia('(max-width: 719px)').matches;
 
 export default function App() {
   const { t, localize } = useI18n();
-
-  const [campus, setCampus] = useState(DEFAULT_CAMPUS);
-  const [category, setCategory] = useState(null); // null = all categories
-  const [query, setQuery] = useState('');
-  const [view, setView] = useState('map'); // 'map' | 'list'
-  const [selectedId, setSelectedId] = useState(null);
-
-  // Side panel: open by default on wide screens, closed on phones (it would cover the map).
-  const isNarrow = () => window.matchMedia('(max-width: 719px)').matches;
-  const [sidebarOpen, setSidebarOpen] = useState(() => !isNarrow());
   const [theme, toggleTheme] = useTheme();
 
-  // Places that match the current campus, category chip and search text.
-  const visiblePlaces = useMemo(
-    () => filterPlaces(PLACES, { campus, category, query, localize, t }),
-    [campus, category, query, localize, t]
-  );
+  const [campus, setCampus] = useState(DEFAULT_CAMPUS);
+  const [openCategory, setOpenCategory] = useState(null); // the open accordion row (one at a time)
+  const [selectedId, setSelectedId] = useState(null);
+  const [focus, setFocus] = useState(null); // { id, n }: asks the map to fly to a place
+  // Sidebar: open by default on wide screens, closed on phones (where it covers the map).
+  const [sidebarOpen, setSidebarOpen] = useState(() => !isNarrow());
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [query, setQuery] = useState('');
 
   const campusPlaces = useMemo(() => PLACES.filter((p) => p.campus === campus), [campus]);
-  // Categories that have places on this campus (empty chips are hidden).
-  const availableCategories = useMemo(
-    () => new Set(campusPlaces.flatMap((p) => [p.category, ...(p.alsoCategories ?? [])])),
-    [campusPlaces]
+  const categoryPlaces = useMemo(
+    () => (openCategory ? campusPlaces.filter((p) => inCategory(p, openCategory)) : []),
+    [campusPlaces, openCategory]
   );
-  const selectedPlace = PLACES.find((p) => p.id === selectedId) ?? null;
-  const selectPlace = (place) => setSelectedId(place.id);
+  const selectedPlace = campusPlaces.find((p) => p.id === selectedId) ?? null;
+  const results = useMemo(
+    () => (query.trim() ? filterPlaces(PLACES, { campus, category: null, query, localize, t }) : []),
+    [campus, query, localize, t]
+  );
+
+  // Picking a place (from the sidebar, the search, or the map): show its details in the sidebar.
+  // `fly` moves the camera to it; tapping a building on the map doesn't need that.
+  const select = useCallback((place, { fly = true } = {}) => {
+    setSelectedId(place.id);
+    setSidebarOpen(true);
+    if (fly) setFocus((f) => ({ id: place.id, n: (f?.n ?? 0) + 1 }));
+  }, []);
+
+  const closeSearch = useCallback(() => {
+    setSearchOpen(false);
+    setQuery('');
+  }, []);
+
+  const pickFromSearch = (place) => {
+    closeSearch();
+    select(place);
+  };
 
   const changeCampus = (id) => {
     setCampus(id);
     setSelectedId(null);
+    setOpenCategory(null);
   };
+
+  // Escape: close the search first, then the details, then (on phones) the drawer.
+  useEffect(() => {
+    const onKey = (e) => {
+      if (e.key !== 'Escape') return;
+      if (searchOpen) closeSearch();
+      else if (selectedId && sidebarOpen) setSelectedId(null);
+      else if (sidebarOpen && isNarrow()) setSidebarOpen(false);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [searchOpen, selectedId, sidebarOpen, closeSearch]);
 
   return (
     <div className={`app ${sidebarOpen ? 'sidebar-open' : ''}`}>
-      <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} theme={theme} onToggleTheme={toggleTheme}>
-        <CampusSwitcher value={campus} onChange={changeCampus} />
-        <ViewToggle value={view} onChange={setView} />
-        <SearchBar
-          value={query}
-          onChange={setQuery}
-          // Show matching places under the search box on the map view only; the list view is already a result list.
-          results={view === 'map' && query ? visiblePlaces : null}
-          onSelect={(place) => {
-            selectPlace(place);
-            if (isNarrow()) setSidebarOpen(false); // on phones, make room for the details sheet
-          }}
-        />
-        <CategoryChips value={category} onChange={setCategory} available={availableCategories} />
-      </Sidebar>
+      <Sidebar
+        open={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
+        campus={campus}
+        onCampus={changeCampus}
+        places={campusPlaces}
+        openCategory={openCategory}
+        onToggleCategory={(id) => setOpenCategory((open) => (open === id ? null : id))}
+        selectedPlace={selectedPlace}
+        onSelect={select}
+        onBack={() => setSelectedId(null)}
+      />
 
-      {/* Opens the side panel again once it has been closed. */}
-      {!sidebarOpen && (
-        <button type="button" className="menu-button" onClick={() => setSidebarOpen(true)} aria-label={t('openMenu')} aria-controls="sidebar" title={t('openMenu')}>
-          <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
-            <path d="M4 7h16M4 12h16M4 17h16" />
-          </svg>
-        </button>
-      )}
+      {/* On phones the sidebar is a drawer: tapping the dimmed map closes it. */}
+      <div className="backdrop" onClick={() => setSidebarOpen(false)} aria-hidden="true" />
 
       <main className="content">
-        {view === 'map' ? (
-          // Only Beirut has a 3D model so far; Byblos is "coming soon" in the switcher.
-          <Suspense
-            fallback={
-              <div className="campus-loading" role="status">
-                <span className="spinner" aria-hidden="true" />
-                {t('loading3d')}
-              </div>
-            }
-          >
-            <CampusView
-              places={visiblePlaces}
-              allPlaces={campusPlaces}
-              category={category}
-              selectedPlace={selectedPlace}
-              onSelect={selectPlace}
-              onBackgroundClick={() => setSelectedId(null)}
-            />
-          </Suspense>
-        ) : (
-          <ListView places={visiblePlaces} onSelect={selectPlace} />
-        )}
-      </main>
+        <Suspense
+          fallback={
+            <div className="campus-loading" role="status">
+              <span className="spinner" aria-hidden="true" />
+              {t('loading3d')}
+            </div>
+          }
+        >
+          {/* Only Beirut has a 3D model so far; Byblos is "coming soon" in the switcher. */}
+          <CampusView
+            places={categoryPlaces}
+            allPlaces={campusPlaces}
+            category={openCategory}
+            selectedPlace={selectedPlace}
+            focus={focus}
+            theme={theme}
+            onSelect={(place) => select(place, { fly: false })}
+            onBackgroundClick={() => !sidebarOpen && setSelectedId(null)}
+          />
+        </Suspense>
 
-      {selectedPlace && (
-        <PlaceSheet place={selectedPlace} onClose={() => setSelectedId(null)} onSelect={selectPlace} />
-      )}
+        <TopControls
+          sidebarOpen={sidebarOpen}
+          onMenu={() => setSidebarOpen((open) => !open)}
+          theme={theme}
+          onToggleTheme={toggleTheme}
+          search={{ open: searchOpen, onOpen: () => setSearchOpen(true), onClose: closeSearch, query, onQuery: setQuery, results, onPick: pickFromSearch }}
+        />
+
+        <SelectedBar place={selectedPlace} visible={Boolean(selectedPlace) && !sidebarOpen} onOpen={() => setSidebarOpen(true)} onClear={() => setSelectedId(null)} />
+      </main>
     </div>
   );
 }

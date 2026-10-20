@@ -22,7 +22,8 @@ function buildingCentre(code) {
 /** Ground point [x, z] the camera should look at for a place, or null if it has no spot on the map. */
 export function placeFocus(place) {
   if (place.building) return buildingCentre(place.building)?.centre ?? null;
-  return place.position ?? null;
+  if (place.position) return place.position;
+  return buildingCentre(place.id)?.centre ?? null; // a building itself
 }
 
 /** 3D position of the pin for a place, or null. */
@@ -32,7 +33,9 @@ export function placeAnchor(place) {
     return b ? [b.centre[0], b.top + PIN_HEIGHT_ABOVE_ROOF, b.centre[1]] : null;
   }
   if (place.position) return [place.position[0], heightAt(...place.position) + 7, place.position[1]];
-  return null;
+  // A building itself: the pin sits above it.
+  const self = buildingCentre(place.id);
+  return self ? [self.centre[0], self.top + PIN_HEIGHT_ABOVE_ROOF, self.centre[1]] : null;
 }
 
 /**

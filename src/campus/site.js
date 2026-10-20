@@ -337,3 +337,12 @@ export const COLORS = {
   patch: '#6e9a4a',  // garden patches
   stairs: '#c2c5c3', // lighter concrete grey
 };
+
+// ── Scene light and dark ──
+// The 3D scene follows the theme: the background (the "sky" and the ground beyond the campus)
+// and the lighting fade between these values. Dark = a soft evening: dimmer light with a cool tint.
+// (Labels and pins are normal page elements, so they stay readable in both.)
+export const SCENE = {
+  light: { background: '#3d4a45', sky: '#ffffff', ground: '#8a8f7a', hemi: 1.6, sun: 1.6, sunColor: '#ffffff' },
+  dark: { background: '#101615', sky: '#9db3dc', ground: '#2a323d', hemi: 0.62, sun: 0.55, sunColor: '#b5c3e6' },
+};

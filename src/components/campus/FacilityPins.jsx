@@ -30,7 +30,7 @@ export default function FacilityPins({ groups, selectedId, onSelect, name }) {
           aria-label={label}
         >
           <span className="label-icon">
-            <CategoryIcon id={g.category} size={16} />
+            {g.places.length === 1 && g.places[0].code ? <span className="pin-code">{g.places[0].code}</span> : <CategoryIcon id={g.category} size={16} />}
           </span>
           {g.places.length > 1 && <span className="pin-count">{g.places.length}</span>}
           <span className="label-text">{title}</span>

@@ -1,6 +1,6 @@
 /*
   Global styles. Mobile-first: the base styles target phones, and the
-  @media block at the bottom adjusts for wider screens.
+  @media blocks adjust for wider screens.
 
   RTL note: use "logical" properties (margin-inline-start, padding-inline,
   inset-inline-end, text-align: start) instead of left/right, so the layout
@@ -13,15 +13,19 @@
   --brand: #00573f;
   --brand-ink: #ffffff;
   --link: #00573f;
-  --bg: #e9efeb;
-  --surface: #dbe5df;
-  --border: #c5d1ca;
+  --bg: #e9efeb;        /* sidebar, buttons, panels */
+  --card: #f4f8f5;      /* cards inside the sidebar */
+  --surface: #dbe5df;   /* hovers, inputs, small pills */
+  --border: #d0dad4;
   --text: #1c2321;
-  --muted: #55655e;
+  --muted: #5a6a63;
   --warn: #8a5a00;
-  --shadow: 0 4px 20px rgb(0 0 0 / 0.18);
-  --radius: 14px;
-  --sidebar-w: 340px;
+  --map-bg: #3d4a45;    /* the 3D view before it has drawn (the scene sets its own background) */
+  --shadow: 0 6px 24px rgb(0 0 0 / 0.16);
+  --radius: 16px;
+  --sidebar-w: 360px;
+  --ease: cubic-bezier(0.22, 0.8, 0.24, 1);
+  --t: 260ms;           /* the standard animation length */
   font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Noto Sans Arabic', sans-serif;
   color: var(--text);
   background: var(--bg);
@@ -32,19 +36,30 @@
   color-scheme: dark;
   --brand: #2a8a68;
   --link: #6fd1a8;
-  --bg: #222b28;
-  --surface: #2f3b37;
-  --border: #3d4b46;
+  --bg: #1a2220;
+  --card: #232d2a;
+  --surface: #2d3935;
+  --border: #33423d;
   --text: #e6ece8;
   --muted: #9fb0a8;
   --warn: #e0b04a;
-  --shadow: 0 4px 20px rgb(0 0 0 / 0.45);
+  --map-bg: #101615;
+  --shadow: 0 6px 24px rgb(0 0 0 / 0.5);
 }
 
 * { box-sizing: border-box; }
 html, body, #root { height: 100%; margin: 0; }
 button, input { font: inherit; color: inherit; }
 button { cursor: pointer; }
+[dir='rtl'] .flip-rtl { transform: scaleX(-1); }
+
+/* Switching theme: colours fade for a moment (the class is added by theme.js). */
+html.theme-fade,
+html.theme-fade *:not(.theme-icon),
+html.theme-fade *::before,
+html.theme-fade *::after {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease, fill 0.3s ease, stroke 0.3s ease !important;
+}
 
 /* ---------- Layout ---------- */
 
@@ -55,69 +70,407 @@ button { cursor: pointer; }
   background: var(--bg);
 }
 
-/* The map (or list) fills the whole screen. */
+/* The map fills the screen (on wide screens it makes room for the open sidebar). */
 .content {
   position: absolute;
   inset: 0;
+  transition: inset-inline-start var(--t) var(--ease);
 }
 
-/* Side panel: slides in from the start edge. Closed = moved off-screen. */
+/* Sidebar: slides in from the start edge. Closed = moved off-screen. */
 .sidebar {
   position: absolute;
   top: 0;
   bottom: 0;
   inset-inline-start: 0;
-  width: min(88vw, var(--sidebar-w));
+  width: min(90vw, var(--sidebar-w));
   z-index: 1000;
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  padding: 12px;
-  padding-top: max(12px, env(safe-area-inset-top));
-  overflow-y: auto;
+  gap: 14px;
+  padding: 16px 16px 0;
+  padding-top: max(16px, env(safe-area-inset-top));
   background: var(--bg);
   border-inline-end: 1px solid var(--border);
   box-shadow: var(--shadow);
-  transform: translateX(-104%);
+  transform: translateX(-105%);
   visibility: hidden;
-  transition: transform 0.22s ease, visibility 0s linear 0.22s;
+  transition: transform var(--t) var(--ease), visibility 0s linear var(--t);
 }
-[dir='rtl'] .sidebar { transform: translateX(104%); }
+[dir='rtl'] .sidebar { transform: translateX(105%); }
 .app.sidebar-open .sidebar {
   transform: none;
   visibility: visible;
-  transition: transform 0.22s ease, visibility 0s;
+  transition: transform var(--t) var(--ease), visibility 0s;
 }
 
-.sidebar-header { display: flex; align-items: center; gap: 6px; }
-.sidebar-title { flex: 1; margin: 0; font-size: 1.15rem; }
+/* Dimmed map behind the drawer (phones only): tap it to close. */
+.backdrop {
+  display: none;
+  position: absolute;
+  inset: 0;
+  z-index: 999;
+  background: rgb(0 0 0 / 0.4);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--t) ease;
+}
 
-.icon-button,
-.menu-button {
+@media (max-width: 719px) {
+  .backdrop { display: block; }
+  .app.sidebar-open .backdrop { opacity: 1; pointer-events: auto; }
+}
+
+@media (min-width: 720px) {
+  /* The map moves over to make room for the open sidebar (on phones it is a drawer over the map). */
+  .app.sidebar-open .content { inset-inline-start: var(--sidebar-w); }
+  .sb-close { display: none; }
+}
+
+/* Sidebar header */
+.sb-header { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.brand h1 { margin: 0; font-size: 1.2rem; font-weight: 700; letter-spacing: -0.01em; }
+.brand-mark {
+  flex: none;
+  width: 30px;
+  height: 30px;
+  border-radius: 10px;
+  background: radial-gradient(circle at center, #fff 0 14%, transparent 15% 36%, #fff 37% 46%, transparent 47%), var(--brand);
+}
+
+/* Round buttons */
+.round-btn {
   flex: none;
   display: inline-grid;
   place-items: center;
-  width: 40px;
-  height: 40px;
+  width: 38px;
+  height: 38px;
   border: 0;
   border-radius: 50%;
   background: var(--surface);
   color: var(--text);
+  transition: background-color 0.2s ease, transform 0.15s ease;
 }
-.icon-button:hover { background: var(--border); }
-[dir='rtl'] .chevron { transform: scaleX(-1); }
+.round-btn:hover { background: var(--border); }
+.round-btn:active { transform: scale(0.94); }
+.round-btn.small { width: 32px; height: 32px; }
 
-/* Opens the side panel again; floats over the map. */
-.menu-button {
+/* Campus switcher */
+.segmented {
+  display: flex;
+  gap: 2px;
+  padding: 3px;
+  border-radius: 999px;
+  background: var(--surface);
+}
+.segmented button {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 7px 12px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  font-size: 0.88rem;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: background-color var(--t) var(--ease), color var(--t) ease;
+}
+.segmented button.active { background: var(--brand); color: var(--brand-ink); }
+.segmented button:disabled { color: var(--muted); font-weight: 500; cursor: not-allowed; }
+.soon { padding: 1px 7px; border-radius: 999px; background: var(--border); color: var(--muted); font-size: 0.64rem; font-weight: 600; }
+
+/* The two panes: the list of categories, and (once a place is picked) its details. */
+.sb-views { position: relative; flex: 1; min-height: 0; margin-inline: -16px; }
+.sb-view {
   position: absolute;
-  top: max(10px, env(safe-area-inset-top));
-  inset-inline-start: 10px;
-  z-index: 1001;
+  inset: 0;
+  overflow-y: auto;
+  padding: 2px 16px 24px;
+  padding-bottom: max(24px, env(safe-area-inset-bottom));
+  overscroll-behavior: contain;
+  transition: transform var(--t) var(--ease), opacity var(--t) ease, visibility 0s linear var(--t);
+}
+.sb-details { transform: translateX(32px); opacity: 0; visibility: hidden; }
+[dir='rtl'] .sb-details { transform: translateX(-32px); }
+.show-details .sb-details { transform: none; opacity: 1; visibility: visible; transition: transform var(--t) var(--ease), opacity var(--t) ease, visibility 0s; }
+.show-details .sb-list { transform: translateX(-32px); opacity: 0; visibility: hidden; }
+[dir='rtl'] .show-details .sb-list { transform: translateX(32px); }
+
+/* ---------- Accordion of categories ---------- */
+
+.acc { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.acc-item {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  transition: border-color var(--t) ease, box-shadow var(--t) ease;
+}
+.acc-item.open {
+  border-color: color-mix(in srgb, var(--cat-color) 55%, var(--border));
+  box-shadow: 0 4px 16px rgb(0 0 0 / 0.08);
+}
+.acc-head {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 14px;
+  border: 0;
+  background: none;
+  text-align: start;
+  font-size: 0.98rem;
+  font-weight: 600;
+}
+.acc-name { flex: 1; min-width: 0; }
+.acc-count {
+  min-width: 26px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-align: center;
+}
+.chev { flex: none; color: var(--muted); transition: transform var(--t) var(--ease); }
+.acc-item.open > .acc-head .chev,
+.bldg.open .chev { transform: rotate(180deg); }
+
+/* Smooth open/close without measuring heights: the row grows from 0fr to 1fr. */
+.acc-panel {
+  display: grid;
+  grid-template-rows: 0fr;
+  visibility: hidden;
+  transition: grid-template-rows var(--t) var(--ease), visibility 0s linear var(--t);
+}
+.acc-item.open > .acc-panel,
+.bldg.open > .acc-panel {
+  grid-template-rows: 1fr;
+  visibility: visible;
+  transition: grid-template-rows var(--t) var(--ease), visibility 0s;
+}
+.acc-inner { min-height: 0; overflow: hidden; }
+
+.place-list { list-style: none; margin: 0; padding: 0 8px 8px; }
+.place-list > li + li,
+.level-group li + li { border-top: 1px solid var(--border); }
+
+.place-row {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 9px 8px;
+  border: 0;
+  border-radius: 12px;
+  background: none;
+  text-align: start;
+  transition: background-color 0.15s ease;
+}
+.place-row:hover { background: var(--surface); }
+.place-row.selected { background: color-mix(in srgb, var(--brand) 16%, transparent); }
+.place-text { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.place-text strong { font-size: 0.93rem; font-weight: 600; }
+.place-text small { color: var(--muted); font-size: 0.78rem; }
+.row-arrow { flex: none; color: var(--muted); opacity: 0.55; }
+
+.bldg-head { display: flex; align-items: center; gap: 4px; }
+.bldg-head .place-row { flex: 1; min-width: 0; }
+.level-group { margin: 0 0 6px; padding-inline-start: 8px; }
+.level-group h4 {
+  margin: 8px 8px 2px;
+  color: var(--muted);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+.level-group ul { list-style: none; margin: 0; padding: 0; }
+
+/* ---------- Details of a place (in the sidebar) ---------- */
+
+.details-top { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.category-tag { display: inline-flex; align-items: center; gap: 8px; color: var(--muted); font-size: 0.82rem; font-weight: 600; }
+.details h2 { margin: 6px 0 4px; font-size: 1.4rem; line-height: 1.2; letter-spacing: -0.01em; }
+.details-subtitle { margin: 0 0 6px; color: var(--muted); font-size: 0.9rem; }
+.sheet-desc { margin: 4px 0 12px; color: var(--muted); line-height: 1.45; }
+
+.sheet-details { margin: 0 0 14px; }
+.sheet-details div { display: flex; gap: 12px; padding: 10px 0; border-top: 1px solid var(--border); }
+.sheet-details dt { flex: 0 0 96px; color: var(--muted); font-size: 0.88rem; }
+.sheet-details dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
+.sheet-details a { color: var(--link); }
+
+.link-button {
+  border: 0;
+  padding: 0;
+  background: none;
+  color: var(--link);
+  text-decoration: underline;
+  text-align: start;
+}
+
+.inside { margin: 4px 0 16px; }
+.inside h3 { margin: 0 0 4px; color: var(--muted); font-size: 0.88rem; }
+
+.sheet-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+.button {
+  flex: 1;
+  text-align: center;
+  padding: 11px 16px;
+  border-radius: 999px;
+  border: 1px solid var(--link);
+  color: var(--link);
+  text-decoration: none;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: background-color 0.2s ease;
+}
+.button:hover { background: color-mix(in srgb, var(--link) 12%, transparent); }
+.button.primary { background: var(--brand); border-color: var(--brand); color: var(--brand-ink); }
+.button.primary:hover { filter: brightness(1.08); }
+
+/* ---------- Buttons floating at the top of the map ---------- */
+
+.topbar {
+  position: absolute;
+  top: max(12px, env(safe-area-inset-top));
+  inset-inline: 12px;
+  z-index: 30;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  pointer-events: none; /* only the buttons themselves react, so the map stays draggable */
+}
+.fab {
+  flex: none;
   width: 44px;
   height: 44px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  background: var(--bg);
+  color: var(--text);
+  box-shadow: var(--shadow);
+  pointer-events: auto;
+  transition: transform 0.15s ease, background-color 0.2s ease;
+}
+.fab:active { transform: scale(0.94); }
+
+/* Search: a round button that grows into a search bar. */
+.search-box {
+  position: relative;
+  flex: 1 1 0;
+  min-width: 44px;
+  max-width: 44px;
+  transition: max-width var(--t) var(--ease);
+}
+.search-box.open { max-width: 480px; }
+.search-bar {
+  display: flex;
+  align-items: center;
+  height: 44px;
+  border-radius: 999px;
   background: var(--bg);
   box-shadow: var(--shadow);
+  overflow: hidden;
+  pointer-events: auto;
 }
+.search-fab { box-shadow: none; background: transparent; }
+.search-input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  font-size: 1rem; /* 16px+ stops iOS from zooming in on focus */
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+.search-box.open .search-input { opacity: 1; transition: opacity 0.2s ease 0.1s; }
+.search-input::placeholder { color: var(--muted); }
+/* Our own X button clears the search, so hide the browser's built-in one. */
+.search-input::-webkit-search-cancel-button,
+.search-input::-webkit-search-decoration { -webkit-appearance: none; appearance: none; }
+.search-close {
+  flex: none;
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+.search-box.open .search-close { opacity: 1; pointer-events: auto; }
+.search-results {
+  position: absolute;
+  top: calc(100% + 8px);
+  inset-inline: 0;
+  margin: 0;
+  padding: 6px;
+  list-style: none;
+  max-height: min(60vh, 440px);
+  overflow-y: auto;
+  border-radius: 18px;
+  background: var(--bg);
+  box-shadow: var(--shadow);
+  pointer-events: auto;
+  animation: pop-in var(--t) var(--ease);
+}
+.search-results .empty { padding: 14px; color: var(--muted); text-align: center; }
+@keyframes pop-in {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* Light/dark button: the sun and the moon turn and fade into each other. */
+.fab-theme { position: relative; margin-inline-start: auto; max-width: 44px; overflow: hidden; transition: max-width var(--t) var(--ease), margin var(--t) var(--ease), opacity 0.2s ease, transform 0.15s ease, background-color 0.2s ease; }
+.theme-icon { position: absolute; inset: 0; display: grid; place-items: center; opacity: 0; transform: rotate(-80deg) scale(0.4); transition: opacity 0.25s ease, transform 0.35s var(--ease); }
+.theme-icon.on { opacity: 1; transform: none; }
+
+@media (max-width: 719px) {
+  /* On a phone the open search bar takes the whole row. */
+  .topbar.search-open .fab-theme { max-width: 0; margin-inline-start: -10px; opacity: 0; pointer-events: none; }
+}
+
+/* The picked place, shown at the bottom while the sidebar is closed. */
+.selected-bar {
+  position: absolute;
+  inset-inline-start: 50%;
+  bottom: calc(max(26px, env(safe-area-inset-bottom)) + 58px);
+  z-index: 35;
+  width: min(calc(100% - 24px), 420px);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 8px 8px 10px;
+  border-radius: 18px;
+  background: var(--bg);
+  box-shadow: var(--shadow);
+  transform: translate(-50%, 18px);
+  opacity: 0;
+  visibility: hidden;
+  transition: transform var(--t) var(--ease), opacity 0.2s ease, visibility 0s linear var(--t);
+}
+[dir='rtl'] .selected-bar { transform: translate(50%, 18px); }
+.selected-bar.show { transform: translate(-50%, 0); opacity: 1; visibility: visible; transition: transform var(--t) var(--ease), opacity 0.2s ease, visibility 0s; }
+[dir='rtl'] .selected-bar.show { transform: translate(50%, 0); }
+.selected-main { flex: 1; min-width: 0; display: flex; align-items: center; gap: 10px; padding: 0; border: 0; background: none; text-align: start; }
+.selected-more { flex: none; display: inline-flex; align-items: center; gap: 2px; color: var(--link); font-size: 0.8rem; font-weight: 600; }
+
+/* Parking pins show the lot letter instead of an icon. */
+.pin-code { font-size: 0.82rem; font-weight: 800; line-height: 1; }
+.cat-badge.code { font-size: 0.8rem; font-weight: 800; }
 
 /* ---------- 3D campus ---------- */
 
@@ -125,14 +478,14 @@ button { cursor: pointer; }
   position: absolute;
   inset: 0;
   z-index: 0; /* keeps the 3D labels below the side panel and the bottom sheet */
-  background: #3d4a45;
+  background: var(--map-bg);
   touch-action: none; /* let the 3D view handle pinch and drag */
 }
 
 /* Toolbar centred at the bottom of the 3D view (labels of the tall buildings sit at the top). */
 .campus-toolbar {
   position: absolute;
-  bottom: max(14px, env(safe-area-inset-bottom));
+  bottom: max(26px, env(safe-area-inset-bottom));
   left: 50%;
   transform: translateX(-50%);
   display: flex;
@@ -161,28 +514,15 @@ button { cursor: pointer; }
   white-space: nowrap;
 }
 .campus-button.active { background: #0b5cad; color: #fff; }
-.campus-button.active.hangouts { background: #d6336c; }
 
-.parking-p {
-  display: inline-grid;
-  place-items: center;
-  width: 20px;
-  height: 20px;
-  border-radius: 4px;
-  background: #0b5cad;
-  color: #fff;
-  font-weight: 700;
-  font-size: 0.8rem;
-}
-.campus-button.active .parking-p { background: #fff; color: #0b5cad; }
 
 .campus-attribution {
   position: absolute;
-  top: 4px;
-  inset-inline-end: 8px;
+  bottom: 5px;
+  inset-inline-start: 12px;
   margin: 0;
-  font-size: 0.65rem;
-  color: rgb(255 255 255 / 0.8);
+  font-size: 0.62rem;
+  color: rgb(255 255 255 / 0.7);
   z-index: 30;
 }
 .campus-attribution a { color: inherit; }
@@ -230,7 +570,7 @@ button { cursor: pointer; }
   align-items: center;
   justify-content: center;
   gap: 12px;
-  background: #3d4a45;
+  background: var(--map-bg);
   color: #fff;
   font-size: 0.95rem;
 }
@@ -245,281 +585,7 @@ button { cursor: pointer; }
 @keyframes spin { to { transform: rotate(360deg); } }
 .gate-label { background: #f0a030; color: #1c2321; border-radius: 4px; font-size: 0.72rem; }
 
-.parking-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 3px;
-  padding: 3px;
-  border: 0;
-  border-radius: 6px;
-  background: #fff;
-  color: #1c2321;
-  box-shadow: var(--shadow);
-}
-.parking-code {
-  display: inline-grid;
-  place-items: center;
-  width: 20px;
-  height: 20px;
-  border: 2px solid #2a2f2d;
-  border-radius: 50%;
-  font-weight: 700;
-  font-size: 0.75rem;
-}
 
-/* ---------- Segmented controls (campus switcher, map/list toggle) ---------- */
-
-.segmented {
-  display: flex;
-  background: var(--surface);
-  border-radius: 999px;
-  padding: 3px;
-}
-
-.segmented button {
-  flex: 1;
-  justify-content: center;
-  border: 0;
-  background: transparent;
-  padding: 6px 12px;
-  border-radius: 999px;
-  font-size: 0.9rem;
-  white-space: nowrap;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.segmented button.active {
-  background: var(--brand);
-  color: var(--brand-ink);
-}
-
-.segmented button:disabled {
-  color: var(--muted);
-  cursor: not-allowed;
-}
-
-.badge {
-  font-size: 0.65rem;
-  background: var(--border);
-  color: var(--muted);
-  padding: 1px 6px;
-  border-radius: 999px;
-}
-
-/* ---------- Search ---------- */
-
-.search { position: relative; }
-
-.search input {
-  width: 100%;
-  padding: 10px 14px;
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  background: var(--surface);
-  font-size: 1rem; /* 16px+ prevents iOS from zooming in on focus */
-}
-
-.search input:focus {
-  outline: 2px solid var(--brand);
-  outline-offset: 1px;
-}
-
-.search-results {
-  margin: 8px 0 0;
-  padding: 6px;
-  list-style: none;
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  max-height: 40vh;
-  overflow-y: auto;
-}
-
-.search-results .empty { padding: 12px; color: var(--muted); }
-
-/* Shared row style for search results and the list view. */
-.search-results button,
-.list button {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 10px;
-  border: 0;
-  background: transparent;
-  border-radius: 10px;
-  text-align: start;
-}
-
-.search-results button:hover,
-.list button:hover { background: var(--surface); }
-
-.result-text { display: flex; flex-direction: column; }
-.result-text small { color: var(--muted); }
-
-/* ---------- Category chips ---------- */
-
-.chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-
-.chip {
-  --chip-color: var(--brand);
-  flex: none;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  background: var(--surface);
-  font-size: 0.85rem;
-  white-space: nowrap;
-}
-
-.chip.active {
-  background: var(--chip-color);
-  border-color: var(--chip-color);
-  color: #fff;
-}
-.chip.active .dot { background: #fff; }
-
-.dot {
-  flex: none;
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: var(--chip-color, var(--brand));
-}
-
-/* ---------- List view ---------- */
-
-.list {
-  height: 100%;
-  overflow-y: auto;
-  padding: 64px 12px 24px;
-  background: var(--bg);
-}
-.list ul { list-style: none; margin: 0; padding: 0; }
-.list li + li { border-top: 1px solid var(--border); }
-.list-count { color: var(--muted); font-size: 0.85rem; margin: 4px 10px; }
-.list-empty { padding: 24px; text-align: center; color: var(--muted); }
-
-/* ---------- Bottom sheet ---------- */
-
-.sheet {
-  position: fixed;
-  inset-inline: 0;
-  bottom: 0;
-  max-height: 65dvh;
-  overflow-y: auto;
-  background: var(--bg);
-  border-radius: 20px 20px 0 0;
-  box-shadow: var(--shadow);
-  padding: 14px 18px;
-  padding-bottom: max(18px, env(safe-area-inset-bottom));
-  z-index: 1200;
-  animation: slide-up 0.2s ease-out;
-}
-
-@keyframes slide-up {
-  from { transform: translateY(100%); }
-  to { transform: translateY(0); }
-}
-
-.sheet-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.category-tag {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 0.8rem;
-  color: var(--muted);
-}
-
-.sheet-close {
-  border: 0;
-  background: var(--surface);
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  font-size: 1.3rem;
-  line-height: 1;
-}
-
-.sheet h2 { margin: 8px 0 4px; font-size: 1.3rem; }
-.sheet-desc { margin: 0 0 12px; color: var(--muted); }
-
-.sheet-details { margin: 0 0 16px; }
-.sheet-details div {
-  display: flex;
-  gap: 12px;
-  padding: 8px 0;
-  border-top: 1px solid var(--border);
-}
-.sheet-details dt { flex: 0 0 110px; color: var(--muted); font-size: 0.9rem; }
-.sheet-details dd { margin: 0; }
-.sheet-details a { color: var(--link); }
-
-.link-button {
-  border: 0;
-  padding: 0;
-  background: none;
-  color: var(--link);
-  text-decoration: underline;
-  text-align: start;
-}
-
-.sheet-inside h3 { font-size: 0.9rem; margin: 0 0 4px; color: var(--muted); }
-.sheet-inside ul { list-style: none; margin: 0 0 14px; padding: 0; }
-.sheet-inside button {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  width: 100%;
-  padding: 8px 0;
-  border: 0;
-  border-top: 1px solid var(--border);
-  background: none;
-  text-align: start;
-}
-
-.sheet-actions { display: flex; gap: 8px; flex-wrap: wrap; }
-
-.button {
-  flex: 1;
-  text-align: center;
-  padding: 10px 16px;
-  border-radius: 999px;
-  border: 1px solid var(--link);
-  color: var(--link);
-  text-decoration: none;
-  font-weight: 600;
-}
-.button.primary { background: var(--brand); color: var(--brand-ink); }
-
-/* ---------- Wider screens ---------- */
-
-@media (min-width: 720px) {
-  /* The map moves over to make room for the open side panel (on phones it covers the map). */
-  .app.sidebar-open .content { inset-inline-start: var(--sidebar-w); }
-
-  /* Show the sheet as a floating card instead of full width. */
-  .sheet {
-    inset-inline: auto 16px;
-    bottom: 16px;
-    width: 380px;
-    border-radius: 20px;
-  }
-}
 
 /* Layer holding the labels and badges that float over the 3D view. It lets drags
    pass through to the 3D view; only the parking badges are tappable. */
@@ -529,39 +595,11 @@ button { cursor: pointer; }
   overflow: hidden;
   pointer-events: none;
 }
-.campus-labels .parking-badge { pointer-events: auto; }
 
 /* Managed labels (see components/campus/labels.jsx). */
 .managed-label.label-hidden { visibility: hidden; }
 .managed-label.label-compact .label-text { display: none; }
 
-/* Hangout spot pins: pink, with a bench icon; shrink to just the icon when zoomed out. */
-.hangout-pin {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  padding: 3px 9px 3px 3px;
-  border: 2px solid #fff;
-  border-radius: 999px;
-  background: var(--pin-color, #d6336c);
-  color: #fff;
-  font-size: 0.72rem;
-  font-weight: 600;
-  white-space: nowrap;
-  box-shadow: var(--shadow);
-  pointer-events: auto;
-  cursor: pointer;
-}
-.label-compact .hangout-pin { padding: 3px; }
-.hangout-pin .label-icon {
-  display: inline-grid;
-  place-items: center;
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  background: rgb(255 255 255 / 0.25);
-}
-.hangout-pin.active { filter: brightness(0.8); outline: 3px solid rgb(0 0 0 / 0.25); }
 
 /* Details sheet: features and "not verified" note. */
 .feature-list { display: flex; flex-wrap: wrap; gap: 6px; }
@@ -578,6 +616,7 @@ button { cursor: pointer; }
   color: var(--warn);
 }
 
+
 /* ---------- Category icons, chips and facility pins ---------- */
 
 .cat-badge {
@@ -592,19 +631,6 @@ button { cursor: pointer; }
 }
 .category-tag .cat-badge { width: 22px; height: 22px; }
 
-.chip { --chip-ink: #fff; }
-.chip-icon {
-  flex: none;
-  display: inline-grid;
-  place-items: center;
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  background: var(--chip-color);
-  color: var(--chip-ink);
-}
-.chip.active { color: var(--chip-ink); }
-.chip.active .chip-icon { background: color-mix(in srgb, var(--chip-ink) 22%, transparent); }
 
 /* The pin: coloured circle with the category icon, a light ring and a dark outer ring so it
    reads on both the pale ground and the dark surroundings. */
@@ -659,3 +685,14 @@ button { cursor: pointer; }
 .sheet-fineprint a { color: var(--link); }
 
 .facility-pin .label-text:empty { display: none; }
+
+/* ---------- Reduced motion ---------- */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  html.theme-fade, html.theme-fade *, html.theme-fade *::before, html.theme-fade *::after { transition: none !important; }
+}

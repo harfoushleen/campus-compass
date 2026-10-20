@@ -1,4 +1,4 @@
-// Segmented control to pick a campus. Inactive campuses are shown as "Coming soon".
+// A small segmented toggle to pick a campus. Inactive campuses are shown as "Coming soon".
 import { CAMPUSES } from '../data/campuses.js';
 import { useI18n } from '../i18n/index.jsx';
 
@@ -17,7 +17,7 @@ export default function CampusSwitcher({ value, onChange }) {
           onClick={() => onChange(c.id)}
         >
           {t(`campus.${c.id}`)}
-          {!c.active && <span className="badge">{t('comingSoon')}</span>}
+          {!c.active && <span className="soon">{t('comingSoon')}</span>}
         </button>
       ))}
     </div>

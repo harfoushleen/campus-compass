@@ -16,7 +16,8 @@
       "clubs"
     ],
     "latitude": 33.892331,
-    "longitude": 35.478503
+    "longitude": 35.478503,
+    "short": "Student Center"
   },
   {
     "id": "NH",
@@ -33,7 +34,8 @@
       "classes"
     ],
     "latitude": 33.892556,
-    "longitude": 35.478481
+    "longitude": 35.478481,
+    "short": "Nicol"
   },
   {
     "id": "SFA",
@@ -52,7 +54,8 @@
       "studio"
     ],
     "latitude": 33.892892,
-    "longitude": 35.478629
+    "longitude": 35.478629,
+    "short": "Safadi"
   },
   {
     "id": "GYM",
@@ -72,7 +75,8 @@
       "fitness"
     ],
     "latitude": 33.89317,
-    "longitude": 35.478575
+    "longitude": 35.478575,
+    "short": "Gymnasium"
   },
   {
     "id": "US",
@@ -89,7 +93,8 @@
       "administration"
     ],
     "latitude": 33.893396,
-    "longitude": 35.478569
+    "longitude": 35.478569,
+    "short": "Univ. Services"
   },
   {
     "id": "IH",
@@ -107,7 +112,8 @@
       "classes"
     ],
     "latitude": 33.893176,
-    "longitude": 35.478185
+    "longitude": 35.478185,
+    "short": "Irwin"
   },
   {
     "id": "SH",
@@ -125,7 +131,8 @@
       "historic"
     ],
     "latitude": 33.892693,
-    "longitude": 35.477676
+    "longitude": 35.477676,
+    "short": "Sage"
   },
   {
     "id": "ShH",
@@ -142,7 +149,8 @@
       "classes"
     ],
     "latitude": 33.893171,
-    "longitude": 35.477538
+    "longitude": 35.477538,
+    "short": "Shannon"
   },
   {
     "id": "OG",
@@ -159,7 +167,8 @@
       "classes"
     ],
     "latitude": 33.892832,
-    "longitude": 35.477097
+    "longitude": 35.477097,
+    "short": "Orme-Gray"
   },
   {
     "id": "AKSOB",
@@ -177,7 +186,8 @@
       "school of business"
     ],
     "latitude": 33.892744,
-    "longitude": 35.476513
+    "longitude": 35.476513,
+    "short": "AKSOB"
   },
   {
     "id": "RNL",
@@ -198,7 +208,8 @@
       "computers"
     ],
     "latitude": 33.892932,
-    "longitude": 35.476503
+    "longitude": 35.476503,
+    "short": "Library"
   },
   {
     "id": "UGP",
@@ -206,7 +217,7 @@
     "campus": "beirut",
     "category": "parking",
     "building": "",
-    "description": "Underground parking for faculty and staff.",
+    "description": "Underground parking for faculty and staff, under the Library and the School of Business.",
     "hours": "",
     "contact": "",
     "link": "",
@@ -217,7 +228,14 @@
       "garage"
     ],
     "latitude": 33.893045,
-    "longitude": 35.476368
+    "longitude": 35.476368,
+    "code": "U",
+    "subtitle": "Faculty and staff",
+    "position": [
+      -160,
+      -9
+    ],
+    "verified": false
   },
   {
     "id": "GB",
@@ -235,15 +253,16 @@
       "sadat"
     ],
     "latitude": 33.894274,
-    "longitude": 35.477054
+    "longitude": 35.477054,
+    "short": "Gezairi"
   },
   {
     "id": "P-M",
-    "name": "Middle Gate Parking (Students/Faculty/Staff)",
+    "name": "Middle Gate Parking",
     "campus": "beirut",
     "category": "parking",
     "building": "",
-    "description": "Parking for students, faculty/staff.",
+    "description": "Parking at the Middle Gate for students, faculty and staff.",
     "hours": "",
     "contact": "",
     "link": "",
@@ -253,15 +272,22 @@
       "M"
     ],
     "latitude": 33.892383,
-    "longitude": 35.477029
+    "longitude": 35.477029,
+    "code": "M",
+    "subtitle": "Students, faculty and staff",
+    "position": [
+      -99,
+      68
+    ],
+    "verified": false
   },
   {
     "id": "P-L",
-    "name": "Lower Gate Parking (LAU Vehicles/Authorized)",
+    "name": "Lower Gate Parking",
     "campus": "beirut",
     "category": "parking",
     "building": "",
-    "description": "Parking for lau vehicles, authorized.",
+    "description": "Parking at the Lower Gate for LAU vehicles and authorized vehicles.",
     "hours": "",
     "contact": "",
     "link": "",
@@ -271,15 +297,22 @@
       "L"
     ],
     "latitude": 33.893413,
-    "longitude": 35.477287
+    "longitude": 35.477287,
+    "code": "L",
+    "subtitle": "LAU vehicles and authorized",
+    "position": [
+      -72,
+      -45
+    ],
+    "verified": false
   },
   {
     "id": "P-G",
-    "name": "Gezairi Parking (Faculty/Staff)",
+    "name": "Gezairi Parking",
     "campus": "beirut",
     "category": "parking",
-    "building": "GB",
-    "description": "Parking for faculty, staff.",
+    "building": "",
+    "description": "Parking at the Gezairi Building for faculty and staff.",
     "hours": "",
     "contact": "",
     "link": "",
@@ -289,7 +322,15 @@
       "G"
     ],
     "latitude": 33.894274,
-    "longitude": 35.477044
+    "longitude": 35.477044,
+    "code": "G",
+    "subtitle": "Faculty and staff",
+    "position": [
+      -84,
+      -142
+    ],
+    "verified": false,
+    "near": "GB"
   },
   {
     "id": "H-AKSOBCAF",

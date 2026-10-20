@@ -51,3 +51,22 @@ export function placeCoordinates(place) {
   const building = place.building && getPlace(place.building);
   return building && typeof building.latitude === 'number' ? [building.latitude, building.longitude] : null;
 }
+
+/** "Level 3 (lobby)" -> "Level 3". */
+export const shortLevel = (level) => (level ?? '').replace(/\s*\(.*\)\s*$/, '').trim();
+
+/** Sort key for "Level 4", "Ground floor", "Levels 8, 10 and 11"... (unknown levels go last). */
+export const levelOrder = (level) => (/ground|street/i.test(level ?? '') ? 0 : parseInt((level ?? '').match(/\d+/)?.[0] ?? '99', 10));
+
+/** Short name of a place, for subtitles ("Irwin", "Library"). */
+export const shortName = (place) => place?.short ?? place?.name ?? '';
+
+/** Second line of a place row: "Irwin · Level 1", "Near Sage Hall", "Students, faculty and staff"... */
+export function placeSubtitle(place, t) {
+  if (place.subtitle) return place.subtitle;
+  const building = place.building ? getPlace(place.building) : null;
+  if (building) return [shortName(building), shortLevel(place.level)].filter(Boolean).join(' · ');
+  if (place.near) return `${t('near')} ${shortName(getPlace(place.near))}`;
+  if (place.category === 'buildings') return t('placesInside', { count: PLACES.filter((p) => p.building === place.id).length });
+  return '';
+}

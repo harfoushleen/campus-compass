@@ -1,10 +1,10 @@
-// Bottom sheet showing the details of one place.
-import { useEffect } from 'react';
-import { getCategory } from '../data/categories.js';
+// The details of one place, shown inside the sidebar (with a back arrow to return to the list).
+// For a building it also lists the places inside it, grouped by level.
 import { useI18n } from '../i18n/index.jsx';
-import { PLACES, getPlace, placeCoordinates } from '../data/places.js';
+import { PLACES, getPlace, levelOrder, placeCoordinates, placeSubtitle } from '../data/places.js';
 import { getHours } from '../data/hours.js';
 import { CategoryBadge } from './CategoryIcon.jsx';
+import { BackIcon } from './icons.jsx';
 
 const MAIN_PHONE = '+961 1 786456';
 
@@ -35,9 +35,6 @@ function Contact({ value }) {
 const formatDate = (s) =>
   /^\d{4}-\d{2}-\d{2}$/.test(s ?? '') ? new Date(s + 'T00:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : s;
 
-// Sort key for "Level 4", "Ground floor", "Levels 8, 10 and 11"...
-const levelOrder = (level) => (/ground|street/i.test(level ?? '') ? 0 : parseInt((level ?? '').match(/\d+/)?.[0] ?? '99', 10));
-
 const hostOf = (url) => {
   try {
     return new URL(url).hostname.replace(/^www\./, '');
@@ -46,36 +43,39 @@ const hostOf = (url) => {
   }
 };
 
-export default function PlaceSheet({ place, onClose, onSelect }) {
+/** Places inside a building, grouped by level: [{ level, places: [...] }, ...] from the lowest level up. */
+export function placesByLevel(buildingId) {
+  const groups = new Map();
+  for (const p of PLACES.filter((x) => x.building === buildingId)) {
+    const key = p.level || '';
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(p);
+  }
+  return [...groups.entries()]
+    .sort((a, b) => levelOrder(a[0]) - levelOrder(b[0]))
+    .map(([level, places]) => ({ level, places: places.sort((a, b) => a.name.localeCompare(b.name)) }));
+}
+
+export default function PlaceDetails({ place, onBack, onSelect }) {
   const { t, localize } = useI18n();
-  const category = getCategory(place.category);
   const building = place.building ? getPlace(place.building) : null;
   const near = place.near ? getPlace(place.near) : null; // hangout spots: the closest building
-  // For a building: the places that list it as their "building", by level.
-  const inside = PLACES.filter((p) => p.building === place.id).sort((a, b) => levelOrder(a.level) - levelOrder(b.level));
+  const groups = placesByLevel(place.id);
   const coords = placeCoordinates(place);
   const isFacility = Boolean(place.building); // sits inside a building: always show an hours line
   const hours = getHours(place);
 
-  // Close with the Escape key (handy on desktop).
-  useEffect(() => {
-    const onKey = (e) => e.key === 'Escape' && onClose();
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [onClose]);
-
-  const hoursRow =
-    hours ? (
-      <>
-        <span>{localize(hours.text)}</span>
-        <small className="hours-meta">
-          {hours.checked && t('hoursChecked', { date: formatDate(hours.checked) })}
-          {hours.stale && ` · ${t('hoursStale')}`}
-        </small>
-      </>
-    ) : isFacility ? (
-      <span className="muted">{t('hoursUnknown')}</span>
-    ) : null;
+  const hoursRow = hours ? (
+    <>
+      <span>{localize(hours.text)}</span>
+      <small className="hours-meta">
+        {hours.checked && t('hoursChecked', { date: formatDate(hours.checked) })}
+        {hours.stale && ` · ${t('hoursStale')}`}
+      </small>
+    </>
+  ) : isFacility ? (
+    <span className="muted">{t('hoursUnknown')}</span>
+  ) : null;
 
   // Each detail row is only shown if the field has a value.
   const rows = [
@@ -115,18 +115,19 @@ export default function PlaceSheet({ place, onClose, onSelect }) {
     coords && `https://www.google.com/maps/dir/?api=1&travelmode=walking&destination=${coords[0]},${coords[1]}`;
 
   return (
-    <section className="sheet" role="dialog" aria-labelledby="sheet-title">
-      <div className="sheet-header">
+    <article className="details" aria-labelledby="place-title">
+      <div className="details-top">
+        <button type="button" className="round-btn" onClick={onBack} aria-label={t('back')} title={t('back')}>
+          <BackIcon />
+        </button>
         <span className="category-tag">
           <CategoryBadge id={place.category} />
           {t(`category.${place.category}`)}
         </span>
-        <button type="button" className="sheet-close" aria-label={t('close')} onClick={onClose}>
-          &times;
-        </button>
       </div>
 
-      <h2 id="sheet-title">{localize(place.name)}</h2>
+      <h2 id="place-title">{localize(place.name)}</h2>
+      {place.subtitle && <p className="details-subtitle">{place.subtitle}</p>}
       {place.description && <p className="sheet-desc">{localize(place.description)}</p>}
       {place.verified === false && <p className="sheet-note">{place.position ? t('notVerified') : t('notVerifiedInfo')}</p>}
 
@@ -141,22 +142,27 @@ export default function PlaceSheet({ place, onClose, onSelect }) {
 
       {place.note && <p className="sheet-fineprint">{t('noteLabel')}: {place.note}</p>}
 
-      {inside.length > 0 && (
-        <div className="sheet-inside">
+      {groups.length > 0 && (
+        <div className="inside">
           <h3>{t('insideBuilding')}</h3>
-          <ul>
-            {inside.map((p) => (
-              <li key={p.id}>
-                <button type="button" onClick={() => onSelect(p)}>
-                  <CategoryBadge id={p.category} />
-                  <span className="result-text">
-                    <strong>{localize(p.name)}</strong>
-                    <small>{[localize(p.level), p.room && `${t('room')} ${p.room}`].filter(Boolean).join(' · ')}</small>
-                  </span>
-                </button>
-              </li>
-            ))}
-          </ul>
+          {groups.map((g) => (
+            <section key={g.level || 'none'} className="level-group">
+              <h4>{g.level || t('levelNotListed')}</h4>
+              <ul>
+                {g.places.map((p) => (
+                  <li key={p.id}>
+                    <button type="button" className="place-row" onClick={() => onSelect(p)}>
+                      <CategoryBadge id={p.category} />
+                      <span className="place-text">
+                        <strong>{localize(p.name)}</strong>
+                        <small>{[p.room && `${t('room')} ${p.room}`].filter(Boolean).join('')}</small>
+                      </span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ))}
         </div>
       )}
 
@@ -181,6 +187,6 @@ export default function PlaceSheet({ place, onClose, onSelect }) {
           <a href={place.source} target="_blank" rel="noreferrer">{hostOf(place.source)}</a>
         </p>
       )}
-    </section>
+    </article>
   );
 }
