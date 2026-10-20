@@ -16,6 +16,8 @@ function material(color, side = THREE.FrontSide) {
   return materials.get(key);
 }
 
+const COURT_GREEN = '#3f7537'; // same green as the court markings texture
+
 // Greyed-out version of a colour (for buildings hidden by a filter), so it
 // still reads as a campus building and not as part of the city around it.
 const fade = (color) => '#' + new THREE.Color(color).lerp(new THREE.Color(COLORS.dimmed), 0.65).getHexString();
@@ -42,7 +44,7 @@ function buildGeometry() {
     const parts = b.parts.map((part) => {
       const { bottom, top } = partHeights(part);
       const style = STYLES[part.style ?? b.style];
-      const p = { geometry: extrudeFootprint(part.footprint, bottom, top), style, roof: null, courts: null };
+      const p = { geometry: extrudeFootprint(part.footprint, bottom, top), style, roof: null, courts: null, slab: null };
       let roofHeight = 0;
       if (part.roof === 'hip') {
         const r = hipRoof(part.footprint, top);
@@ -53,13 +55,16 @@ function buildGeometry() {
         p.roof = { geometry: r.geometry, color: ROOFS.sawtooth, glass: r.glass };
         roofHeight = r.height;
       } else if (part.roof === 'courts') {
-        p.courts = courtsLayout(part.footprint, top).map((court) => {
+        const { courts, slab } = courtsLayout(part.footprint, top);
+        p.courts = courts.map((court) => {
           const g = new THREE.PlaneGeometry(...court.size);
           g.rotateX(-Math.PI / 2);
           g.rotateY(court.rotationY);
           g.translate(...court.position);
           return g;
         });
+        p.slab = new THREE.BoxGeometry(...slab.size).rotateY(slab.rotationY).translate(...slab.position);
+        roofHeight = slab.size[1];
       }
       labelY = Math.max(labelY, top + roofHeight);
       return p;
@@ -110,6 +115,13 @@ export default function Buildings({ activeIds, selectedId, onSelect, showLabels 
             <mesh geometry={part.geometry} material={[material(isDimmed ? fade(part.style.roof) : part.style.roof), material(tint(part.style.wall))]} />
             {part.roof && <mesh geometry={part.roof.geometry} material={material(isDimmed ? fade(part.roof.color) : part.roof.color, THREE.DoubleSide)} />}
             {part.roof?.glass && <mesh geometry={part.roof.glass} material={material(WINDOWS.color)} raycast={() => null} />}
+            {/* Raised tennis field: concrete sides, green top. Box faces: +x, -x, +y (top), -y, +z, -z. */}
+            {part.slab && (
+              <mesh
+                geometry={part.slab}
+                material={[tint(part.style.wall), tint(part.style.wall), isDimmed ? fade(COURT_GREEN) : COURT_GREEN, tint(part.style.wall), tint(part.style.wall), tint(part.style.wall)].map((c) => material(c))}
+              />
+            )}
             {part.courts?.map((court, k) => (
               <mesh key={k} geometry={court} raycast={() => null}>
                 <meshLambertMaterial map={getCourtTexture()} />

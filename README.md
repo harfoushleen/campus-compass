@@ -77,7 +77,7 @@ Open `src/data/places.json` and add an object to the list:
 - **Optional:** everything else. Empty fields are just hidden.
 - **`building`**: the code of the building the place is in. Tapping that building in 3D then lists the place, and the place highlights the building. Codes: `SH` Sage Hall, `NH` Nicol Hall, `IH` Irwin Hall, `ShH` Shannon Hall, `US` University Services, `OG` Orme-Gray, `SFA` Safadi Fine Arts, `GYM` Gymnasium, `WKSC` Student Center, `AKSOB` Adnan Kassar School of Business, `RNL` Riyad Nassar Library, `UGP` Underground Parking, `GB` Gezairi Building.
 - **Buildings are places too:** each building has an entry whose `id` is its code. That entry holds the description shown when the building is tapped.
-- **Categories:** `academic`, `offices`, `services`, `study`, `labs`, `food`, `printing`, `prayer`, `accessibility`, `parking`.
+- **Categories:** `acadsvc` (Academic services), `student` (Student life & support), `food`, `study` (Study & library), `sports` (Sports & fitness), `techid` (Tech & ID services), `venues`, `hangout` (Hangout spots), `cats`, `buildings`, `parking`. A place can also show up under another chip with `"alsoCategories": ["food"]`. Chips with no places are hidden automatically.
 - **`latitude` / `longitude`** (optional) are only used by the Directions button. Places inside a building use the building's coordinates automatically. To get coordinates: in Google Maps, long-press the spot and copy the two numbers (latitude first). Write them as numbers, without quotes.
 - `contact` becomes a tappable link if it's an email or phone number.
 - `keywords` are extra search words that don't appear in the name, for example "coffee" for a cafeteria.
@@ -98,6 +98,37 @@ If you make a mistake (missing field, coordinates in quotes), the app skips that
 - **Neighbouring streets and buildings**: run `npm run osm` to re-download them from OpenStreetMap.
 
 Building outlines and streets come from OpenStreetMap (© OpenStreetMap contributors, ODbL). The credit line in the corner of the 3D view is required by that licence, so keep it.
+
+## Campus facilities (pins on demand)
+
+Facilities (offices, services, food, library zones, sports, venues...) are normal entries in `places.json` with a `building` code, a `level` and a `room`. Extra fields they use:
+
+| Field | What it is |
+|---|---|
+| `level`, `room` | Where it is inside the building, as text (`"Level 3 (lobby)"`, `"303B"`). Leave empty if unknown: the app shows "Not listed". |
+| `hours` | Opening hours as text. If hours can be read from LAU's pages (see below), `src/data/hours.json` takes over. |
+| `hoursKey` | Which entry of `hours.json` to use (default: the place's own `id`). `"general"` = typical office hours. |
+| `contact` | Parts separated by ` · `, e.g. `"+961 1 786456 ext. 1318 · registrar.beirut@lau.edu.lb"`. Each part becomes a link. |
+| `link` | The official page ("Open official page" button). |
+| `source`, `sourceDate` | The page the level/room came from, and the date that page says it was updated. |
+| `checked` | The day the details were last compared with the source. |
+| `note` | Conflicts or doubts, shown in small print (e.g. "LAU's pages disagree about the level"). |
+| `verified` | `false` until someone has checked the place on campus. |
+
+**Pins appear only on demand.** Nothing is pinned by default. Picking a place (search, list, map) shows one pin above its building and flies the camera there. Turning a category chip on shows a pin for every place in it, and frames them. Several places in one building share a pin with a count; tapping it opens the building, which lists them by level and room. Hangout spots and the cat area work the same way.
+
+### Opening hours that update themselves
+
+The app can't read LAU's websites itself: they don't send the headers (CORS) browsers need. Instead:
+
+1. `scripts/update-hours.js` (run it with `npm run hours`) downloads the official pages, reads the hours and writes `src/data/hours.json`.
+2. `.github/workflows/update-hours.yml` runs that script every Monday on GitHub (free), commits the file if it changed, and Vercel redeploys from the commit. You can also start it by hand from the Actions tab.
+3. If a page can't be fetched or its hours can't be found, the **old hours are kept** and marked `"stale": true`; the app then says "may be outdated". Hours are never blanked. Places with no known hours say "Not listed. See the official page."
+4. The details sheet shows "Checked <date>" next to the hours.
+
+To track hours for another place, add a function for it to `SOURCES` in `scripts/update-hours.js` and set the same key as `hoursKey` (or the place `id`).
+
+Note: LAU's Cloudflare protection refuses Node's built-in `fetch`, so the script uses `curl` (preinstalled on GitHub's servers).
 
 ## Adding Byblos
 

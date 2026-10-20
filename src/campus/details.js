@@ -128,16 +128,23 @@ export function getCourtTexture() {
   return courtTexture;
 }
 
-/** Positions of the courts on a deck: two side by side, long side along the deck's `u`. */
-export function courtsLayout(footprint, top) {
-  const { cx, cz, angle, v, length, width } = orientedBounds(footprint);
-  // Courts run along whichever side is longer; two fit side by side across the other.
-  const courtW = Math.min(13, width / 2 - 1), courtL = Math.min(26, length - 2);
-  return [-1, 1].map((side) => ({
-    position: [cx + v[0] * side * (courtW / 2 + 0.5), top + 0.06, cz + v[1] * side * (courtW / 2 + 0.5)],
-    rotationY: Math.PI / 2 - angle, // turns the court's long side to run along u
-    size: [courtW, courtL],
+/**
+ * Two tennis courts side by side on a raised slab, centred on a deck.
+ * length / width = size of one court; raise = height of the slab above the deck;
+ * margin = border of the slab around the courts; gap = space between the two courts. (metres)
+ * Returns the court planes and the slab (a box).
+ */
+export function courtsLayout(footprint, top, { length = 20, width = 9, raise = 1.2, margin = 1.2, gap = 0.4 } = {}) {
+  const { cx, cz, angle, v } = orientedBounds(footprint);
+  const rotationY = Math.PI / 2 - angle; // turns the long side to run along the deck's long axis
+  const offset = width / 2 + gap / 2;
+  const courts = [-1, 1].map((side) => ({
+    position: [cx + v[0] * side * offset, top + raise + 0.06, cz + v[1] * side * offset],
+    rotationY,
+    size: [width, length],
   }));
+  const slab = { position: [cx, top + raise / 2, cz], rotationY, size: [2 * width + gap + 2 * margin, raise, length + 2 * margin] };
+  return { courts, slab };
 }
 
 // ── Windows and bands ──

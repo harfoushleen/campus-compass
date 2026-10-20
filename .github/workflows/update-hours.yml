@@ -1,0 +1,34 @@
+# Refreshes src/data/hours.json from LAU's official pages once a week (free: GitHub Actions).
+# If the file changed, it is committed to main, and Vercel redeploys the site from that commit.
+# You can also run it by hand: GitHub -> Actions -> "Update opening hours" -> Run workflow.
+name: Update opening hours
+
+on:
+  schedule:
+    - cron: '0 5 * * 1' # every Monday at 05:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write # lets the job commit the updated hours.json
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Read hours from the official pages
+        run: node scripts/update-hours.js
+      - name: Commit if anything changed
+        run: |
+          if git diff --quiet -- src/data/hours.json; then
+            echo "No changes."
+            exit 0
+          fi
+          git config user.name "campus-compass-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add src/data/hours.json
+          git commit -m "Update opening hours"
+          git push
