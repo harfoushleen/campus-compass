@@ -4,3 +4,5 @@ dev-dist
 .vercel
 *.local
 .DS_Store
+dist-offline
+release

@@ -9,7 +9,8 @@
     "preview": "vite preview",
     "icons": "node scripts/make-icons.js",
     "osm": "node scripts/fetch-osm.js",
-    "hours": "node scripts/update-hours.js"
+    "hours": "node scripts/update-hours.js",
+    "package": "node scripts/package.js"
   },
   "dependencies": {
     "@react-three/drei": "^10.7.9",
@@ -21,6 +22,7 @@
   "devDependencies": {
     "@vitejs/plugin-react": "^6.1.2",
     "vite": "^8.3.4",
-    "vite-plugin-pwa": "^2.0.0"
+    "vite-plugin-pwa": "^2.0.0",
+    "yazl": "^3.3.1"
   }
 }

@@ -148,6 +148,27 @@ The UI is ready for right-to-left languages:
 
 The CSS uses logical properties (`inline-start`/`inline-end`) rather than left/right, so the layout mirrors itself automatically.
 
+## Offline zip for library laptops (no installation)
+
+```bash
+npm run package
+```
+
+This builds the app a second time, in a special "offline" mode, and creates **`release/campus-app.zip`** (about 0.35 MB). Copy the zip to a laptop and follow the 3 lines in its README.txt:
+
+1. Unzip it.
+2. Double-click `start.bat` (Windows) or `start.command` (Mac).
+3. Close the window to stop.
+
+How it works, and what to know:
+
+- **No installation, no administrator rights.** Windows uses PowerShell's built-in web server (`scripts/package/server.ps1`); the Mac uses Perl, which ships with macOS (`server.pl`). Both only listen on the laptop itself (127.0.0.1), pick a free port (starting at 8765), open the browser, and keep running until the window is closed.
+- **Fully offline.** The packaging script checks the build and stops if anything would be loaded from the internet (fonts, scripts, maps, CDNs). Only the links you tap (Google Maps directions, LAU pages) need internet.
+- **No service worker.** This build has no PWA caching, so an old version can never get stuck in the browser, and it removes any old service worker it finds. The server also tells the browser not to cache anything.
+- **Mac warning:** the first time, macOS may block `start.command` because it was downloaded: right-click it and choose Open. Windows may show a "SmartScreen" notice for `start.bat`: choose "More info" > "Run anyway".
+- **Opening hours and place details** are the ones in the zip. To update a laptop, build a new zip and replace the folder.
+- This does **not** change the website: `npm run build` (what Vercel runs) still produces the installable PWA in `dist/`. The offline version builds into `dist-offline/`, and both folders and `release/` are ignored by git.
+
 ## Deploy to Vercel (free)
 
 **Option A: GitHub (recommended, auto-deploys on every push)**
