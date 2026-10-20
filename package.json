@@ -8,7 +8,8 @@
     "build": "vite build",
     "preview": "vite preview",
     "icons": "node scripts/make-icons.js",
-    "osm": "node scripts/fetch-osm.js"
+    "osm": "node scripts/fetch-osm.js",
+    "hours": "node scripts/update-hours.js"
   },
   "dependencies": {
     "@react-three/drei": "^10.7.9",

@@ -1,5 +1,5 @@
 // Scrollable list of places, an alternative to the map.
-import { getCategory } from '../data/categories.js';
+import { CategoryBadge } from './CategoryIcon.jsx';
 import { useI18n } from '../i18n/index.jsx';
 import { getPlace } from '../data/places.js';
 
@@ -15,13 +15,14 @@ export default function ListView({ places, onSelect }) {
         {places.map((place) => (
           <li key={place.id}>
             <button type="button" onClick={() => onSelect(place)}>
-              <span className="dot" style={{ background: getCategory(place.category).color }} />
+              <CategoryBadge id={place.category} />
               <span className="result-text">
                 <strong>{localize(place.name)}</strong>
                 <small>
                   {t(`category.${place.category}`)}
                   {place.building && ` · ${localize(getPlace(place.building)?.name)}`}
                   {place.near && ` · ${t('near')} ${localize(getPlace(place.near)?.name)}`}
+                  {place.level && ` · ${localize(place.level)}`}
                 </small>
               </span>
             </button>

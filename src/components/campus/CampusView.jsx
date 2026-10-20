@@ -1,7 +1,7 @@
 // The 3D campus: canvas, camera controls and the buttons floating over it.
 // This file (and everything it imports, including Three.js) is loaded separately
 // from the rest of the app, so search and the list appear before the 3D view is ready.
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { OrbitControls, PerspectiveCamera } from '@react-three/drei';
@@ -16,6 +16,8 @@ import Site from './Site.jsx';
 import ParkingLayer from './ParkingLayer.jsx';
 import OffscreenMarker from './OffscreenMarker.jsx';
 import Hangouts from './Hangouts.jsx';
+import FacilityPins from './FacilityPins.jsx';
+import { groupPins, placeFocus } from '../../campus/pins.js';
 import { LabelContext, LabelLayout, createLabelRegistry } from './labels.jsx';
 
 // Camera position for the default view. On screens narrower than the reference
@@ -27,15 +29,22 @@ function defaultCameraPosition(aspect) {
   return CAMERA.position.map((p, i) => CAMERA.target[i] + (p - CAMERA.target[i]) * scale);
 }
 
-/** Camera view of one building: looking from the default direction, `distance` metres away. */
+/**
+ * Camera view of a ground point [x, z]: looking from the default direction, `distance` metres away.
+ * `shift` moves the aim point toward the viewer, which puts the point higher up on the screen
+ * (used on phones, where the details sheet covers the lower part).
+ */
+function viewOf([x, z], distance, shift = 0) {
+  const dir = new THREE.Vector3(...CAMERA.position).sub(new THREE.Vector3(...CAMERA.target)).normalize();
+  const flat = new THREE.Vector2(dir.x, dir.z).normalize();
+  const target = [x + flat.x * shift, heightAt(x, z), z + flat.y * shift];
+  return { target, position: [target[0] + dir.x * distance, target[1] + dir.y * distance, target[2] + dir.z * distance] };
+}
+
+/** Camera view of one building, looking from the default direction. */
 function buildingView(id, distance) {
   const b = BUILDINGS.find((x) => x.id === id);
-  const [cx, cz] = centroid(b.parts.flatMap((p) => p.footprint));
-  // Aim at the ground below the building so it shows in the upper part of the
-  // screen, above the details sheet.
-  const target = [cx, heightAt(cx, cz), cz];
-  const dir = new THREE.Vector3(...CAMERA.position).sub(new THREE.Vector3(...CAMERA.target)).normalize();
-  return { target, position: [target[0] + dir.x * distance, target[1] + dir.y * distance, target[2] + dir.z * distance] };
+  return viewOf(centroid(b.parts.flatMap((p) => p.footprint)), distance);
 }
 
 const ease = (t) => (t < 0.5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2); // ease in-out
@@ -104,10 +113,9 @@ const MARKERS = OFFSCREEN_MARKERS.map((m) => {
   return { ...m, point: [cx, buildingTop(b) * 0.6, cz] };
 });
 
-export default function CampusView({ places, allPlaces, selectedPlace, onSelect, onBackgroundClick }) {
+export default function CampusView({ places, allPlaces, category, selectedPlace, onSelect, onBackgroundClick }) {
   const { t, localize } = useI18n();
   const [showParking, setShowParking] = useState(false);
-  const [showHangouts, setShowHangouts] = useState(true);
   const [labelRegistry] = useState(createLabelRegistry);
   const toolbarRef = useRef();
   const [showLabels, setShowLabels] = useState(LABELS.showByDefault);
@@ -125,19 +133,42 @@ export default function CampusView({ places, allPlaces, selectedPlace, onSelect,
     return new Set(places.flatMap((p) => [p.id, p.building].filter(Boolean)));
   }, [places, allPlaces]);
 
-  // Places that get a pin on the map, matching the current search/category filter:
-  // hangout spots ("Hangouts" button) and the cat area ("Labels" button).
-  // The 3D objects themselves (benches, fountain, paths...) are always drawn.
-  const pinSpots = useMemo(
-    () =>
-      places.filter(
-        (p) => p.position && ((p.category === 'hangout' && showHangouts) || (p.category === 'cats' && showLabels))
-      ),
-    [places, showHangouts, showLabels]
-  );
+  // Pins: none by default. A pin appears for the place you picked, and for every place in
+  // the category chip that is on (narrowed by the search box, if you typed something).
+  // Places in the same building share one pin. The 3D objects (benches, paths...) are always drawn.
+  const pinGroups = useMemo(() => {
+    const shown = new Map();
+    if (category) places.forEach((p) => shown.set(p.id, p));
+    if (selectedPlace) shown.set(selectedPlace.id, selectedPlace);
+    return groupPins([...shown.values()], category);
+  }, [places, category, selectedPlace]);
 
   // The building to highlight: the selected place itself, or the building it's in.
   const selectedId = selectedPlace ? selectedPlace.building || selectedPlace.id : null;
+
+  // When a category chip is turned on, frame all of its pins so none are off-screen.
+  useEffect(() => {
+    if (!category || pinGroups.length === 0) return;
+    const xs = pinGroups.map((g) => g.anchor[0]), zs = pinGroups.map((g) => g.anchor[2]);
+    const centre = [(Math.min(...xs) + Math.max(...xs)) / 2, (Math.min(...zs) + Math.max(...zs)) / 2];
+    const spread = Math.max(Math.max(...xs) - Math.min(...xs), Math.max(...zs) - Math.min(...zs));
+    const view = viewOf(centre, Math.min(520, Math.max(270, 170 + spread * 2.4)));
+    flyRef.current(view.position, view.target);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [category]);
+
+  // Fly to the place you picked. Buildings and parking have no pin, so the camera stays put for them.
+  // On phones the camera aims a little higher so the place isn't hidden by the details sheet.
+  useEffect(() => {
+    if (!selectedPlace) return;
+    const focus = placeFocus(selectedPlace);
+    if (!focus) return;
+    const distance = selectedPlace.building ? 200 : 130;
+    const narrow = (wrapperRef.current?.clientWidth ?? 1000) < 720;
+    const view = viewOf(focus, distance, narrow ? distance * 0.2 : 0);
+    flyRef.current(view.position, view.target);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedPlace?.id]);
 
   const selectById = (id) => {
     const place = allPlaces.find((p) => p.id === id);
@@ -177,7 +208,8 @@ export default function CampusView({ places, allPlaces, selectedPlace, onSelect,
           showLabels={showLabels}
         />
         <ParkingLayer onSelect={selectById} showLayer={showParking} />
-        <Hangouts spots={pinSpots} selectedId={selectedPlace?.id} onSelect={selectById} name={(p) => localize(p.name)} />
+        <Hangouts />
+        <FacilityPins groups={pinGroups} selectedId={selectedPlace?.id} onSelect={selectById} name={(p) => localize(p.name)} />
         {MARKERS.map((m, i) => (
           <OffscreenMarker
             key={m.buildingId}
@@ -220,14 +252,6 @@ export default function CampusView({ places, allPlaces, selectedPlace, onSelect,
           onClick={() => setShowParking((v) => !v)}
         >
           <span className="parking-p">P</span> {t('parking')}
-        </button>
-        <button
-          type="button"
-          className={`campus-button ${showHangouts ? 'active hangouts' : ''}`}
-          aria-pressed={showHangouts}
-          onClick={() => setShowHangouts((v) => !v)}
-        >
-          {t('hangouts')}
         </button>
         <button
           type="button"

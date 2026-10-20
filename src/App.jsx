@@ -37,6 +37,11 @@ export default function App() {
   );
 
   const campusPlaces = useMemo(() => PLACES.filter((p) => p.campus === campus), [campus]);
+  // Categories that have places on this campus (empty chips are hidden).
+  const availableCategories = useMemo(
+    () => new Set(campusPlaces.flatMap((p) => [p.category, ...(p.alsoCategories ?? [])])),
+    [campusPlaces]
+  );
   const selectedPlace = PLACES.find((p) => p.id === selectedId) ?? null;
   const selectPlace = (place) => setSelectedId(place.id);
 
@@ -60,7 +65,7 @@ export default function App() {
             if (isNarrow()) setSidebarOpen(false); // on phones, make room for the details sheet
           }}
         />
-        <CategoryChips value={category} onChange={setCategory} />
+        <CategoryChips value={category} onChange={setCategory} available={availableCategories} />
       </Sidebar>
 
       {/* Opens the side panel again once it has been closed. */}
@@ -86,6 +91,7 @@ export default function App() {
             <CampusView
               places={visiblePlaces}
               allPlaces={campusPlaces}
+              category={category}
               selectedPlace={selectedPlace}
               onSelect={selectPlace}
               onBackgroundClick={() => setSelectedId(null)}

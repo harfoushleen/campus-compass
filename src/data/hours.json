@@ -1,0 +1,53 @@
+{
+  "updated": "2026-10-20",
+  "entries": {
+    "registrar": {
+      "hours": "8:30–12:00 and 13:00–15:00 (summer 8:30–13:00)",
+      "checked": "2026-10-20",
+      "source": "https://registrar.lau.edu.lb/services-procedures/student-services/contact-us.php",
+      "stale": false
+    },
+    "it-helpdesk": {
+      "hours": "Mon–Fri 8:00–16:30 (summer 7:30–14:30)",
+      "checked": "2026-10-20",
+      "source": "https://it.lau.edu.lb/contact-us/",
+      "stale": false
+    },
+    "isp": {
+      "hours": "10:00–15:00, Monday to Friday (except holidays)",
+      "checked": "2026-10-20",
+      "source": "https://studyabroad.lau.edu.lb/contact.php",
+      "stale": false
+    },
+    "cashier": {
+      "hours": "Cashier: 9:00–12:00 and 13:00–15:00 (summer 9:00–13:30)",
+      "checked": "2026-10-20",
+      "source": "https://lau.edu.lb/parents/offices.php",
+      "stale": false
+    },
+    "general": {
+      "hours": "Typically 8:00–16:30, half-hour break from 12:30 (summer 7:30–14:30)",
+      "checked": "2026-10-20",
+      "source": "https://lau.edu.lb/parents/offices.php",
+      "stale": false
+    },
+    "fitness-center": {
+      "hours": "Mon–Fri 7:00–20:00",
+      "checked": "2026-10-20",
+      "source": "https://athletics.lau.edu.lb/facility/fitness-centers/",
+      "stale": false
+    },
+    "indoor-court": {
+      "hours": "Mon–Thu 11:00–13:00 · Fri 12:00–15:00 (faculty & staff)",
+      "checked": "2026-10-20",
+      "source": "https://athletics.lau.edu.lb/facility/basketball-indoor-court/",
+      "stale": false
+    },
+    "swimming-pool": {
+      "hours": "Mon 8:00–14:00 · Tue 8:00–10:00 (women), 17:00–18:00 · Wed 8:00–12:00 · Thu 8:00–12:00, 17:00–18:00 · Fri 8:00–10:00 (women), 16:00–17:30 (women)",
+      "checked": "2026-10-20",
+      "source": "https://athletics.lau.edu.lb/facility/swimming-pool/",
+      "stale": false
+    }
+  }
+}

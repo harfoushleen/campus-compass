@@ -2,7 +2,7 @@
 // in a dropdown under the input; tapping one opens its details.
 import { useState } from 'react';
 import { useI18n } from '../i18n/index.jsx';
-import { getCategory } from '../data/categories.js';
+import { CategoryBadge } from './CategoryIcon.jsx';
 import { getPlace } from '../data/places.js';
 
 export default function SearchBar({ value, onChange, results, onSelect }) {
@@ -38,7 +38,7 @@ export default function SearchBar({ value, onChange, results, onSelect }) {
                   setOpen(false);
                 }}
               >
-                <span className="dot" style={{ background: getCategory(place.category).color }} />
+                <CategoryBadge id={place.category} />
                 <span className="result-text">
                   <strong>{localize(place.name)}</strong>
                   <small>{place.building ? localize(getPlace(place.building)?.name) : t(`category.${place.category}`)}</small>

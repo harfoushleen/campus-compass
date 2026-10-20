@@ -1,3 +1,5 @@
+import { inCategory } from '../data/categories.js';
+
 // Filters places by campus, category and a free-text query.
 // The query matches name, building, description, category label and keywords,
 // ignoring case and accents (so "cafe" finds "Café").
@@ -10,7 +12,7 @@ export function filterPlaces(places, { campus, category, query, localize, t }) {
 
   return places.filter((p) => {
     if (p.campus !== campus) return false;
-    if (category && p.category !== category) return false;
+    if (category && !inCategory(p, category)) return false;
     if (!words.length) return true;
     const haystack = normalize(
       [
@@ -19,6 +21,8 @@ export function filterPlaces(places, { campus, category, query, localize, t }) {
         p.near && `${p.near} ${nameOf(p.near)}`,             // nearby building (hangout spots)
         ...(p.features ?? []).map((f) => t(`feature.${f}`)),
         localize(p.description),
+        localize(p.level),
+        p.room && 'room ' + p.room,
         t(`category.${p.category}`),
         ...(p.keywords ?? []).map(localize),
       ].join(' ')
