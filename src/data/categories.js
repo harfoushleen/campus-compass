@@ -19,6 +19,9 @@ const DEFS = [
   // Outdoor spots
   { id: 'hangout', color: '#6A4C93', icon: 'M4 9h16v3H4zM3 13h18v2H3zM5 15h2v4H5zm12 0h2v4h-2zM6 7h2v2H6zm10 0h2v2h-2z' },                                              // bench
   { id: 'cats', color: '#B8692F', icon: 'M12 11c-3 0-5 2.6-5 5 0 1.5 1.2 2.5 2.7 2.5 1 0 1.6-.5 2.3-.5s1.3.5 2.3.5c1.5 0 2.7-1 2.7-2.5 0-2.4-2-5-5-5zM5.5 9a1.8 2.3 0 1 0 0 .01zM9.5 5.5a1.8 2.4 0 1 0 0 .01zM14.5 5.5a1.8 2.4 0 1 0 0 .01zM18.5 9a1.8 2.3 0 1 0 0 .01z' }, // paw
+  // Emergency
+  { id: 'safety', color: '#A4262C', icon: 'M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z' },  // group of people (assembly point)
+  { id: 'shelters', color: '#1F3A5F', icon: 'M12 1 3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z' },  // shield
   // The buildings themselves and parking (no pins)
   { id: 'buildings', color: '#6B7A86', icon: 'M5 21V3h9v6h5v12H5zm3-14v2h3V7H8zm0 4v2h3v-2H8zm0 4v2h3v-2H8zm7-2v2h2v-2h-2zm0 4v2h2v-2h-2z' },                                // building
   { id: 'parking', color: '#24292F', icon: 'M7 4h6a4 4 0 0 1 0 8H9v8H7V4zm2 2v4h4a2 2 0 0 0 0-4H9z' },                                                                  // P

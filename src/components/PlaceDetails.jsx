@@ -129,7 +129,6 @@ export default function PlaceDetails({ place, onBack, onSelect }) {
       <h2 id="place-title">{localize(place.name)}</h2>
       {place.subtitle && <p className="details-subtitle">{place.subtitle}</p>}
       {place.description && <p className="sheet-desc">{localize(place.description)}</p>}
-      {place.verified === false && <p className="sheet-note">{place.position ? t('notVerified') : t('notVerifiedInfo')}</p>}
 
       <dl className="sheet-details">
         {rows.map(([key, value]) => (

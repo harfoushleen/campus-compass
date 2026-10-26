@@ -622,7 +622,7 @@ html.theme-fade *::after {
 .managed-label.label-compact .label-text { display: none; }
 
 
-/* Details sheet: features and "not verified" note. */
+/* Details sheet: features. */
 .feature-list { display: flex; flex-wrap: wrap; gap: 6px; }
 .feature {
   padding: 2px 9px;
@@ -630,11 +630,6 @@ html.theme-fade *::after {
   background: var(--surface);
   border: 1px solid var(--border);
   font-size: 0.8rem;
-}
-.sheet-note {
-  margin: -6px 0 12px;
-  font-size: 0.8rem;
-  color: var(--warn);
 }
 
 

@@ -1948,5 +1948,218 @@
     ],
     "verified": false,
     "checked": "2026-10-20"
+  },
+  {
+    "id": "AP-L",
+    "name": "Lower Gate Assembly Point",
+    "campus": "beirut",
+    "category": "safety",
+    "building": "",
+    "hours": "",
+    "contact": "",
+    "link": "https://fm.lau.edu.lb/safety/preparedness/",
+    "source": "https://fm.lau.edu.lb/documents/campus-safety-plan-beirut.pdf",
+    "sourceDate": "2019-05-27",
+    "verified": false,
+    "checked": "2026-10-26",
+    "near": "IH",
+    "description": "Emergency assembly point on the north side of the campus, between Irwin Hall and University Services, near the Lower Gate.",
+    "keywords": [
+      "shelter",
+      "emergency",
+      "evacuation",
+      "assembly point",
+      "safe",
+      "fire",
+      "meeting point"
+    ],
+    "position": [
+      -8,
+      -46
+    ]
+  },
+  {
+    "id": "AP-C",
+    "name": "Central Assembly Point",
+    "campus": "beirut",
+    "category": "safety",
+    "building": "",
+    "hours": "",
+    "contact": "",
+    "link": "https://fm.lau.edu.lb/safety/preparedness/",
+    "source": "https://fm.lau.edu.lb/documents/campus-safety-plan-beirut.pdf",
+    "sourceDate": "2019-05-27",
+    "verified": false,
+    "checked": "2026-10-26",
+    "near": "SFA",
+    "description": "Emergency assembly point in the middle of the campus, between Irwin Hall and Safadi Fine Arts.",
+    "keywords": [
+      "shelter",
+      "emergency",
+      "evacuation",
+      "assembly point",
+      "safe",
+      "fire",
+      "meeting point"
+    ],
+    "position": [
+      16,
+      6
+    ]
+  },
+  {
+    "id": "AP-M",
+    "name": "Middle Gate Assembly Point",
+    "campus": "beirut",
+    "category": "safety",
+    "building": "",
+    "hours": "",
+    "contact": "",
+    "link": "https://fm.lau.edu.lb/safety/preparedness/",
+    "source": "https://fm.lau.edu.lb/documents/campus-safety-plan-beirut.pdf",
+    "sourceDate": "2019-05-27",
+    "verified": false,
+    "checked": "2026-10-26",
+    "near": "OG",
+    "description": "Emergency assembly point on the west side of the campus, between the Riyad Nassar Library and Orme-Gray, near the Middle Gate.",
+    "keywords": [
+      "shelter",
+      "emergency",
+      "evacuation",
+      "assembly point",
+      "safe",
+      "fire",
+      "meeting point"
+    ],
+    "position": [
+      -116,
+      21
+    ]
+  },
+  {
+    "id": "AP-U",
+    "name": "Upper Gate Assembly Point",
+    "campus": "beirut",
+    "category": "safety",
+    "building": "",
+    "hours": "",
+    "contact": "",
+    "link": "https://fm.lau.edu.lb/safety/preparedness/",
+    "source": "https://fm.lau.edu.lb/documents/campus-safety-plan-beirut.pdf",
+    "sourceDate": "2019-05-27",
+    "verified": false,
+    "checked": "2026-10-26",
+    "near": "NH",
+    "description": "Emergency assembly point on the south side of the campus, between Sage Hall and Nicol Hall, near the Upper Gate.",
+    "keywords": [
+      "shelter",
+      "emergency",
+      "evacuation",
+      "assembly point",
+      "safe",
+      "fire",
+      "meeting point"
+    ],
+    "position": [
+      -2,
+      60
+    ]
+  },
+  {
+    "id": "SHELTER-SFA",
+    "name": "Safadi Fine Arts Shelter",
+    "campus": "beirut",
+    "category": "shelters",
+    "building": "",
+    "near": "SFA",
+    "description": "For use in case of an emergency.",
+    "hours": "",
+    "contact": "",
+    "link": "",
+    "keywords": [
+      "shelter",
+      "underground",
+      "basement",
+      "bunker",
+      "emergency",
+      "safe"
+    ],
+    "position": [
+      49,
+      12
+    ]
+  },
+  {
+    "id": "SHELTER-AKSOB-RNL",
+    "name": "AKSOB and Library Shelter",
+    "campus": "beirut",
+    "category": "shelters",
+    "building": "",
+    "near": "AKSOB",
+    "description": "9 floors underground, under the Adnan Kassar School of Business and the Riyad Nassar Library. For use in case of an emergency.",
+    "hours": "",
+    "contact": "",
+    "link": "",
+    "keywords": [
+      "shelter",
+      "underground",
+      "basement",
+      "bunker",
+      "emergency",
+      "safe"
+    ],
+    "position": [
+      -148,
+      18
+    ],
+    "subtitle": "9 floors underground"
+  },
+  {
+    "id": "SHELTER-SH",
+    "name": "Sage Hall Shelter",
+    "campus": "beirut",
+    "category": "shelters",
+    "building": "",
+    "near": "SH",
+    "description": "For use in case of an emergency.",
+    "hours": "",
+    "contact": "",
+    "link": "",
+    "keywords": [
+      "shelter",
+      "underground",
+      "basement",
+      "bunker",
+      "emergency",
+      "safe"
+    ],
+    "position": [
+      -39,
+      34
+    ]
+  },
+  {
+    "id": "SHELTER-GB",
+    "name": "Gezairi Shelter",
+    "campus": "beirut",
+    "category": "shelters",
+    "building": "",
+    "near": "GB",
+    "description": "For use in case of an emergency.",
+    "hours": "",
+    "contact": "",
+    "link": "",
+    "keywords": [
+      "shelter",
+      "underground",
+      "basement",
+      "bunker",
+      "emergency",
+      "safe"
+    ],
+    "position": [
+      -98,
+      -143
+    ]
   }
 ]

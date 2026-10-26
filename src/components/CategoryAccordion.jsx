@@ -10,7 +10,7 @@ import { placesByLevel } from './PlaceDetails.jsx';
 import { ChevronIcon, ForwardIcon } from './icons.jsx';
 
 // The order of the rows (a category with no places on this campus is left out).
-const ORDER = ['acadsvc', 'student', 'food', 'study', 'sports', 'techid', 'venues', 'hangout', 'cats', 'parking', 'buildings'];
+const ORDER = ['acadsvc', 'student', 'food', 'study', 'sports', 'techid', 'venues', 'hangout', 'cats', 'shelters', 'safety', 'parking', 'buildings'];
 const PARKING_ORDER = 'MULG'; // Middle Gate, Underground, Lower Gate, Gezairi
 
 const sortPlaces = (items, categoryId) =>
