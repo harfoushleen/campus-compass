@@ -5,6 +5,7 @@ import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
 import { useFrame, useThree } from '@react-three/fiber';
 import { SCENE } from '../../campus/site.js';
+import { setNightLevel } from '../../campus/night.js';
 
 const reduceMotion = () => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
 
@@ -27,6 +28,7 @@ export default function SceneTheme({ theme }) {
         sunColor: new THREE.Color(target.sunColor),
         hemi: target.hemi,
         sun: target.sun,
+        lights: target.lights,
       };
     } else {
       const k = reduceMotion() ? 1 : 1 - Math.exp(-delta * 9); // ~300 ms to settle
@@ -37,9 +39,11 @@ export default function SceneTheme({ theme }) {
       c.sunColor.lerp(new THREE.Color(target.sunColor), k);
       c.hemi += (target.hemi - c.hemi) * k;
       c.sun += (target.sun - c.sun) * k;
+      c.lights += (target.lights - c.lights) * k;
     }
     const c = current.current;
     scene.background = c.background;
+    setNightLevel(c.lights); // lit windows and lamps follow
     if (hemi.current) {
       hemi.current.color.copy(c.sky);
       hemi.current.groundColor.copy(c.ground);
@@ -50,7 +54,7 @@ export default function SceneTheme({ theme }) {
       sun.current.intensity = c.sun;
     }
     // Keep drawing until the values have settled.
-    const settled = Math.abs(c.hemi - target.hemi) < 0.005 && Math.abs(c.sun - target.sun) < 0.005 && c.background.getHex() === new THREE.Color(target.background).getHex();
+    const settled = Math.abs(c.hemi - target.hemi) < 0.005 && Math.abs(c.sun - target.sun) < 0.005 && Math.abs(c.lights - target.lights) < 0.005 && c.background.getHex() === new THREE.Color(target.background).getHex();
     if (!settled) invalidate();
   });
 

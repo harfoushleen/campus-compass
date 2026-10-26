@@ -1,10 +1,11 @@
 // Campus details that repeat a lot (windows, floor bands, trees) plus terraces and the
 // amphitheater. Repeated items use one InstancedMesh per kind: one draw call each.
 // None of these react to taps, so taps go through to the buildings.
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import * as THREE from 'three';
 import { WINDOWS } from '../../campus/buildings.js';
-import { COLORS, TREES, TERRACES, AMPHITHEATER } from '../../campus/site.js';
+import { COLORS, TREES, TERRACES, AMPHITHEATER, NIGHT_WINDOWS } from '../../campus/site.js';
+import { onNightLevel } from '../../campus/night.js';
 import { buildPatches } from '../../campus/geometry.js';
 import { buildAmphitheater, buildFacadeInstances, buildPatchPlants, buildTerraces, buildTreeInstances } from '../../campus/details.js';
 
@@ -27,22 +28,34 @@ function instanced(geometry, material, items, place, colorOf) {
 }
 
 export default function Details() {
+  // Windows that glow at night: the same as the others, plus a warm emissive colour that
+  // fades in with the dark scene (emissive ignores the dim lighting, so they stay bright).
+  const glow = useMemo(() => new THREE.MeshLambertMaterial({ color: '#ffffff', emissive: NIGHT_WINDOWS.color, emissiveIntensity: 0 }), []);
+  useEffect(() => onNightLevel((level) => (glow.emissiveIntensity = level)), [glow]);
+
   const meshes = useMemo(() => {
     const { windows, bands } = buildFacadeInstances();
     const trees = buildTreeInstances();
     const { shrubs, flowers } = buildPatchPlants();
     const white = new THREE.MeshLambertMaterial({ color: '#ffffff' }); // tinted per instance
+    const placeWindow = (w, o) => {
+      o.position.set(...w.position);
+      o.rotation.y = w.rotationY;
+    };
+    const placeBand = (b, o) => {
+      o.position.set(...b.position);
+      o.rotation.y = b.rotationY;
+      o.scale.set(b.length, b.height, 1);
+    };
+    const windowShape = new THREE.PlaneGeometry(WINDOWS.width, WINDOWS.height);
+    const bandShape = new THREE.BoxGeometry(1, 1, 0.15);
+    const color = (item) => item.color;
 
     return [
-      instanced(new THREE.PlaneGeometry(WINDOWS.width, WINDOWS.height), white, windows, (w, o) => {
-        o.position.set(...w.position);
-        o.rotation.y = w.rotationY;
-      }, (w) => w.color),
-      instanced(new THREE.BoxGeometry(1, 1, 0.15), white, bands, (b, o) => {
-        o.position.set(...b.position);
-        o.rotation.y = b.rotationY;
-        o.scale.set(b.length, b.height, 1);
-      }, (b) => b.color),
+      instanced(windowShape, white, windows.filter((w) => !w.lit), placeWindow, color),
+      instanced(windowShape, glow, windows.filter((w) => w.lit), placeWindow, color),
+      instanced(bandShape, white, bands.filter((b) => !b.lit), placeBand, color),
+      instanced(bandShape, glow, bands.filter((b) => b.lit), placeBand, color),
       // Trees: a low-poly crown on a short trunk.
       instanced(new THREE.IcosahedronGeometry(3, 0), white, trees, (t, o) => {
         o.position.set(t.position[0], t.position[1] + 5 * t.size, t.position[2]);
@@ -59,7 +72,7 @@ export default function Details() {
         o.scale.setScalar(t.size);
       }),
     ];
-  }, []);
+  }, [glow]);
 
   const terraces = useMemo(buildTerraces, []);
   const patches = useMemo(buildPatches, []);

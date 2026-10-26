@@ -12,6 +12,7 @@ import { buildingTop } from '../../campus/details.js';
 import { useI18n } from '../../i18n/index.jsx';
 import Buildings from './Buildings.jsx';
 import Details from './Details.jsx';
+import Lamps from './Lamps.jsx';
 import Site from './Site.jsx';
 import ParkingLayer from './ParkingLayer.jsx';
 import OffscreenMarker from './OffscreenMarker.jsx';
@@ -199,6 +200,7 @@ export default function CampusView({ places, allPlaces, category, selectedPlace,
         <Controls controlsRef={controlsRef} flyRef={flyRef} />
         <Site showLabels={showLabels} />
         <Details />
+        <Lamps />
         <Buildings
           activeIds={activeIds}
           selectedId={selectedId}

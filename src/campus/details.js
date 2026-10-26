@@ -4,7 +4,7 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { BUILDINGS, FLOOR_HEIGHT, STYLES, WINDOWS } from './buildings.js';
-import { heightAt, CAMERA, TREES, TERRACES, AMPHITHEATER, HANGOUT_DECOR, PATHS, STAIRS, PATCHES } from './site.js';
+import { heightAt, CAMERA, TREES, TERRACES, AMPHITHEATER, HANGOUT_DECOR, PATHS, STAIRS, PATCHES, GATES, LAMPS, NIGHT_WINDOWS } from './site.js';
 import { centroid, insidePolygon, partHeights } from './geometry.js';
 
 // ── Shape helpers ──
@@ -155,10 +155,12 @@ export function courtsLayout(footprint, top, { length = 20, width = 9, raise = 1
  *   'ribbon' a continuous strip of glass per floor
  *   'none'   no windows
  * Styles with `bands: true` also get a coloured band (accent colour) under each floor.
+ * Windows and glass strips have `lit: true` if they glow at night (see NIGHT_WINDOWS).
  */
 export function buildFacadeInstances() {
-  const windows = []; // { position, rotationY, color }
-  const bands = [];   // { position, rotationY, length, height, color }
+  const windows = []; // { position, rotationY, color, lit }
+  const bands = [];   // { position, rotationY, length, height, color, lit }
+  const rand = random(33);
   for (const b of BUILDINGS) {
     if (b.underground) continue;
     for (const part of b.parts) {
@@ -188,18 +190,20 @@ export function buildFacadeInstances() {
                 position: [e.ax + (e.bx - e.ax) * t + e.nx * out, floorY + fh * 0.55, e.az + (e.bz - e.az) * t + e.nz * out],
                 rotationY,
                 color: style.window ?? WINDOWS.color,
+                lit: rand() < NIGHT_WINDOWS.litShare,
               });
             }
           } else if (mode === 'ribbon') {
             bands.push({
               position: [mx + e.nx * out, floorY + fh * 0.55, mz + e.nz * out],
               rotationY, length: e.len * 0.94, height: fh * 0.45, color: style.window ?? WINDOWS.color,
+              lit: rand() < NIGHT_WINDOWS.litShareRibbon,
             });
           }
           if (style.bands) {
             bands.push({
               position: [mx + e.nx * out * 2, floorY + 0.25, mz + e.nz * out * 2],
-              rotationY, length: e.len, height: 0.5, color: style.accent,
+              rotationY, length: e.len, height: 0.5, color: style.accent, lit: false,
             });
           }
         }
@@ -233,8 +237,8 @@ const walkways = [
   ...PATHS.map((p) => ({ width: p.width, points: p.points })),
   ...STAIRS.map((st) => ({ width: st.width, points: [st.from, st.to] })),
 ];
-function nearWalkway(x, z, margin = 1.5) {
-  return walkways.some(({ width, points }) =>
+function nearWalkway(x, z, margin = 1.5, lines = walkways) {
+  return lines.some(({ width, points }) =>
     points.slice(0, -1).some(([ax, az], i) => {
       const [bx, bz] = points[i + 1];
       const dx = bx - ax, dz = bz - az;
@@ -266,6 +270,42 @@ export function buildTreeInstances() {
     }
   }
   return trees;
+}
+
+// ── Lamp posts ──
+
+const stairLines = STAIRS.map((st) => ({ width: st.width, points: [st.from, st.to] }));
+
+/**
+ * Where the lamp posts stand: every LAMPS.spacing metres along each path, alternating sides,
+ * plus one by each gate. Returns [x, z] pairs. Lamps never land in a building, on stairs, or
+ * close to another lamp (paths cross, so this also stops doubles at junctions).
+ */
+export function buildLampPositions() {
+  const lamps = [];
+  const add = (x, z) => {
+    if (insideAnyBuilding(x, z) || nearWalkway(x, z, 0.5, stairLines)) return;
+    if (lamps.some(([lx, lz]) => Math.hypot(lx - x, lz - z) < LAMPS.spacing * 0.6)) return;
+    lamps.push([x, z]);
+  };
+  let side = 1;
+  for (const { width, points } of PATHS) {
+    let next = LAMPS.spacing / 2; // distance along the path to the next lamp
+    let walked = 0;
+    for (let i = 0; i < points.length - 1; i++) {
+      const [ax, az] = points[i], [bx, bz] = points[i + 1];
+      const len = Math.hypot(bx - ax, bz - az);
+      for (; next <= walked + len; next += LAMPS.spacing) {
+        const t = (next - walked) / len;
+        const away = width / 2 + LAMPS.sideOffset;
+        add(ax + (bx - ax) * t + (-(bz - az) / len) * away * side, az + (bz - az) * t + ((bx - ax) / len) * away * side);
+        side = -side;
+      }
+      walked += len;
+    }
+  }
+  for (const gate of GATES) add(gate.position[0] + LAMPS.gateOffset[0], gate.position[1] + LAMPS.gateOffset[1]);
+  return lamps;
 }
 
 // ── Terraces and amphitheater ──

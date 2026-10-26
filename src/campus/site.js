@@ -342,7 +342,29 @@ export const COLORS = {
 // The 3D scene follows the theme: the background (the "sky" and the ground beyond the campus)
 // and the lighting fade between these values. Dark = a soft evening: dimmer light with a cool tint.
 // (Labels and pins are normal page elements, so they stay readable in both.)
+// `lights` is how bright the night lights are (lit windows, lamps): 0 = off, 1 = full.
 export const SCENE = {
-  light: { background: '#3d4a45', sky: '#ffffff', ground: '#8a8f7a', hemi: 1.6, sun: 1.6, sunColor: '#ffffff' },
-  dark: { background: '#101615', sky: '#9db3dc', ground: '#2a323d', hemi: 0.62, sun: 0.55, sunColor: '#b5c3e6' },
+  light: { background: '#3d4a45', sky: '#ffffff', ground: '#8a8f7a', hemi: 1.6, sun: 1.6, sunColor: '#ffffff', lights: 0 },
+  dark: { background: '#101615', sky: '#9db3dc', ground: '#2a323d', hemi: 0.62, sun: 0.55, sunColor: '#b5c3e6', lights: 1 },
+};
+
+// ── Night lights ── (only visible in the dark scene)
+// Windows: a share of them glow warm. Which ones is random but the same on every load.
+export const NIGHT_WINDOWS = {
+  color: '#ffd596',
+  litShare: 0.55,   // of the windows on the grid-style facades
+  litShareRibbon: 0.75, // of the glass strips on ribbon-style facades (Gezairi)
+};
+// Lamp posts along the paths (and one by each gate), each with a halo and a pool of light on the ground.
+export const LAMPS = {
+  spacing: 16,       // metres between lamps along a path
+  sideOffset: 0.8,   // metres from the path's edge; lamps alternate sides
+  height: 4,         // metres
+  poleColor: '#4a4f4d',
+  offColor: '#d8d4c8', // the lamp head in daylight
+  color: '#ffd596',  // the lamp head and its light at night
+  haloSize: 5,       // metres across
+  poolSize: 9,       // metres across
+  poolOpacity: 0.5,
+  gateOffset: [3.6, 0], // a lamp stands this far (x, z) from each gatehouse
 };

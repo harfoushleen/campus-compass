@@ -98,6 +98,7 @@ If you make a mistake (missing field, coordinates in quotes), the app skips that
 - **Paths and stairs**: `PATHS` and `STAIRS` in `site.js` (lists of [x, z] points; trees keep clear of them). `PATCHES` are the green garden patches with bushes and flowers.
 - **Always on the map**: buildings, paths, benches, the fountain, trees, the cat house and surface parking are always drawn. The toolbar buttons only show or hide the labels and reset the camera. Underground parking outlines appear when the Parking category is open.
 - **Light and dark scene**: `SCENE` in `site.js` (background, sky, ground and light strengths for each theme).
+- **Night lights** (dark theme only): `NIGHT_WINDOWS` in `site.js` sets the glow colour and the share of windows that are lit; `LAMPS` sets the lamp posts along the paths (spacing, height, colour, size of the halo and the pool of light).
 - **Label crowding**: `labelPriority` on each building (1 = always shown, 2/3 = shown as you zoom in) and the zoom thresholds in `LABELS` in `site.js`.
 - **Neighbouring streets and buildings**: run `npm run osm` to re-download them from OpenStreetMap.
 
