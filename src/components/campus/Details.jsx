@@ -3,8 +3,8 @@
 // None of these react to taps, so taps go through to the buildings.
 import { useEffect, useMemo } from 'react';
 import * as THREE from 'three';
-import { WINDOWS } from '../../campus/buildings.js';
-import { COLORS, TREES, TERRACES, AMPHITHEATER, NIGHT_WINDOWS } from '../../campus/site.js';
+import { WINDOWS, NIGHT_WINDOWS } from '../../campus/common.js';
+import { useModel } from './model.js';
 import { onNightLevel } from '../../campus/night.js';
 import { buildPatches } from '../../campus/geometry.js';
 import { buildAmphitheater, buildFacadeInstances, buildPatchPlants, buildTerraces, buildTreeInstances } from '../../campus/details.js';
@@ -28,15 +28,17 @@ function instanced(geometry, material, items, place, colorOf) {
 }
 
 export default function Details() {
+  const m = useModel();
+  const { COLORS, TREES, TERRACES, AMPHITHEATER } = m;
   // Windows that glow at night: the same as the others, plus a warm emissive colour that
   // fades in with the dark scene (emissive ignores the dim lighting, so they stay bright).
   const glow = useMemo(() => new THREE.MeshLambertMaterial({ color: '#ffffff', emissive: NIGHT_WINDOWS.color, emissiveIntensity: 0 }), []);
   useEffect(() => onNightLevel((level) => (glow.emissiveIntensity = level)), [glow]);
 
   const meshes = useMemo(() => {
-    const { windows, bands } = buildFacadeInstances();
-    const trees = buildTreeInstances();
-    const { shrubs, flowers } = buildPatchPlants();
+    const { windows, bands } = buildFacadeInstances(m);
+    const trees = buildTreeInstances(m);
+    const { shrubs, flowers } = buildPatchPlants(m);
     const white = new THREE.MeshLambertMaterial({ color: '#ffffff' }); // tinted per instance
     const placeWindow = (w, o) => {
       o.position.set(...w.position);
@@ -72,14 +74,14 @@ export default function Details() {
         o.scale.setScalar(t.size);
       }),
     ];
-  }, [glow]);
+  }, [glow, m, TREES.colors, TREES.trunk]);
 
-  const terraces = useMemo(buildTerraces, []);
-  const patches = useMemo(buildPatches, []);
-  const amphitheater = useMemo(buildAmphitheater, []);
+  const terraces = useMemo(() => buildTerraces(m), [m]);
+  const patches = useMemo(() => buildPatches(m), [m]);
+  const amphitheater = useMemo(() => buildAmphitheater(m), [m]);
   const terraceMaterials = useMemo(
-    () => [new THREE.MeshLambertMaterial({ color: TERRACES.grass }), new THREE.MeshLambertMaterial({ color: TERRACES.wall })],
-    []
+    () => (TERRACES ? [new THREE.MeshLambertMaterial({ color: TERRACES.grass }), new THREE.MeshLambertMaterial({ color: TERRACES.wall })] : []),
+    [TERRACES]
   );
 
   return (
@@ -95,9 +97,11 @@ export default function Details() {
       {terraces.map((g, i) => (
         <mesh key={`t${i}`} geometry={g} material={terraceMaterials} raycast={noRaycast} />
       ))}
-      <mesh geometry={amphitheater} raycast={noRaycast}>
-        <meshLambertMaterial color={AMPHITHEATER.color} />
-      </mesh>
+      {amphitheater && (
+        <mesh geometry={amphitheater} raycast={noRaycast}>
+          <meshLambertMaterial color={AMPHITHEATER.color} />
+        </mesh>
+      )}
     </group>
   );
 }

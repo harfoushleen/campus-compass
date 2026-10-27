@@ -107,8 +107,10 @@ export default function App() {
             </div>
           }
         >
-          {/* Only Beirut has a 3D model so far; Byblos is "coming soon" in the switcher. */}
+          {/* One 3D model per campus (src/campus/index.js). The key rebuilds the scene when the campus changes. */}
           <CampusView
+            key={campus}
+            campus={campus}
             places={categoryPlaces}
             allPlaces={campusPlaces}
             category={openCategory}

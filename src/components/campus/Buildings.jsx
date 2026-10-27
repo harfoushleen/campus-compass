@@ -1,11 +1,11 @@
-// LAU buildings, built from buildings.js: walls, roofs and small extras per building.
+// LAU buildings, built from the campus's buildings.js: walls, roofs and small extras per building.
 // Hover highlights a building; tap/click selects it. Names float above as labels.
 import { useMemo, useState } from 'react';
 import * as THREE from 'three';
 import { ManagedLabel } from './labels.jsx';
-import { BUILDINGS, STYLES, ROOFS, EXTRA_COLORS, WINDOWS } from '../../campus/buildings.js';
-import { COLORS, heightAt } from '../../campus/site.js';
+import { ROOFS, EXTRA_COLORS, WINDOWS } from '../../campus/common.js';
 import { centroid, extrudeFootprint, partHeights } from '../../campus/geometry.js';
+import { useModel } from './model.js';
 import { buildingTop, courtsLayout, getCourtTexture, hipRoof, sawtoothRoof } from '../../campus/details.js';
 
 // Shared materials: one per colour, reused by every building with that colour.
@@ -20,13 +20,13 @@ const COURT_GREEN = '#3f7537'; // same green as the court markings texture
 
 // Greyed-out version of a colour (for buildings hidden by a filter), so it
 // still reads as a campus building and not as part of the city around it.
-const fade = (color) => '#' + new THREE.Color(color).lerp(new THREE.Color(COLORS.dimmed), 0.65).getHexString();
+const fade = (color, dimmed) => '#' + new THREE.Color(color).lerp(new THREE.Color(dimmed), 0.65).getHexString();
 
 /** Geometry for one extra (box or cylinder), see EXTRAS in buildings.js. */
-function extraGeometry(extra, building) {
+function extraGeometry(m, extra, building) {
   const [x, z] = extra.at;
-  const top = buildingTop(building);
-  const bottom = extra.base === 'top' ? top : heightAt(x, z) - 1;
+  const top = buildingTop(m, building);
+  const bottom = extra.base === 'top' ? top : m.heightAt(x, z) - 1;
   const height = extra.height === 'full' ? top - bottom + (extra.above ?? 0) : extra.height;
   const g =
     extra.shape === 'cylinder'
@@ -38,11 +38,12 @@ function extraGeometry(extra, building) {
 }
 
 // Geometry for every building, built once when the 3D view loads.
-function buildGeometry() {
+function buildGeometry(m) {
+  const { BUILDINGS, STYLES } = m;
   return BUILDINGS.map((b) => {
     let labelY = 0;
     const parts = b.parts.map((part) => {
-      const { bottom, top } = partHeights(part);
+      const { bottom, top } = partHeights(m, part);
       const style = STYLES[part.style ?? b.style];
       const p = { geometry: extrudeFootprint(part.footprint, bottom, top), style, roof: null, courts: null, slab: null };
       let roofHeight = 0;
@@ -51,7 +52,7 @@ function buildGeometry() {
         p.roof = { geometry: r.geometry, color: ROOFS.hip };
         roofHeight = r.height;
       } else if (part.roof === 'sawtooth') {
-        const r = sawtoothRoof(part.footprint, top);
+        const r = sawtoothRoof(m, part.footprint, top);
         p.roof = { geometry: r.geometry, color: ROOFS.sawtooth, glass: r.glass };
         roofHeight = r.height;
       } else if (part.roof === 'courts') {
@@ -70,7 +71,7 @@ function buildGeometry() {
       return p;
     });
     const extras = (b.extras ?? []).map((e) => ({
-      geometry: extraGeometry(e, b),
+      geometry: extraGeometry(m, e, b),
       color: EXTRA_COLORS[e.color] ?? e.color,
     }));
     const [cx, cz] = centroid(b.parts.flatMap((p) => p.footprint));
@@ -83,14 +84,16 @@ function buildGeometry() {
 const TAP_TOLERANCE = 6;
 
 export default function Buildings({ activeIds, selectedId, onSelect, showLabels }) {
-  const buildings = useMemo(buildGeometry, []);
+  const m = useModel();
+  const { COLORS } = m;
+  const buildings = useMemo(() => buildGeometry(m), [m]);
   const [hoveredId, setHoveredId] = useState(null);
 
   return buildings.map((b) => {
     const isHovered = hoveredId === b.id;
     const isSelected = selectedId === b.id;
     const isDimmed = activeIds && !activeIds.has(b.id) && !isSelected;
-    const tint = (color) => (isSelected ? COLORS.selected : isHovered ? COLORS.highlight : isDimmed ? fade(color) : color);
+    const tint = (color) => (isSelected ? COLORS.selected : isHovered ? COLORS.highlight : isDimmed ? fade(color, COLORS.dimmed) : color);
 
     return (
       <group
@@ -112,14 +115,14 @@ export default function Buildings({ activeIds, selectedId, onSelect, showLabels 
         {b.parts.map((part, i) => (
           <group key={i}>
             {/* Extruded block: group 0 = top/bottom (roof colour), group 1 = walls. */}
-            <mesh geometry={part.geometry} material={[material(isDimmed ? fade(part.style.roof) : part.style.roof), material(tint(part.style.wall))]} />
-            {part.roof && <mesh geometry={part.roof.geometry} material={material(isDimmed ? fade(part.roof.color) : part.roof.color, THREE.DoubleSide)} />}
+            <mesh geometry={part.geometry} material={[material(isDimmed ? fade(part.style.roof, COLORS.dimmed) : part.style.roof), material(tint(part.style.wall))]} />
+            {part.roof && <mesh geometry={part.roof.geometry} material={material(isDimmed ? fade(part.roof.color, COLORS.dimmed) : part.roof.color, THREE.DoubleSide)} />}
             {part.roof?.glass && <mesh geometry={part.roof.glass} material={material(WINDOWS.color)} raycast={() => null} />}
             {/* Raised tennis field: concrete sides, green top. Box faces: +x, -x, +y (top), -y, +z, -z. */}
             {part.slab && (
               <mesh
                 geometry={part.slab}
-                material={[tint(part.style.wall), tint(part.style.wall), isDimmed ? fade(COURT_GREEN) : COURT_GREEN, tint(part.style.wall), tint(part.style.wall), tint(part.style.wall)].map((c) => material(c))}
+                material={[tint(part.style.wall), tint(part.style.wall), isDimmed ? fade(COURT_GREEN, COLORS.dimmed) : COURT_GREEN, tint(part.style.wall), tint(part.style.wall), tint(part.style.wall)].map((c) => material(c))}
               />
             )}
             {part.courts?.map((court, k) => (

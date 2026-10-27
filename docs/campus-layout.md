@@ -18,7 +18,7 @@
 > - **Camera** was calculated by matching 11 building positions to the reference image
 >   (looking south-west, 26° down, about 290 m away, 28° field of view).
 > - **Hill**: one smooth slope from 0 m (front street) to 8 m (Sage, Upper Gate) instead of four flat levels.
-> - Building and site settings: `src/campus/buildings.js` and `src/campus/site.js`.
+> - Building and site settings: `src/campus/beirut/buildings.js` and `src/campus/beirut/site.js`.
 >
 > Screenshots: `docs/screenshots/stage2-compare.png` (reference vs block model) and
 > `stage2-overlay.png` (the two overlaid).

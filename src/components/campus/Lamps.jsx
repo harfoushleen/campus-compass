@@ -1,12 +1,13 @@
 // Lamp posts along the paths. In daylight they are plain grey posts; at night each lamp
 // glows, with a soft halo around it and a pool of light on the ground. The glow is faked
 // (no real lights, which would be slow on phones) and fades with the dark scene.
-// Positions come from buildLampPositions() in details.js, settings from LAMPS in site.js.
+// Positions come from buildLampPositions() in details.js, settings from LAMPS in campus/common.js.
 import { useEffect, useMemo } from 'react';
 import * as THREE from 'three';
-import { LAMPS, heightAt } from '../../campus/site.js';
+import { LAMPS } from '../../campus/common.js';
 import { buildLampPositions } from '../../campus/details.js';
 import { onNightLevel } from '../../campus/night.js';
+import { useModel } from './model.js';
 
 const noRaycast = () => null;
 
@@ -29,8 +30,10 @@ const lightMaterial = (Material, params) =>
   new Material({ transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending, ...params });
 
 export default function Lamps() {
+  const m = useModel();
+  const { heightAt } = m;
   const lamps = useMemo(() => {
-    const spots = buildLampPositions().map(([x, z]) => [x, heightAt(x, z), z]);
+    const spots = buildLampPositions(m).map(([x, z]) => [x, heightAt(x, z), z]);
     const map = glowTexture();
     const head = LAMPS.height + 0.25;
 
@@ -71,7 +74,7 @@ export default function Lamps() {
     halos.raycast = noRaycast;
 
     return { poles, bulbs, pools, halos };
-  }, []);
+  }, [m, heightAt]);
 
   useEffect(() => {
     const off = new THREE.Color(LAMPS.offColor), on = new THREE.Color(LAMPS.color);

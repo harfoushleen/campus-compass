@@ -48,6 +48,9 @@ export default {
   labels: 'Labels',
   loading3d: 'Loading 3D campus…',
   'marker.gezairi': 'Gezairi',
+  'marker.rhc': 'Residence C',
+  'marker.af': 'Animal Facility',
+  seaView: 'Sea view',
   // Plurals: add ".one", ".other" etc. (Arabic also uses ".zero", ".two", ".few", ".many").
   'resultsCount.one': '{count} place',
   'resultsCount.other': '{count} places',

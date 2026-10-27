@@ -24,7 +24,9 @@
 //   underground  true = drawn only as an entrance (Underground Parking)
 // ─────────────────────────────────────────────────────────────────────────────
 
-export const FLOOR_HEIGHT = 3.5;
+// Shared with the other campuses (see ../common.js).
+import { orientedRect } from '../common.js';
+export { FLOOR_HEIGHT, WINDOWS, ROOFS, EXTRA_COLORS, orientedRect } from '../common.js';
 
 // Facade types. Change a value here and every building using it updates.
 //   wall     wall colour
@@ -46,30 +48,6 @@ export const STYLES = {
   gezairi:     { wall: '#d8cdb8', roof: '#c9bfab', windows: 'ribbon', window: '#5f7480' },
 };
 
-// Windows. All buildings share one instanced mesh, so thousands of them stay cheap.
-export const WINDOWS = {
-  color: '#4d6470',
-  spacing: 3.2, // metres between window centres along a wall
-  width: 1.3,
-  height: 1.8,
-  minWall: 3,   // walls shorter than this get no windows
-};
-
-// Colours of the shaped roofs.
-export const ROOFS = {
-  hip: '#c4502e',      // red tiles
-  sawtooth: '#f7f7f5', // Safadi skylights
-};
-
-// Named colours that extras can use instead of a hex code.
-export const EXTRA_COLORS = {
-  glass: '#9db8bf',
-  cream: '#e6c787',
-  plant: '#c9cccb',
-  door: '#4a3426',
-  doorFrame: '#e4e2dc',
-};
-
 // EXTRAS: small shapes added to a building. Each one has:
 //   shape   'box' or 'cylinder'
 //   at      [x, z] centre
@@ -78,23 +56,6 @@ export const EXTRA_COLORS = {
 //   base    'ground' (stands on the ground) or 'top' (sits on the roof of the tallest part)
 //   height  metres, or 'full' = from the ground up to the roof plus `above` metres
 //   color   hex code or a name from EXTRA_COLORS
-
-/**
- * Builds a rectangle footprint from a centre point, size and rotation.
- * Handy for hand-made parts. `angle` is in degrees, measured from east toward south.
- */
-export function orientedRect(cx, cz, length, depth, angle = 0) {
-  const a = (angle * Math.PI) / 180;
-  const ux = Math.cos(a), uz = Math.sin(a); // along the length
-  const vx = -uz, vz = ux;                   // along the depth
-  const l = length / 2, d = depth / 2;
-  return [
-    [cx - ux * l - vx * d, cz - uz * l - vz * d],
-    [cx + ux * l - vx * d, cz + uz * l - vz * d],
-    [cx + ux * l + vx * d, cz + uz * l + vz * d],
-    [cx - ux * l + vx * d, cz - uz * l + vz * d],
-  ];
-}
 
 // Sage Hall's OSM outline (27 × 12 m) is much smaller than the building on the
 // official map, where it's about as wide as Irwin Hall. So it's rebuilt here as a

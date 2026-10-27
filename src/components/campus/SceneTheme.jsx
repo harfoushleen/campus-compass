@@ -1,10 +1,10 @@
 // Makes the 3D scene follow the light/dark theme: the background and the lighting fade
-// smoothly from "daylight" to "evening" (values in SCENE in site.js). With "reduce motion"
+// smoothly from "daylight" to "evening" (values in SCENE in campus/common.js). With "reduce motion"
 // on, the change is instant. Runs inside the <Canvas>.
 import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
 import { useFrame, useThree } from '@react-three/fiber';
-import { SCENE } from '../../campus/site.js';
+import { SCENE } from '../../campus/common.js';
 import { setNightLevel } from '../../campus/night.js';
 
 const reduceMotion = () => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;

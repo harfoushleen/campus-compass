@@ -1,16 +1,19 @@
 // Everything around the LAU buildings: ground, streets, neighbouring blocks and gates.
 import { useMemo } from 'react';
 import { buildPaths, buildStairs, buildStreets, buildSurroundings, buildTerrain } from '../../campus/geometry.js';
-import { COLORS, GATES, LABELS, heightAt } from '../../campus/site.js';
+import { LABELS } from '../../campus/common.js';
 import { ManagedLabel } from './labels.jsx';
+import { useModel } from './model.js';
 
 export default function Site({ showLabels }) {
-  // Each of these is a single merged mesh, so the whole city costs only 3 draw calls.
-  const terrain = useMemo(() => buildTerrain(), []);
-  const streets = useMemo(() => buildStreets(), []);
-  const paths = useMemo(() => buildPaths(), []);
-  const stairs = useMemo(() => buildStairs(), []);
-  const surroundings = useMemo(() => buildSurroundings(), []);
+  const m = useModel();
+  const { COLORS, GATES, heightAt } = m;
+  // Each of these is a single merged mesh, so the whole city costs only a few draw calls.
+  const terrain = useMemo(() => buildTerrain(m), [m]);
+  const streets = useMemo(() => buildStreets(m), [m]);
+  const paths = useMemo(() => buildPaths(m), [m]);
+  const stairs = useMemo(() => buildStairs(m), [m]);
+  const surroundings = useMemo(() => buildSurroundings(m), [m]);
 
   return (
     <group>
@@ -24,12 +27,16 @@ export default function Site({ showLabels }) {
       <mesh geometry={paths} raycast={() => null}>
         <meshLambertMaterial color={COLORS.path} />
       </mesh>
-      <mesh geometry={stairs} raycast={() => null}>
-        <meshLambertMaterial color={COLORS.stairs} />
-      </mesh>
-      <mesh geometry={surroundings} raycast={() => null}>
-        <meshLambertMaterial color={COLORS.surrounding} />
-      </mesh>
+      {stairs && (
+        <mesh geometry={stairs} raycast={() => null}>
+          <meshLambertMaterial color={COLORS.stairs} />
+        </mesh>
+      )}
+      {surroundings && (
+        <mesh geometry={surroundings} raycast={() => null}>
+          <meshLambertMaterial color={COLORS.surrounding} />
+        </mesh>
+      )}
 
       {GATES.map((gate) => {
         const [x, z] = gate.position;
