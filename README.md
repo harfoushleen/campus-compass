@@ -96,10 +96,10 @@ If you make a mistake (missing field, coordinates in quotes), the app skips that
 ## Adjusting the 3D campus
 
 - **Buildings**: `src/campus/<campus>/buildings.js` (`beirut` or `byblos`), one entry per building. Change `floors`, the footprint corners (metres east/south of the campus centre), `roof`, or the `style`. Colours live in `STYLES` at the top of that file; on Byblos, `level` names the terrace a building stands on and `below` counts the floors under that terrace; the Gezairi Building has its own `gezairi` style, ready to restyle from photos.
-- **Facades and roofs**: in `buildings.js`, `STYLES` sets each facade type's colours and windows (`grid`, `ribbon` or `none`); `WINDOWS` (the window size and spacing) and `ROOFS` (the red tile and skylight colours) are shared by all campuses, in `src/campus/common.js`. A part's `roof` can be `flat`, `hip`, `sawtooth` or `courts`.
+- **Facades and roofs**: in `buildings.js`, `STYLES` sets each facade type's colours and windows (`grid`, `ribbon` or `none`); `WINDOWS` (the window size and spacing) and `ROOFS` (the red tile and skylight colours) are shared by all campuses, in `src/campus/common.js`. A part's `roof` can be `flat`, `hip`, `vault` (barrel), `sawtooth` or `courts`.
 - **Small details** (Irwin's glass bay, the Library's glass cylinder, rooftop boxes): the `extras` list on a building. The format is explained above `BUILDINGS`.
 - **Labels**: `label` gives a shorter name for the floating label, and `labelOffset` moves a label that overlaps another one.
-- **Gates, parking lots, trees, terraces, amphitheater, hill, camera, off-screen markers, colours**: `src/campus/<campus>/site.js`. On Byblos the hill is built from `LEVELS` (the height of each terrace), `TERRACES_LEVELLED`, `RAMPS` and the SRTM slope; the sea and old town are `SEA`; extra camera buttons ("Sea view") are `VIEWS`.
+- **Gates, parking lots, trees, terraces, amphitheater, hill, camera, off-screen markers, colours**: `src/campus/<campus>/site.js`. On Byblos the hill is built from `LEVELS` (the height of each terrace), `TERRACES_LEVELLED`, `RAMPS` and the SRTM slope; the ground and haze beyond the scene are `HORIZON`.
 - **Hangout spots**: entries in `places.json` with `"category": "hangout"`, a `position` (`[x, z]` in metres, same coordinates as `buildings.js`), `near` (closest building code), `features` (`benches`, `food`, `fountain`, `trees`, `shade`, `cats`) and `verified`. `"verified": false` marks a position that has not been checked on campus (it is only a note for you; the app shows nothing). Their 3D touches (benches, kiosk, fountain, big tree, shrubs) are in `HANGOUT_DECOR` in the campus's `site.js`.
 - **Paths and stairs**: `PATHS` and `STAIRS` in the campus's `site.js` (lists of [x, z] points; trees keep clear of them). `PATCHES` are the green garden patches with bushes and flowers.
 - **Always on the map**: buildings, paths, benches, the fountain, trees, the cat house and surface parking are always drawn. The toolbar buttons only show or hide the labels and reset the camera. Underground parking outlines appear when the Parking category is open.
@@ -152,7 +152,7 @@ Byblos was added this way, after Beirut:
 
 The 3D code (`geometry.js`, `details.js`, `pins.js` and `src/components/campus/`) is shared and never mentions a campus by name: it works from the campus's model. The plan for Byblos, with its sources and guesses, is in `docs/byblos-layout.md`.
 
-Byblos's places (stage 4) are not added yet: until then its sidebar is empty and the 3D model is the block model described in that document.
+Byblos's places (stage 4) are not added yet, so its sidebar is empty; its 3D model (stage 3) is complete. Its extra settings, beyond Beirut's: `level` and `below` on buildings, `LEVELS`, `RAMPS`, `HORIZON`, `COURTS` and `PARKING_BAYS` in `src/campus/byblos/site.js`, and the `vault` roof.
 
 ## Adding Arabic
 

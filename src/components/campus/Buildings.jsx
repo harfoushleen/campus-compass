@@ -6,7 +6,7 @@ import { ManagedLabel } from './labels.jsx';
 import { ROOFS, EXTRA_COLORS, WINDOWS } from '../../campus/common.js';
 import { centroid, extrudeFootprint, partHeights } from '../../campus/geometry.js';
 import { useModel } from './model.js';
-import { buildingTop, courtsLayout, getCourtTexture, hipRoof, sawtoothRoof } from '../../campus/details.js';
+import { buildingTop, courtsLayout, getCourtTexture, hipRoof, sawtoothRoof, vaultRoof } from '../../campus/details.js';
 
 // Shared materials: one per colour, reused by every building with that colour.
 const materials = new Map();
@@ -54,6 +54,10 @@ function buildGeometry(m) {
       } else if (part.roof === 'sawtooth') {
         const r = sawtoothRoof(m, part.footprint, top);
         p.roof = { geometry: r.geometry, color: ROOFS.sawtooth, glass: r.glass };
+        roofHeight = r.height;
+      } else if (part.roof === 'vault') {
+        const r = vaultRoof(part.footprint, top);
+        p.roof = { geometry: r.geometry, color: style.roof };
         roofHeight = r.height;
       } else if (part.roof === 'courts') {
         const { courts, slab } = courtsLayout(part.footprint, top);

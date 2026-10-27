@@ -107,6 +107,31 @@ export function sawtoothRoof(m, footprint, top, { teeth = 7, height = 3.4 } = {}
   return { geometry: mergeGeometries(teethParts), glass: mergeGeometries(glassParts), height };
 }
 
+/**
+ * Barrel-vault roof (Cafeteria, Student Center, Library): a half-ellipse along the footprint's long side,
+ * sitting at height `top`. Returns { geometry, height }.
+ */
+export function vaultRoof(footprint, top, { rise = 0.3, maxHeight = 4.5 } = {}) {
+  const { cx, cz, length, width, u, v } = orientedBounds(footprint);
+  const h = Math.min(width * rise, maxHeight);
+  const shape = new THREE.Shape();
+  const steps = 14;
+  for (let i = 0; i <= steps; i++) {
+    const a = Math.PI - (Math.PI * i) / steps; // from the left edge over the top to the right edge
+    const x = (width / 2 + 0.3) * Math.cos(a), y = h * Math.sin(a);
+    if (i === 0) shape.moveTo(x, y);
+    else shape.lineTo(x, y);
+  }
+  shape.lineTo(-(width / 2 + 0.3), 0);
+  const geometry = new THREE.ExtrudeGeometry(shape, { depth: length, bevelEnabled: false });
+  // The shape's x runs across the building (v), its y up, and the extrusion along the long side (u).
+  const m = new THREE.Matrix4().makeBasis(new THREE.Vector3(v[0], 0, v[1]), new THREE.Vector3(0, 1, 0), new THREE.Vector3(u[0], 0, u[1]));
+  m.setPosition(cx - (u[0] * length) / 2, top, cz - (u[1] * length) / 2);
+  geometry.applyMatrix4(m);
+  geometry.computeVertexNormals();
+  return { geometry, height: h };
+}
+
 /** Tennis-court markings, drawn once into a small canvas texture. */
 let courtTexture;
 export function getCourtTexture() {
@@ -146,6 +171,58 @@ export function courtsLayout(footprint, top, { length = 20, width = 9, raise = 1
   }));
   const slab = { position: [cx, top + raise / 2, cz], rotationY, size: [2 * width + gap + 2 * margin, raise, length + 2 * margin] };
   return { courts, slab };
+}
+
+/**
+ * Outdoor courts on the ground (COURTS in the campus's site.js): [{ at: [x, z], size: [width, length], angle }].
+ * Returns, for each, the court plane and its concrete slab (a box), both lying on the ground at `at`.
+ */
+export function buildCourts(m) {
+  return (m.COURTS ?? []).map(({ at: [x, z], size: [w, l], angle = 0 }) => {
+    const y = m.heightAt(x, z);
+    const rotationY = Math.PI / 2 - (angle * Math.PI) / 180;
+    return {
+      court: { position: [x, y + 0.34, z], rotationY, size: [w, l] },
+      slab: { position: [x, y + 0.15, z], rotationY, size: [w + 2.4, 0.3, l + 2.4] },
+    };
+  });
+}
+
+/**
+ * White bay lines for the surface parking lots (PARKING in the campus's site.js; not the underground ones).
+ * A stripe every `spacing` metres across the lot's short side, cut to the lot's outline. Returns flat
+ * [x, y, z, ...] triangles lying just above the ground, or null.
+ */
+export function buildParkingLines(m, { spacing = 2.7, half = 0.07, inset = 1.2 } = {}) {
+  const positions = [];
+  for (const lot of m.PARKING) {
+    if (lot.underground) continue;
+    const { cx, cz, length, width, u, v } = orientedBounds(lot.area);
+    // Stripes run along v (the short side) at steps along u, leaving an aisle in the middle of wide lots.
+    for (let s = -length / 2 + spacing; s < length / 2 - 0.5; s += spacing) {
+      let runStart = null;
+      for (let t = -width / 2; t <= width / 2 + 0.01; t += 0.5) {
+        const x = cx + u[0] * s + v[0] * t, z = cz + u[1] * s + v[1] * t;
+        const inside = insidePolygon(lot.area, x, z);
+        if (inside && runStart === null) runStart = t;
+        if ((!inside || t >= width / 2) && runStart !== null) {
+          const a = runStart + inset, b = t - 0.5 - inset;
+          runStart = null;
+          if (b - a < 2) continue;
+          const p0 = [cx + u[0] * s + v[0] * a, cz + u[1] * s + v[1] * a], p1 = [cx + u[0] * s + v[0] * b, cz + u[1] * s + v[1] * b];
+          const y0 = m.heightAt(...p0) + 0.36, y1 = m.heightAt(...p1) + 0.36;
+          const ox = u[0] * half, oz = u[1] * half;
+          positions.push(p0[0] - ox, y0, p0[1] - oz, p1[0] - ox, y1, p1[1] - oz, p0[0] + ox, y0, p0[1] + oz,
+            p0[0] + ox, y0, p0[1] + oz, p1[0] - ox, y1, p1[1] - oz, p1[0] + ox, y1, p1[1] + oz);
+        }
+      }
+    }
+  }
+  if (!positions.length) return null;
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+  g.computeVertexNormals();
+  return g;
 }
 
 // ── Windows and bands ──

@@ -4,13 +4,15 @@
 import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
 import { useFrame, useThree } from '@react-three/fiber';
-import { SCENE } from '../../campus/common.js';
+import { SCENE as BASE_SCENE } from '../../campus/common.js';
+import { useModel } from './model.js';
 import { setNightLevel } from '../../campus/night.js';
 
 const reduceMotion = () => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
 
 export default function SceneTheme({ theme }) {
   const { scene, invalidate } = useThree();
+  const SCENE = useModel().SCENE ?? BASE_SCENE; // a campus can have its own sky and backdrop
   const hemi = useRef();
   const sun = useRef();
   const current = useRef(null); // the values being shown right now

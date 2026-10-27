@@ -1,24 +1,30 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // Everything in the 3D Byblos campus that isn't a building: terrain, gates, parking,
-// the sea, camera and colours. Same layout as ../beirut/site.js.
+// the horizon, camera and colours. Same layout as ../beirut/site.js.
 // Coordinates: metres, x = east, z = south (see geo.js); y = metres above the datum below.
 //
-// Stage 2 (block model): terrain, gates, parking and the sea only. Paths, stairs, gardens,
-// trees, courts and the hangout decorations are added in stage 3 (the lists below are empty).
+// Stage 3 added the landscaping: paths, stairs, lawns, trees, the fountains, the amphitheater and the courts. None of it is in
+// OpenStreetMap, so all of it is traced from the official 3D map and the master plan (positions about 15 m accurate).
 // ─────────────────────────────────────────────────────────────────────────────
 import dem from './dem.json';
 import { BUILDINGS } from './buildings.js';
-import { orientedRect } from '../common.js';
+import { orientedRect, SCENE as BASE_SCENE } from '../common.js';
 
 // Settings shared with the other campuses (labels, light/dark scene, night lights...).
-export { LABELS, HANGOUT_COLORS, FLY_DURATION, SCENE, NIGHT_WINDOWS, LAMPS } from '../common.js';
+export { LABELS, HANGOUT_COLORS, FLY_DURATION, NIGHT_WINDOWS, LAMPS } from '../common.js';
+
+// Light and dark scene: as shared, but with a hazy blue sky behind the hills instead of Beirut's dark backdrop.
+export const SCENE = {
+  light: { ...BASE_SCENE.light, background: '#b4cadb', sky: '#f4f8ff' },
+  dark: { ...BASE_SCENE.dark, background: '#0b121c' },
+};
 
 // Area of the 3D scene (also limits how far the camera can pan).
 export const BOUNDS = { minX: -520, maxX: 420, minZ: -260, maxZ: 220 };
 
 // ── Ground / hill ──
 // Heights (y) are metres above the datum: Lower Parking A, which is about 215 m above sea level.
-// So the Engineering center (y ≈ 86) is at about 300 m, and the sea is at y = -215.
+// So the Engineering center (y ≈ 76) is at about 290 m.
 export const DATUM_ABOVE_SEA = 215;
 
 // The ground is built in three layers (see buildHeightField below):
@@ -29,8 +35,8 @@ export const DATUM_ABOVE_SEA = 215;
 // Every terrace height is an estimate: fitted to the SRTM values and tuned against the official 3D map.
 // To be checked on site (they are listed in docs/byblos-layout.md).
 export const LEVELS = {
-  T0: 0,   // Lower Parking A, Health Clinic (Gate House), start of the lower road
-  // T1 is the ramp of the lower road along Lower Parking B (RAMPS below): +3 m at the west end, +35 m at the Lower Gate
+  T0: 36,  // Lower Parking A, Health Clinic (Gate House), Residence C, start of the lower road. 36 m above the SRTM value: see the note above RAMPS
+  // T1 is the lower road along Lower Parking B (RAMPS below): about 40 m, nearly level, dropping to T2 at the Lower Gate
   T2: 35,  // Lower Gate, Residence Hall B, lots D and E
   T3: 39,  // Science Parking C, Science Building
   T4: 63,  // Main Gate, the main plaza, Library, Central Administration, Block A, Student Center, Service Center
@@ -59,10 +65,14 @@ export const TERRACES_LEVELLED = [
   { level: 'T10', blend: 10, points: [[78, 126], [142, 124], [142, 152], [78, 156]] },
 ];
 
+// The lower road (Lower Parking A and B) is drawn 30 to 36 m higher than the SRTM elevation says (SRTM: 3 m at the
+// west end rising to 26 m at the Lower Gate), because that is how the official 3D map draws it: a long, nearly level road on
+// an embankment, much higher on the page than the elevation data allows. To get the SRTM heights back, set T0 to 0 and the
+// ramp heights to 3, 9, 15, 21, 26, 31, 35.
 // Roads that climb from terrace to terrace: [x, z, y] points along the road, width and blend in metres.
 export const RAMPS = [
   // Lower road: Lower Parking A (T0) -> Lower Parking B -> Lower Gate (T2)
-  { width: 30, blend: 14, points: [[-335, -8, 3], [-300, -12, 9], [-250, -26, 15], [-205, -26, 21], [-165, -26, 26], [-130, -25, 31], [-100, -22, 35]] },
+  { width: 30, blend: 14, points: [[-335, -8, 37], [-300, -12, 40], [-250, -26, 42], [-205, -26, 42], [-165, -26, 41], [-130, -25, 38], [-100, -22, 35]] },
 ];
 
 // The steep drop north of Block A and Residence B (metres taken off the SRTM slope, growing northward from z = -60).
@@ -188,29 +198,112 @@ export const heightAt = (x, z) => sample(getField().heights, x, z);
 /** 0..1: how much the ground at a point is stone (campus) rather than forest. */
 export const groundMask = (x, z) => sample(getField().paved, x, z);
 
-// ── The sea and the old town ──
-// Old Byblos (castle, harbour, souk) is about 2.4 km west-north-west of the campus and the coast about 2.2 km west
-// (approximate, from general knowledge, not from the supplied data). The hillside runs down to the water, which is
-// drawn as one flat plane to the horizon. Drawn by components/campus/Sea.jsx; the "Sea view" button looks that way.
-export const SEA = {
-  level: -DATUM_ABOVE_SEA,
-  coastX: -2250,   // metres west of the origin where the water starts
-  far: 14000,      // how far the sea plane extends
-  span: 6000,      // half-width (north-south) of the hillside and sea
-  oldTown: { center: [-2420, -560], radius: 190, count: 70, baseY: -203 },
-  colors: { hill: '#3b5f40', water: '#2f7f9a', town: '#cdbf9c' },
+// ── Beyond the scene ──
+// The hillside carries on past BOUNDS at the edge's height and falls away a little (HORIZON.fall metres over
+// HORIZON.fallDistance), fading into the sky in the haze (fog: where it starts and where it is complete).
+// Drawn by components/campus/Horizon.jsx. There is no sea or old town in the model.
+export const HORIZON = {
+  span: 14000,       // how far the ground reaches
+  fall: 40,
+  fallDistance: 3000,
+  fog: [1800, 9000],
+  color: '#3b5f40',
 };
 
 // ── Surrounding city ──
 // The neighbouring village houses are left out on purpose (the official map shows only forest around the campus).
 // So there is no SURROUNDINGS setting and osm-surroundings.json holds only the roads.
 
-// ── Landscaping, hangouts, paths, stairs, garden patches ── (stage 3)
-export const TREES = { clusters: [], rows: [], colors: ['#2f5a3a', '#3d6e44'], trunk: '#6b4f3a' };
-export const HANGOUT_DECOR = {};
-export const PATHS = [];
-export const STAIRS = [];
-export const PATCHES = [];
+// ── Landscaping ──
+// Trees (pines and cypresses): random positions inside each cluster (the same every load), or evenly along a row.
+// Trees never grow inside buildings, on paths or stairs, or in garden patches.
+export const TREES = {
+  clusters: [
+    { center: [-96, 12], radius: 14, count: 16 },   // pines by the Cafeteria and courts
+    { center: [-60, 30], radius: 10, count: 8 },
+    { center: [30, -20], radius: 8, count: 5 },     // main plaza
+    { center: [0, -145], radius: 35, count: 18 },   // the wooded slope below Block A
+    { center: [-80, -100], radius: 30, count: 14 },
+    { center: [-150, -60], radius: 35, count: 14 },
+    { center: [60, -150], radius: 40, count: 14 },
+    { center: [-50, 110], radius: 60, count: 20 },  // the slope behind the campus
+    { center: [200, 110], radius: 30, count: 10 },
+    { center: [330, 60], radius: 30, count: 10 },
+  ],
+  rows: [
+    { from: [-300, 16], to: [-175, 8], count: 16 },  // along the lower road
+    { from: [-345, -48], to: [-250, -52], count: 10 },
+  ],
+  colors: ['#2c5a38', '#3b6b44'],
+  trunk: '#6b4f3a',
+};
+
+// Stone amphitheater beside Bassil Hall, open to the north (FM's grounds page lists one; position from the 3D map).
+export const AMPHITHEATER = { center: [60, 12], radius: 9, tiers: 5, color: '#b9a58a' };
+
+// The two outdoor courts beside the Cafeteria (mini-football, tennis, volleyball, basketball): at = centre,
+// size = [width, length], angle = direction of the length in degrees from east toward south.
+export const COURTS = [
+  { at: [-127, 35], size: [14, 30], angle: 90 },
+  { at: [-110, 35], size: [14, 30], angle: 90 },
+];
+
+// Surface parking lots get white bay lines (see PARKING below).
+export const PARKING_BAYS = true;
+
+// ── Hangout spots: 3D touches ── (fountains, benches...; the spots themselves are places, added in stage 4)
+// Same format as Beirut: benches [[x, z, angle], ...], fountain { at, radius }, grass { at, size }.
+export const HANGOUT_DECOR = {
+  'FOUNTAIN-PLAZA': {
+    fountain: { at: [92, 0], radius: 5 },
+    grass: { at: [92, 0], size: [9, 9] },
+    benches: [[92, -7.5, 0], [92, 7.5, 180], [84.5, 0, 270], [99.5, 0, 90]],
+  },
+  'FOUNTAIN-ARCHITECTURE': {
+    fountain: { at: [44, 11], radius: 2 }, // the OSM fountain by Architecture Hall
+    benches: [[44, 6.5, 0], [44, 15.5, 180]],
+  },
+  'MAIN-PLAZA': {
+    benches: [[34, -44, 90], [40, -36, 90], [56, -14, 0], [62, -2, 0]],
+  },
+  'COURTS-SEATING': {
+    benches: [[-127, 55, 180], [-110, 55, 180], [-96, 54, 180]],
+  },
+};
+
+// ── Paths and stairs ──
+// Paths: lines of [x, z] points laid on the ground, `width` in metres. Stairs: from one point to another; the height
+// gained follows the ground. Traced from the official 3D map (about 15 m accuracy); trees keep clear of them and lamps
+// line the paths at night.
+export const PATHS = [
+  { id: 'mainPromenade', width: 6, points: [[26, -60], [30, -50], [34, -40], [40, -30], [48, -18], [56, -8], [64, 4]] },  // from the Main Gate
+  { id: 'plazaToFountain', width: 5, points: [[64, 4], [78, 10], [90, 8], [98, -2]] },
+  { id: 'libraryWalk', width: 4, points: [[30, -52], [42, -56], [54, -60]] },
+  { id: 'rncaWalk', width: 4, points: [[50, -30], [62, -38], [74, -42]] },
+  { id: 'scienceFront', width: 4, points: [[-61, -20], [-50, -12], [-38, -6], [-24, -3], [-8, -14], [6, -24]] },           // from the Lower Gate
+  { id: 'upperRoad', width: 3, points: [[4, 12], [-8, 26], [-28, 42], [-48, 54], [-69, 64]] },                              // to the Upper Gate
+  { id: 'cafeteria', width: 3, points: [[-69, 64], [-74, 52], [-80, 48]] },
+  { id: 'courts', width: 3, points: [[-84, 52], [-98, 56], [-118, 56]] },
+  { id: 'architecture', width: 3, points: [[60, -4], [46, 6], [30, 14], [20, 20]] },
+  { id: 'bassil', width: 3, points: [[98, -2], [100, 14], [92, 28]] },
+  { id: 'eastPromenade', width: 5, points: [[98, -2], [112, 6], [128, 10], [146, 8], [160, 14], [172, 20]] },             // toward the Chagoury and Frem buildings
+  { id: 'engineering', width: 3, points: [[194, 60], [212, 66], [232, 64], [240, 66]] },
+  { id: 'blockA', width: 3, points: [[-10, -72], [-20, -68], [-30, -64]] },
+];
+
+export const STAIRS = [
+  { id: 'scienceUp', from: [-4, -26], to: [12, -44], width: 5, steps: 34 },  // Science Parking up to the main plaza
+  { id: 'cafeDown', from: [-2, 22], to: [-18, 32], width: 4, steps: 22 },    // fountain plaza down to the Upper Gate road
+  { id: 'engineeringUp', from: [226, 56], to: [238, 62], width: 5, steps: 16 }, // up to the Engineering center
+];
+
+// ── Garden patches ── green lawns with a few bushes and flower clumps. `points` is the outline ([x, z] corners).
+export const PATCHES = [
+  { id: 'mainLawn', shrubs: 3, flowers: 4, points: [[-2, -50], [12, -58], [20, -52], [8, -42]] },
+  { id: 'plazaLawn', shrubs: 3, flowers: 5, points: [[46, -34], [60, -44], [70, -32], [56, -24]] },
+  { id: 'fountainLawn', shrubs: 3, flowers: 5, points: [[72, -18], [88, -24], [96, -10], [78, -4]] },
+  { id: 'cafeLawn', shrubs: 2, flowers: 4, points: [[-68, 20], [-56, 26], [-60, 40], [-72, 34]] },
+];
 
 // ── Off-screen markers ──
 // When one of these buildings is off-screen, a small marker at the edge of the view points to it (tap = fly there).
@@ -295,15 +388,15 @@ export const PARKING = [
 // 15 landmarks picked in that image (see docs/byblos-layout.md). `fov` is the vertical field of view for a
 // landscape screen as wide as the image (aspect 2.59); narrower screens move the camera back.
 export const CAMERA = {
-  target: [-175, 45, 58],
-  position: [-283, 242, -283],
-  fov: 35,
+  target: [-145, 50, 56],
+  position: [-292, 225, -296],
+  fov: 33.5,
   referenceAspect: 1700 / 657,
   narrowTarget: [-20, 50, 15], // phones (narrower than narrowBelowAspect) look at the middle of the buildings instead
   narrowBelowAspect: 2.2,
   narrowScreenFit: 0.62, // 1 = always fit the full width on narrower screens, lower = closer (sides cropped)
   near: 5,
-  far: 20000,            // the sea reaches far
+  far: 20000,            // the hillside and haze reach far
   targetHeight: [-230, 160], // how high or low the point the camera orbits around may go (the hill is steep)
   maxFrameDistance: 700,
   // Orbit limits
@@ -312,14 +405,6 @@ export const CAMERA = {
   minPolarAngle: 0.15,              // radians from straight down (0 = top view)
   maxPolarAngle: (82 * Math.PI) / 180, // stops the camera before it reaches the ground
 };
-
-// Extra camera views (buttons next to "Default view"). "Sea view" stands on the campus's west side and looks
-// west-north-west, past Residence C, over the old town of Byblos (about 2.4 km away) and the Mediterranean.
-// The orbit point has to stay inside BOUNDS, so the target is just past the campus's edge and the camera looks
-// out nearly level to the horizon.
-export const VIEWS = [
-  { id: 'sea', labelKey: 'seaView', position: [-200, 90, -50], target: [-520, 10, -190] },
-];
 
 // ── Colours ──
 export const COLORS = {
@@ -330,7 +415,7 @@ export const COLORS = {
   highlight: '#ffcf70',
   selected: '#ffb84d',
   dimmed: '#9fa3a1',
-  path: '#a6a9a7',
+  path: '#a39b86',   // paving: darker than the terraces so the paths read
   patch: '#6e9a4a',
-  stairs: '#c2c5c3',
+  stairs: '#cfc9b8',
 };

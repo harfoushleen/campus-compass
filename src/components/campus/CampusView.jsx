@@ -17,7 +17,7 @@ import Buildings from './Buildings.jsx';
 import Details from './Details.jsx';
 import Lamps from './Lamps.jsx';
 import Site from './Site.jsx';
-import Sea from './Sea.jsx';
+import Horizon from './Horizon.jsx';
 import ParkingLayer from './ParkingLayer.jsx';
 import OffscreenMarker from './OffscreenMarker.jsx';
 import Hangouts from './Hangouts.jsx';
@@ -34,7 +34,7 @@ const reduceMotion = () => window.matchMedia?.('(prefers-reduced-motion: reduce)
 // campus tiny: the sides are cropped a little and users can pan. A campus whose reference
 // image is much wider than a phone (Byblos) can give a `narrowTarget`: the point phones look at,
 // so the buildings are in the middle instead of the far end of the campus.
-function defaultView(m, aspect) {
+function initialView(m, aspect) {
   const { CAMERA } = m;
   const scale = Math.max(1, (CAMERA.referenceAspect / aspect) ** CAMERA.narrowScreenFit);
   const target = CAMERA.narrowTarget && aspect < CAMERA.narrowBelowAspect ? CAMERA.narrowTarget : CAMERA.target;
@@ -58,10 +58,11 @@ function buildingView(m, id, distance) {
 const ease = (t) => (t < 0.5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2); // ease in-out
 
 function Controls({ m, controlsRef, flyRef }) {
-  const { CAMERA, BOUNDS } = m;
+  const { CAMERA } = m;
+  const { BOUNDS } = m;
   const { size, invalidate } = useThree();
   // Computed once on mount, so resizing the window doesn't undo the user's camera moves.
-  const [initial] = useState(() => defaultView(m, size.width / size.height));
+  const [initial] = useState(() => initialView(m, size.width / size.height));
   const flight = useRef(null);
   const [minY, maxY] = CAMERA.targetHeight ?? [0, 40]; // how high or low the orbit point may go
 
@@ -202,7 +203,7 @@ export default function CampusView({ campus, places, allPlaces, category, select
 
   const defaultView = () => {
     const { clientWidth, clientHeight } = wrapperRef.current;
-    const view = defaultView(m, clientWidth / clientHeight);
+    const view = initialView(m, clientWidth / clientHeight);
     flyRef.current(view.position, view.target);
   };
 
@@ -225,7 +226,7 @@ export default function CampusView({ campus, places, allPlaces, category, select
           <LabelContext.Provider value={{ registry: labelRegistry, portal: labelsRef }}>
             <Controls m={m} controlsRef={controlsRef} flyRef={flyRef} />
             <Site showLabels={showLabels} />
-            <Sea />
+            <Horizon />
             <Details />
             <Lamps />
             <Buildings
@@ -288,12 +289,6 @@ export default function CampusView({ campus, places, allPlaces, category, select
         <button type="button" className="campus-button" onClick={defaultView}>
           {t('resetView')}
         </button>
-        {/* Extra camera views some campuses have (Byblos: looking out over the old town and the sea). */}
-        {(m.VIEWS ?? []).map((view) => (
-          <button key={view.id} type="button" className="campus-button" onClick={() => flyRef.current(view.position, view.target)}>
-            {t(view.labelKey)}
-          </button>
-        ))}
       </div>
 
       <p className="campus-attribution">

@@ -7,7 +7,7 @@ import { WINDOWS, NIGHT_WINDOWS } from '../../campus/common.js';
 import { useModel } from './model.js';
 import { onNightLevel } from '../../campus/night.js';
 import { buildPatches } from '../../campus/geometry.js';
-import { buildAmphitheater, buildFacadeInstances, buildPatchPlants, buildTerraces, buildTreeInstances } from '../../campus/details.js';
+import { buildAmphitheater, buildCourts, buildFacadeInstances, buildPatchPlants, buildTerraces, buildTreeInstances, getCourtTexture } from '../../campus/details.js';
 
 const noRaycast = () => null;
 const tmp = new THREE.Object3D();
@@ -79,6 +79,7 @@ export default function Details() {
   const terraces = useMemo(() => buildTerraces(m), [m]);
   const patches = useMemo(() => buildPatches(m), [m]);
   const amphitheater = useMemo(() => buildAmphitheater(m), [m]);
+  const courts = useMemo(() => buildCourts(m), [m]);
   const terraceMaterials = useMemo(
     () => (TERRACES ? [new THREE.MeshLambertMaterial({ color: TERRACES.grass }), new THREE.MeshLambertMaterial({ color: TERRACES.wall })] : []),
     [TERRACES]
@@ -96,6 +97,21 @@ export default function Details() {
       {/* Terraces: grass tops, stone walls. */}
       {terraces.map((g, i) => (
         <mesh key={`t${i}`} geometry={g} material={terraceMaterials} raycast={noRaycast} />
+      ))}
+      {/* Outdoor courts: a concrete slab with the court markings on top. */}
+      {courts.map((c, i) => (
+        <group key={`court${i}`}>
+          <mesh position={c.slab.position} rotation={[0, c.slab.rotationY, 0]} raycast={noRaycast}>
+            <boxGeometry args={c.slab.size} />
+            <meshLambertMaterial color="#9a9e9b" />
+          </mesh>
+          <group position={c.court.position} rotation={[0, c.court.rotationY, 0]}>
+            <mesh rotation={[-Math.PI / 2, 0, 0]} raycast={noRaycast}>
+              <planeGeometry args={c.court.size} />
+              <meshLambertMaterial map={getCourtTexture()} />
+            </mesh>
+          </group>
+        </group>
       ))}
       {amphitheater && (
         <mesh geometry={amphitheater} raycast={noRaycast}>

@@ -50,7 +50,6 @@ export default {
   'marker.gezairi': 'Gezairi',
   'marker.rhc': 'Residence C',
   'marker.af': 'Animal Facility',
-  seaView: 'Sea view',
   // Plurals: add ".one", ".other" etc. (Arabic also uses ".zero", ".two", ".few", ".many").
   'resultsCount.one': '{count} place',
   'resultsCount.other': '{count} places',

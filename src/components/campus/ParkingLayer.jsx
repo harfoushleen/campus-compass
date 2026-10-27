@@ -4,6 +4,7 @@
 // normal facility pins; see FacilityPins.jsx.
 import { useMemo } from 'react';
 import { centroid, flatPolygon } from '../../campus/geometry.js';
+import { buildParkingLines } from '../../campus/details.js';
 import { useModel } from './model.js';
 
 export default function ParkingLayer({ showUnderground }) {
@@ -17,11 +18,23 @@ export default function ParkingLayer({ showUnderground }) {
     [m]
   );
 
-  return lots
-    .filter((lot) => !lot.underground || showUnderground)
-    .map((lot) => (
-      <mesh key={lot.code} geometry={lot.geometry} raycast={() => null}>
-        <meshBasicMaterial color={lot.underground ? '#1f6feb' : '#2f2f2f'} transparent opacity={lot.underground ? 0.35 : 0.85} />
-      </mesh>
-    ));
+  // White bay lines on the surface lots (campuses with PARKING_BAYS: Byblos).
+  const bays = useMemo(() => (m.PARKING_BAYS ? buildParkingLines(m) : null), [m]);
+
+  return (
+    <>
+      {lots
+        .filter((lot) => !lot.underground || showUnderground)
+        .map((lot) => (
+          <mesh key={lot.code} geometry={lot.geometry} raycast={() => null}>
+            <meshBasicMaterial color={lot.underground ? '#1f6feb' : '#2f2f2f'} transparent opacity={lot.underground ? 0.35 : 0.85} />
+          </mesh>
+        ))}
+      {bays && (
+        <mesh geometry={bays} raycast={() => null}>
+          <meshBasicMaterial color="#e9e9e4" />
+        </mesh>
+      )}
+    </>
+  );
 }

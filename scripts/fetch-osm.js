@@ -3,7 +3,7 @@
 //
 //   npm run osm                   Beirut
 //   npm run osm -- byblos         Byblos
-//   add --dry to only print what would be saved
+//   add --dry to only print what would be saved, or --out <file> to save somewhere else (to compare with the current data)
 //
 // You only need to run this again if you want fresher OSM data.
 // Data © OpenStreetMap contributors, ODbL (https://www.openstreetmap.org/copyright).
@@ -148,10 +148,11 @@ async function fromMapApi() {
 }
 
 const { buildings, streets } = await (campus === 'byblos' ? fromMapApi() : fromOverpass());
-const out = new URL(`../src/campus/${campus}/osm-surroundings.json`, import.meta.url);
+const outIndex = process.argv.indexOf('--out');
+const out = outIndex > 0 ? process.argv[outIndex + 1] : new URL(`../src/campus/${campus}/osm-surroundings.json`, import.meta.url);
 if (dry) {
   console.log(`${campus}: would save ${buildings.length} buildings and ${streets.length} streets (origin ${ORIGIN.lat}, ${ORIGIN.lng})`);
 } else {
   writeFileSync(out, JSON.stringify({ attribution: '© OpenStreetMap contributors (ODbL)', buildings, streets }));
-  console.log(`Saved ${buildings.length} buildings and ${streets.length} streets to src/campus/${campus}/osm-surroundings.json`);
+  console.log(`Saved ${buildings.length} buildings and ${streets.length} streets to ${outIndex > 0 ? out : `src/campus/${campus}/osm-surroundings.json`}`);
 }

@@ -11,7 +11,8 @@
 // counts are from the LAU Facilities Management building pages (fm.lau.edu.lb).
 // Positions marked "guess" were matched by size or placed by hand; see docs/byblos-layout.md.
 //
-// Stage 2 (block model): flat roofs everywhere; the real roof shapes are added in stage 3.
+// Stage 3: roofs are hip (red tile), vault (curved) or flat, as on the official 3D map; extras add the orange
+// tile bays on Block A and Residence B, and rooftop details.
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { orientedRect } from '../common.js';
@@ -19,7 +20,7 @@ export { FLOOR_HEIGHT, WINDOWS, ROOFS, EXTRA_COLORS, orientedRect } from '../com
 
 // Facade types, as in Beirut. Colours are read from the 3D building map.
 export const STYLES = {
-  sand:      { wall: '#e3d3a8', roof: '#d9d2c0', windows: 'grid', window: '#4d5a60' },        // cream stone with orange tile roofs (stage 3)
+  sand:      { wall: '#e3d3a8', roof: '#d9d2c0', windows: 'grid', window: '#4d5a60', accent: '#c4b27f', bands: true }, // cream stone with balcony lines and orange tile roofs
   white:     { wall: '#ecebe6', roof: '#d4d8d7', windows: 'grid' },                           // Chagoury center
   glass:     { wall: '#b9a8a2', roof: '#a9786a', windows: 'ribbon', window: '#6d8590' },      // Library: glass with a pink-brown roof
   glassGrey: { wall: '#b4bfc2', roof: '#9aa5a8', windows: 'ribbon', window: '#5f7480' },      // Central Administration
@@ -28,6 +29,10 @@ export const STYLES = {
   concrete:  { wall: '#c9cccb', roof: '#b3b6b2', windows: 'none' },                           // plant, tank, drum
   parking:   { wall: '#8d9290', roof: '#8d9290', windows: 'none' },
 };
+
+// A point `d` metres along a long axis through (cx, cz) pointing `angle` degrees from east toward south.
+const along = (cx, cz, angle, d) => [+(cx + Math.cos((angle * Math.PI) / 180) * d).toFixed(1), +(cz + Math.sin((angle * Math.PI) / 180) * d).toFixed(1)];
+const TILE = '#c4502e'; // the orange roof tile
 
 export const BUILDINGS = [
   {
@@ -39,6 +44,8 @@ export const BUILDINGS = [
     level: 'T4',
     // 9 floors; levels 1-2 are the underground parking F, so 7 show above the plaza.
     parts: [{ footprint: [[-17.9, -93.6], [-4.1, -82.8], [28, -123.5], [14.2, -134.2]], floors: 9, below: 2, floorHeight: 3.2, roof: 'flat' }],
+    // Three orange-tile bays on the roof, as on the official map.
+    extras: [-16, 0, 16].map((d) => ({ shape: 'box', at: along(5, -109, 129, d), size: [10, 15], angle: 129, base: 'top', height: 3.4, color: TILE })),
   },
   {
     id: 'RHB',
@@ -49,6 +56,8 @@ export const BUILDINGS = [
     level: 'T2',
     // 9 levels: store, two parking levels (E), then six floors of rooms above the Lower Gate road.
     parts: [{ footprint: [[-100.9, -47.9], [-91.4, -30], [-35.7, -58.8], [-45.1, -76.8]], floors: 9, below: 3, floorHeight: 3.2, roof: 'flat' }],
+    // Four orange-tile gable units on the roof.
+    extras: [-22, -7.5, 7.5, 22].map((d) => ({ shape: 'box', at: along(-68, -53, 153, d), size: [9, 15], angle: 153, base: 'top', height: 3.4, color: TILE })),
   },
   {
     id: 'RHC',
@@ -57,7 +66,7 @@ export const BUILDINGS = [
     style: 'sand',
     level: 'T0',
     // guess: OSM building 986149009, matched by its area (300 m²); the map only shows an arrow pointing west.
-    parts: [{ footprint: [[-436.9, -84.8], [-423.5, -78.7], [-431.2, -62], [-445.5, -68.5], [-443.1, -73.7], [-445.3, -74.7], [-442.4, -80.9], [-439.3, -79.6]], floors: 3, roof: 'flat' }],
+    parts: [{ footprint: [[-436.9, -84.8], [-423.5, -78.7], [-431.2, -62], [-445.5, -68.5], [-443.1, -73.7], [-445.3, -74.7], [-442.4, -80.9], [-439.3, -79.6]], floors: 3, roof: 'hip' }],
   },
   {
     id: 'LIB',
@@ -67,7 +76,7 @@ export const BUILDINGS = [
     style: 'glass',
     level: 'T4',
     // 5 floors; the lobby is on level 3, so two floors show only on the downhill (north) side.
-    parts: [{ footprint: [[44.7, -111.2], [53.7, -94.9], [56, -64.4], [75.1, -68.1], [76.2, -81.4], [78.8, -85.4], [74.7, -88.2], [73.2, -99.7], [71, -100], [72, -110.7], [63, -119.9], [51.2, -117.6]], floors: 5, below: 2, roof: 'flat' }],
+    parts: [{ footprint: [[44.7, -111.2], [53.7, -94.9], [56, -64.4], [75.1, -68.1], [76.2, -81.4], [78.8, -85.4], [74.7, -88.2], [73.2, -99.7], [71, -100], [72, -110.7], [63, -119.9], [51.2, -117.6]], floors: 5, below: 2, roof: 'vault' }],
   },
   {
     id: 'RNCA',
@@ -83,21 +92,21 @@ export const BUILDINGS = [
     name: 'Science Building',
     style: 'sand',
     level: 'T3',
-    parts: [{ footprint: [[-54.9, 14.8], [-47.5, 30], [-35.4, 24.2], [-37.8, 19.5], [-11.6, 6.9], [-9.6, 10.9], [1.9, 5.4], [-5.2, -9.1]], floors: 7, roof: 'flat' }],
+    parts: [{ footprint: [[-54.9, 14.8], [-47.5, 30], [-35.4, 24.2], [-37.8, 19.5], [-11.6, 6.9], [-9.6, 10.9], [1.9, 5.4], [-5.2, -9.1]], floors: 7, roof: 'hip' }],
   },
   {
     id: 'TR',
     name: 'Tohme-Rizk Hall',
     style: 'sand',
     level: 'T6',
-    parts: [{ footprint: [[-44, 32.6], [-43.6, 39.4], [-12.8, 37.7], [-13.1, 30.8]], floors: 4, roof: 'flat' }],
+    parts: [{ footprint: [[-44, 32.6], [-43.6, 39.4], [-12.8, 37.7], [-13.1, 30.8]], floors: 4, roof: 'hip' }],
   },
   {
     id: 'ARC',
     name: 'Architecture Hall',
     style: 'sand',
     level: 'T5',
-    parts: [{ footprint: [[-0.5, 22.9], [1, 38.5], [28.5, 35.8], [28, 31.5], [36.1, 30.8], [35.2, 21.9], [31, 22.3], [31.2, 23.8], [14.3, 25.4], [13.9, 21.6]], floors: 6, roof: 'flat' }],
+    parts: [{ footprint: [[-0.5, 22.9], [1, 38.5], [28.5, 35.8], [28, 31.5], [36.1, 30.8], [35.2, 21.9], [31, 22.3], [31.2, 23.8], [14.3, 25.4], [13.9, 21.6]], floors: 6, roof: 'hip' }],
   },
   {
     id: 'ZH',
@@ -105,7 +114,8 @@ export const BUILDINGS = [
     name: 'Zakhem Hall',
     style: 'sand',
     level: 'T5',
-    parts: [{ footprint: [[39.7, 31.8], [32, 46.1], [80.7, 72.2], [88.5, 57.9], [77.1, 51.8], [75.2, 55.3], [50.6, 42.2], [52.5, 38.6]], floors: 7, roof: 'flat' }],
+    // 6 floors: counted from the official 3D map. FM says 7 (levels 1 to 7); its photos show only single wings, so none gives a full count.
+    parts: [{ footprint: [[39.7, 31.8], [32, 46.1], [80.7, 72.2], [88.5, 57.9], [77.1, 51.8], [75.2, 55.3], [50.6, 42.2], [52.5, 38.6]], floors: 6, roof: 'hip' }],
   },
   {
     id: 'BSL',
@@ -114,7 +124,7 @@ export const BUILDINGS = [
     style: 'sand',
     level: 'T5',
     // guess: OSM building 987117571 (181 m², small for 5 floors at FM's 1,214 m²).
-    parts: [{ footprint: [[70.5, 24.4], [75.4, 19.9], [93.9, 40], [88.9, 44.4]], floors: 5, roof: 'flat' }],
+    parts: [{ footprint: [[70.5, 24.4], [75.4, 19.9], [93.9, 40], [88.9, 44.4]], floors: 5, roof: 'hip' }],
   },
   {
     id: 'FCC',
@@ -122,7 +132,7 @@ export const BUILDINGS = [
     name: 'Frem Civic Center',
     style: 'sand',
     level: 'T7',
-    parts: [{ footprint: [[129.5, 12.4], [147, 12.8], [145.7, 73.6], [148.8, 73.7], [148.7, 78.5], [142.2, 78.4], [142.1, 81.7], [138.3, 81.6], [138.3, 77.8], [131.8, 77.7], [131.9, 71.9], [128.1, 71.8], [128.3, 63.4], [129.8, 63.4], [129.9, 58.5], [127.5, 58.4], [128, 34.9], [121.4, 34.8], [121.5, 27.9], [129.2, 28.1]], floors: 5, roof: 'flat' }],
+    parts: [{ footprint: [[129.5, 12.4], [147, 12.8], [145.7, 73.6], [148.8, 73.7], [148.7, 78.5], [142.2, 78.4], [142.1, 81.7], [138.3, 81.6], [138.3, 77.8], [131.8, 77.7], [131.9, 71.9], [128.1, 71.8], [128.3, 63.4], [129.8, 63.4], [129.9, 58.5], [127.5, 58.4], [128, 34.9], [121.4, 34.8], [121.5, 27.9], [129.2, 28.1]], floors: 5, roof: 'hip' }],
   },
   {
     id: 'CHSC',
@@ -132,6 +142,11 @@ export const BUILDINGS = [
     style: 'white',
     level: 'T7',
     parts: [{ footprint: [[96.3, -46.3], [133.4, -6.4], [164.2, -36.5], [162, -37.8], [152.3, -36.9], [122.5, -70.4]], floors: 6, roof: 'flat' }],
+    extras: [
+      { shape: 'box', at: [110, -54], size: [16, 12], angle: 47, base: 'top', height: 2.6, color: TILE },    // orange-tile wing on the west side
+      { shape: 'box', at: [136, -30], size: [14, 7], angle: 47, base: 'top', height: 1.2, color: '#ffffff' }, // skylights
+      { shape: 'box', at: [148, -38], size: [8, 5], angle: 47, base: 'top', height: 1.2, color: '#ffffff' },
+    ],
   },
   {
     id: 'ELRC',
@@ -140,8 +155,10 @@ export const BUILDINGS = [
     label: 'Engineering Labs',
     style: 'elrc',
     level: 'T8',
-    // 7 levels; level 1 (shelter and testing room) is below the entrance.
-    parts: [{ footprint: [[238.9, 59.4], [245.9, 66.6], [242.3, 70.1], [284.2, 113.9], [295.9, 102.9], [246.9, 51.8]], floors: 7, below: 1, roof: 'flat' }],
+    // 8 floors: counted from the official 3D map. FM says 7 levels (level 1 is a shelter and testing room); its photos show 5 floors
+    // above a retaining wall with more hidden, which is a lower bound, not a count.
+    parts: [{ footprint: [[238.9, 59.4], [245.9, 66.6], [242.3, 70.1], [284.2, 113.9], [295.9, 102.9], [246.9, 51.8]], floors: 8, roof: 'flat' }],
+    extras: [{ shape: 'box', at: [270, 83], size: [14, 7], angle: 47, base: 'top', height: 3, color: 'plant' }], // rooftop plant room
   },
   {
     id: 'STC',
@@ -149,7 +166,7 @@ export const BUILDINGS = [
     style: 'concrete',
     level: 'T4',
     // guess: OSM building 1191770841 (366 m²; FM lists 1,227 m² on "level 1", so the match is doubtful).
-    parts: [{ footprint: [[18.8, -24.9], [13.9, -16.3], [2.5, -10.7], [1, -13.4], [-4.8, -10.5], [0.7, 0.2], [8, -4.1], [11.1, 1], [20.3, -3.5], [18, -6.6], [20.3, -8.8], [24.4, -15.9], [27.1, -20.6]], floors: 2, roof: 'flat' }],
+    parts: [{ footprint: [[18.8, -24.9], [13.9, -16.3], [2.5, -10.7], [1, -13.4], [-4.8, -10.5], [0.7, 0.2], [8, -4.1], [11.1, 1], [20.3, -3.5], [18, -6.6], [20.3, -8.8], [24.4, -15.9], [27.1, -20.6]], floors: 2, roof: 'vault' }],
   },
   {
     id: 'SC',
@@ -157,7 +174,7 @@ export const BUILDINGS = [
     style: 'sand',
     level: 'T4',
     // guess: placed by hand next to the Student Center (154 m² footprint x 3 floors = FM's 478 m²).
-    parts: [{ footprint: orientedRect(38, -8, 14, 11, 0), floors: 3, roof: 'flat' }],
+    parts: [{ footprint: orientedRect(38, -8, 14, 11, 0), floors: 3, roof: 'hip' }],
   },
   {
     id: 'CAF',
@@ -165,7 +182,7 @@ export const BUILDINGS = [
     style: 'navy',
     level: 'T6',
     // Placed inside the OSM "Cafateria" zone (x -96 to -71, z 17 to 54): cafeteria upstairs, Athletics Office below.
-    parts: [{ footprint: orientedRect(-84, 36, 26, 14, 90), floors: 2, roof: 'flat' }],
+    parts: [{ footprint: orientedRect(-84, 36, 26, 14, 90), floors: 2, roof: 'vault' }],
   },
   {
     id: 'HC',
@@ -174,7 +191,7 @@ export const BUILDINGS = [
     style: 'sand',
     level: 'T0',
     // guess: placed by hand at the entrance of Lower Parking A.
-    parts: [{ footprint: orientedRect(-335, 28, 12, 10, 0), floors: 1, roof: 'flat' }],
+    parts: [{ footprint: orientedRect(-335, 28, 12, 10, 0), floors: 1, roof: 'hip' }],
   },
   {
     id: 'AF',
