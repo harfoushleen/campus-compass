@@ -175,11 +175,22 @@ const SOURCES = [
     ['fitness-centers', 'fitness-center'],
     ['basketball-indoor-court', 'indoor-court'],
     ['swimming-pool', 'swimming-pool'],
+    ['basketball-outdoor-court', 'basketball-outdoor-byblos'], // Byblos campus (this one has a table)
   ].map(([slug, key]) => ({
     url: `https://athletics.lau.edu.lb/facility/${slug}/`,
     raw: true, // reads the HTML table, not the plain text
     keys: { [key]: (html) => athleticsHours(html) },
   })),
+  {
+    // The Byblos fitness center page has no table, only a sentence: "open Monday through Friday from 7:00 a.m. to 6:00 p.m."
+    url: 'https://athletics.lau.edu.lb/facility/fitness-center-byblos/',
+    keys: {
+      'fitness-center-byblos': (text) => {
+        const r = ranges(text.match(/Monday through Friday from ([^\n]*?) and is located/i)?.[1] ?? '')[0];
+        return r ? `Mon–Fri ${r}` : null;
+      },
+    },
+  },
 ];
 
 // ───────────────────────── run ─────────────────────────

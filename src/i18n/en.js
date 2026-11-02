@@ -73,6 +73,8 @@ export default {
   'feature.grass': 'Grass patch',
   'feature.cathouse': 'Cat house',
   'feature.seating': 'Seating',
+  'feature.steps': 'Steps',
+  'feature.music': 'Live music',
   'feature.vine': 'Vine',
 
   near: 'Near',
