@@ -532,7 +532,7 @@ export const PARKING_BAYS = true;
 // Same format as Beirut: benches [[x, z, angle], ...], fountain { at, radius }, grass { at, size }.
 export const HANGOUT_DECOR = {
   'FOUNTAIN-PLAZA': {
-    grass: { at: [92, 0], size: [9, 9] }, // a round lawn: there is no fountain here (the user, who knows the campus)
+    grass: { at: [92, 0], size: [9, 9] }, // a round lawn that fills the ring road (its edge is under the road): there is no fountain here (the user, who knows the campus)
     benches: [[100.7, -8.7, 45], [92, -15.5, 0]], // outside the ring road, facing the lawn
   },
   'FOUNTAIN-ARCHITECTURE': {
@@ -562,7 +562,7 @@ export const HANGOUT_DECOR = {
 // line the paths at night.
 export const PATHS = [
   { id: 'mainPromenade', width: 6, points: [[26, -60], [30, -50], [34, -40], [40, -30], [48, -18], [56, -8], [64, 4]] },  // from the Main Gate
-  { id: 'plazaToFountain', width: 5, points: [[64, 4], [78, 10], [90, 8], [98, -2]] },
+  { id: 'plazaToFountain', width: 5, points: [[64, 4], [78, 10], [84.2, 8.2]] },  // stops at the outer edge of the ring road round the lawn: nothing crosses the lawn
   { id: 'libraryWalk', width: 4, points: [[30, -52], [44, -57.5], [54, -60]] },
   { id: 'rncaWalk', width: 4, points: [[43.6, -25], [62, -36], [74, -42]] },   // leaves the main promenade, to the Central Administration
   { id: 'scienceFront', width: 4, points: [[-61, -20], [-50, -12], [-38, -6], [-24, -3], [-8, -14], [6, -24]] },           // from the Lower Gate
@@ -571,7 +571,7 @@ export const PATHS = [
   { id: 'courts', width: 3, points: [[-84, 52], [-98, 56], [-118, 56]] },
   { id: 'architectureNorth', width: 3, points: [[18, 17], [-6, 18]] },                          // from the plaza along Architecture Hall to the stairs down to the Upper Gate road
   { id: 'architecture', width: 3, points: [[60, -4], [46, 6], [30, 14], [20, 20]] },
-  { id: 'bassil', width: 3, points: [[98, -2], [100, 14], [92, 28], [88.5, 33.2]] },
+  { id: 'bassil', width: 3, points: [[99.4, 7.6], [100, 14], [92, 28], [88.5, 33.2]] },
   { id: 'eastPromenade', width: 5, points: [[112, 5.5], [128, 10], [146, 8], [160, 14], [172, 20]] },             // toward the Chagoury and Frem buildings
   { id: 'engineering', width: 3, points: [[194, 60], [203, 63]] },
   { id: 'amphitheaterWalk', width: 3, points: [[54, -60], [66, -62.5], [74, -63.5], [79.8, -65.2]] },  // from the Library entrance along its plaza face to the head of the amphitheater stair
@@ -584,7 +584,7 @@ export const STAIRS = [
   { id: 'scienceUp', from: [-4, -26], to: [12, -44], width: 5 },  // Science Parking up to the main plaza
   { id: 'cafeDown', from: [-6, 18], to: [-30, 27], width: 4 },    // fountain plaza down to the Upper Gate road
   { id: 'amphitheaterSteps', from: [79.8, -65.2], to: [82.4, -75.5], width: 5.5 }, // the broad stair from the plaza down to the amphitheater, between the Library and the Central Administration
-  { id: 'eastUp', from: [99, -1.5], to: [112, 5.5], width: 5 },    // fountain plaza up to the east promenade (Frem and Chagoury)
+  { id: 'eastUp', from: [102.7, -1.8], to: [112, 5.5], width: 5 },    // fountain plaza up to the east promenade (Frem and Chagoury)
   { id: 'engineeringUp', from: [203, 63], to: [238.5, 61.2], width: 5 }, // up to the Engineering center
   { id: 'lowerGateUp', from: [-52, -34], to: [-8, -56], width: 6 },  // Lower Gate road up to the main plaza and Block A (27 m climb: see GRADED)
 ];
@@ -622,8 +622,8 @@ const LAWN_SPECS = [
   ['promenadeEast1', 'mainPromenade', 1, 4.5, 14, 0.29, 0.47],      // both sides of the entrance promenade, either side of the walk to the Central Administration
   ['promenadeEast2', 'mainPromenade', 1, 4.5, 14, 0.63, 0.88],
   ['promenadeWest', 'mainPromenade', -1, 4.5, 11, 0.2, 0.6],
-  ['fountainNorth', 'plazaToFountain', 1, 4, 9, 0.1, 0.4],          // the two beds on the way to the fountain
-  ['fountainSouth', 'plazaToFountain', -1, 4, 9, 0.1, 0.4],
+  ['fountainNorth', 'plazaToFountain', 1, 4, 9, 0.185, 0.745],          // the two beds on the way to the fountain
+  ['fountainSouth', 'plazaToFountain', -1, 4, 9, 0.185, 0.745],
 ];
 const lawns = LAWN_SPECS.map(([id, pathId, side, near, far, from, to]) => ({ id, side, strip: pathStrip(pathId, side, near, far, from, to) }));
 
