@@ -10,7 +10,8 @@
     "icons": "node scripts/make-icons.js",
     "osm": "node scripts/fetch-osm.js",
     "hours": "node scripts/update-hours.js",
-    "package": "node scripts/package.js"
+    "package": "node scripts/package.js",
+    "check:byblos": "node scripts/check-byblos.mjs"
   },
   "dependencies": {
     "@react-three/drei": "^10.7.9",

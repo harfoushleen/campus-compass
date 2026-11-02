@@ -1,0 +1,230 @@
+[
+  {
+    "check": "network",
+    "what": "road '249222125' climbs 48% (limit 25%): needs stairs, a ramp, or a regraded slope",
+    "where": "(296.2, 127.2)",
+    "extra": ""
+  },
+  {
+    "check": "network",
+    "what": "road '708713250' climbs 69% (limit 25%): needs stairs, a ramp, or a regraded slope",
+    "where": "(53.2, -130.7)",
+    "extra": ""
+  },
+  {
+    "check": "network",
+    "what": "road '777277639' climbs 112% (limit 25%): needs stairs, a ramp, or a regraded slope",
+    "where": "(160.9, 80.2)",
+    "extra": ""
+  },
+  {
+    "check": "network",
+    "what": "road '777277640' climbs 238% (limit 25%): needs stairs, a ramp, or a regraded slope",
+    "where": "(112.7, 53)",
+    "extra": ""
+  },
+  {
+    "check": "network",
+    "what": "road '992652062' climbs 46% (limit 25%): needs stairs, a ramp, or a regraded slope",
+    "where": "(184.1, 100)",
+    "extra": ""
+  },
+  {
+    "check": "network",
+    "what": "road '992652066' climbs 68% (limit 25%): needs stairs, a ramp, or a regraded slope",
+    "where": "(-73.83, -20.1)",
+    "extra": ""
+  },
+  {
+    "check": "network",
+    "what": "road '992652067' climbs 43% (limit 25%): needs stairs, a ramp, or a regraded slope",
+    "where": "(-279.97, -27.61)",
+    "extra": ""
+  },
+  {
+    "check": "network",
+    "what": "road '992652068' climbs 26% (limit 25%): needs stairs, a ramp, or a regraded slope",
+    "where": "(-294.1, -4.1)",
+    "extra": ""
+  },
+  {
+    "check": "network",
+    "what": "road '992652069' climbs 34% (limit 25%): needs stairs, a ramp, or a regraded slope",
+    "where": "(-272.32, -29.66)",
+    "extra": ""
+  },
+  {
+    "check": "network",
+    "what": "road 'infrastructureDrive' climbs 40% (limit 25%): needs stairs, a ramp, or a regraded slope",
+    "where": "(1.4, 97.6)",
+    "extra": ""
+  },
+  {
+    "check": "network",
+    "what": "path 'upperRoad' climbs 127% (limit 35%): needs stairs, a ramp, or a regraded slope",
+    "where": "(-36.67, 28.87)",
+    "extra": ""
+  },
+  {
+    "check": "network",
+    "what": "stairs 'scienceUp' climbs 100% (limit 62%)",
+    "where": "(-1.71, -28.57)",
+    "extra": ""
+  },
+  {
+    "check": "floating",
+    "what": "building RHC: the ground under its edge varies by 4.7 m (the pad is not level: one side sinks into the hill)",
+    "where": "(-442.9, -67.32)",
+    "extra": ""
+  },
+  {
+    "check": "floating",
+    "what": "building LIB: the ground under its edge varies by 3.23 m (the pad is not level: one side sinks into the hill)",
+    "where": "(63, -119.9)",
+    "extra": ""
+  },
+  {
+    "check": "floating",
+    "what": "building RNCA: the ground under its edge varies by 1.87 m (the pad is not level: one side sinks into the hill)",
+    "where": "(75.5, -57.7)",
+    "extra": ""
+  },
+  {
+    "check": "floating",
+    "what": "building SCI: the ground under its edge varies by 11.05 m (the pad is not level: one side sinks into the hill)",
+    "where": "(-54.9, 14.8)",
+    "extra": ""
+  },
+  {
+    "check": "floating",
+    "what": "building ARC: the ground under its edge varies by 1.69 m (the pad is not level: one side sinks into the hill)",
+    "where": "(1, 38.5)",
+    "extra": ""
+  },
+  {
+    "check": "floating",
+    "what": "building ZH: the ground under its edge varies by 1.73 m (the pad is not level: one side sinks into the hill)",
+    "where": "(78.07, 70.79)",
+    "extra": ""
+  },
+  {
+    "check": "floating",
+    "what": "building STC: the ground under its edge varies by 6.19 m (the pad is not level: one side sinks into the hill)",
+    "where": "(-1.8, -12)",
+    "extra": ""
+  },
+  {
+    "check": "floating",
+    "what": "road '249222125': 6 vertices sink into the ground (down to -0.21 m), the ground cuts it",
+    "where": "(277.45, 76.64)",
+    "extra": ""
+  },
+  {
+    "check": "floating",
+    "what": "road '708713250': 8 vertices sink into the ground (down to -1.49 m), the ground cuts it",
+    "where": "(48.01, -116.9)",
+    "extra": ""
+  },
+  {
+    "check": "floating",
+    "what": "road '708713250': 1 vertices float above the ground (up to 0.66 m)",
+    "where": "(36.42, -116.76)",
+    "extra": ""
+  },
+  {
+    "check": "floating",
+    "what": "road '708713250-lower': 11 vertices sink into the ground (down to -0.52 m), the ground cuts it",
+    "where": "(-61.54, -24.87)",
+    "extra": ""
+  },
+  {
+    "check": "floating",
+    "what": "road '708713250-lower': 1 vertices float above the ground (up to 0.64 m)",
+    "where": "(-367.72, 1.83)",
+    "extra": ""
+  },
+  {
+    "check": "floating",
+    "what": "road '777277640': 1 vertices sink into the ground (down to -0.54 m), the ground cuts it",
+    "where": "(109.34, 53.18)",
+    "extra": ""
+  },
+  {
+    "check": "floating",
+    "what": "road '992652059': 2 vertices sink into the ground (down to -0.03 m), the ground cuts it",
+    "where": "(109.78, 53.59)",
+    "extra": ""
+  },
+  {
+    "check": "floating",
+    "what": "road '992652061': 1 vertices sink into the ground (down to -0.05 m), the ground cuts it",
+    "where": "(129.56, -63.57)",
+    "extra": ""
+  },
+  {
+    "check": "floating",
+    "what": "road '992652065': 1 vertices sink into the ground (down to -0.03 m), the ground cuts it",
+    "where": "(-5.94, -26.39)",
+    "extra": ""
+  },
+  {
+    "check": "floating",
+    "what": "road '992652066': 2 vertices sink into the ground (down to -0.71 m), the ground cuts it",
+    "where": "(-71.94, -15.19)",
+    "extra": ""
+  },
+  {
+    "check": "floating",
+    "what": "road '992652066': 1 vertices float above the ground (up to 0.8 m)",
+    "where": "(-71.26, -21.18)",
+    "extra": ""
+  },
+  {
+    "check": "floating",
+    "what": "road '992652069': 1 vertices sink into the ground (down to -0.08 m), the ground cuts it",
+    "where": "(-270.5, -26.74)",
+    "extra": ""
+  },
+  {
+    "check": "floating",
+    "what": "road 'infrastructureDrive': 1 vertices sink into the ground (down to 0 m), the ground cuts it",
+    "where": "(3.87, 95.13)",
+    "extra": ""
+  },
+  {
+    "check": "floating",
+    "what": "path 'scienceFront': 1 vertices sink into the ground (down to -0.36 m), the ground cuts it",
+    "where": "(5.65, -26.21)",
+    "extra": ""
+  },
+  {
+    "check": "floating",
+    "what": "path 'scienceFront': 3 vertices float above the ground (up to 5.32 m)",
+    "where": "(-3.22, -14.95)",
+    "extra": ""
+  },
+  {
+    "check": "floating",
+    "what": "path 'upperRoad': 6 vertices sink into the ground (down to -1.32 m), the ground cuts it",
+    "where": "(-34.46, 26.69)",
+    "extra": ""
+  },
+  {
+    "check": "floating",
+    "what": "path 'upperRoad': 5 vertices float above the ground (up to 1.86 m)",
+    "where": "(-37.79, 27.62)",
+    "extra": ""
+  },
+  {
+    "check": "floating",
+    "what": "path 'residenceBFront': 5 vertices float above the ground (up to 0.81 m)",
+    "where": "(-44.4, -49.02)",
+    "extra": ""
+  },
+  {
+    "check": "floating",
+    "what": "stairs 'scienceUp': 12 treads do not follow the slope (up to -0.64 m off the ground)",
+    "where": "(-5.59, -27.53)",
+    "extra": ""
+  }
+]

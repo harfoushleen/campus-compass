@@ -3,7 +3,7 @@
 // Every floating label (buildings, gates, hangout spots, parking badges) is a
 // <ManagedLabel>. On each redraw, <LabelLayout> decides what to show:
 //   1. Zoom: labels with priority 2 or 3 appear only when zoomed in far enough
-//      (thresholds in LABELS, site.js). Hovered/selected labels always show.
+//      (thresholds in LABELS, campus/common.js). Hovered/selected labels always show.
 //   2. Overlap: going from most to least important, a label that would overlap
 //      an already-placed label, or a button / the Gezairi marker, is hidden.
 //   "Compactable" labels (hangout pins) shrink to their icon instead of
@@ -12,7 +12,7 @@ import { createContext, useCallback, useContext, useEffect, useRef } from 'react
 import * as THREE from 'three';
 import { useFrame, useThree } from '@react-three/fiber';
 import { Html } from '@react-three/drei';
-import { LABELS } from '../../campus/site.js';
+import { LABELS } from '../../campus/common.js';
 
 export const LabelContext = createContext(null);
 

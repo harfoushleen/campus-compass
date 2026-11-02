@@ -48,6 +48,8 @@ export default {
   labels: 'Labels',
   loading3d: 'Loading 3D campus…',
   'marker.gezairi': 'Gezairi',
+  'marker.rhc': 'Residence C',
+  'marker.af': 'Animal Facility',
   // Plurals: add ".one", ".other" etc. (Arabic also uses ".zero", ".two", ".few", ".many").
   'resultsCount.one': '{count} place',
   'resultsCount.other': '{count} places',
@@ -71,6 +73,8 @@ export default {
   'feature.grass': 'Grass patch',
   'feature.cathouse': 'Cat house',
   'feature.seating': 'Seating',
+  'feature.steps': 'Steps',
+  'feature.music': 'Live music',
   'feature.vine': 'Vine',
 
   near: 'Near',

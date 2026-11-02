@@ -11,10 +11,10 @@ import { ChevronIcon, ForwardIcon } from './icons.jsx';
 
 // The order of the rows (a category with no places on this campus is left out).
 const ORDER = ['acadsvc', 'student', 'food', 'study', 'sports', 'techid', 'venues', 'hangout', 'cats', 'shelters', 'safety', 'parking', 'buildings'];
-const PARKING_ORDER = 'MULG'; // Middle Gate, Underground, Lower Gate, Gezairi
+const PARKING_ORDER = { beirut: 'MULG', byblos: 'ABCDEFGHIJK' }; // order of the lot letters on each campus
 
 const sortPlaces = (items, categoryId) =>
-  [...items].sort((a, b) => (categoryId === 'parking' ? PARKING_ORDER.indexOf(a.code) - PARKING_ORDER.indexOf(b.code) : a.name.localeCompare(b.name)));
+  [...items].sort((a, b) => (categoryId === 'parking' ? PARKING_ORDER[a.campus].indexOf(a.code) - PARKING_ORDER[a.campus].indexOf(b.code) : a.name.localeCompare(b.name)));
 
 /** One place: its name, a short second line, and the category icon (letter for parking). */
 function PlaceRow({ place, selected, onSelect }) {

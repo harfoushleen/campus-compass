@@ -4,7 +4,11 @@
 import rawPlaces from './places.json';
 import { CATEGORIES } from './categories.js';
 import { CAMPUSES } from './campuses.js';
-import { toLatLng } from '../campus/geo.js';
+import * as beirutGeo from '../campus/beirut/geo.js';
+import * as byblosGeo from '../campus/byblos/geo.js';
+
+// Each campus has its own origin for converting a place's 3D position to GPS.
+const GEO = { beirut: beirutGeo, byblos: byblosGeo };
 
 const REQUIRED = ['id', 'name', 'campus', 'category'];
 
@@ -47,7 +51,7 @@ export const getPlace = (id) => PLACES.find((p) => p.id === id);
 /** Coordinates for directions: the place's own, its 3D position, or else its building's. */
 export function placeCoordinates(place) {
   if (typeof place.latitude === 'number') return [place.latitude, place.longitude];
-  if (place.position) return toLatLng(...place.position);
+  if (place.position) return GEO[place.campus].toLatLng(...place.position);
   const building = place.building && getPlace(place.building);
   return building && typeof building.latitude === 'number' ? [building.latitude, building.longitude] : null;
 }

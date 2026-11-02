@@ -3,9 +3,10 @@
 // instances so each kind is drawn with a single InstancedMesh: cheap on phones.
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
-import { BUILDINGS, FLOOR_HEIGHT, STYLES, WINDOWS } from './buildings.js';
-import { heightAt, CAMERA, TREES, TERRACES, AMPHITHEATER, HANGOUT_DECOR, PATHS, STAIRS, PATCHES, GATES, LAMPS, NIGHT_WINDOWS } from './site.js';
+import { FLOOR_HEIGHT, WINDOWS } from './common.js';
 import { centroid, insidePolygon, partHeights } from './geometry.js';
+
+// Functions below that need a campus take its model `m` first (see src/campus/index.js).
 
 // ── Shape helpers ──
 
@@ -77,12 +78,12 @@ export function hipRoof(footprint, top, { overhang = 0.6, pitch = 0.32, maxHeigh
  * The steep glass side of each tooth faces the default camera, as on the official map.
  * Returns the white teeth and, separately, the glass faces (drawn darker).
  */
-export function sawtoothRoof(footprint, top, { teeth = 7, height = 3.4 } = {}) {
+export function sawtoothRoof(m, footprint, top, { teeth = 7, height = 3.4 } = {}) {
   const { cx, cz, length, width, u, v } = orientedBounds(footprint);
   const step = length / teeth;
   const depth = width * 0.92;
   // Which end of each tooth gets the steep glass face: the one facing the camera.
-  const toCamera = [CAMERA.position[0] - CAMERA.target[0], CAMERA.position[2] - CAMERA.target[2]];
+  const toCamera = [m.CAMERA.position[0] - m.CAMERA.target[0], m.CAMERA.position[2] - m.CAMERA.target[2]];
   const glassAtEnd = u[0] * toCamera[0] + u[1] * toCamera[1] > 0; // glass at local x = step
   const gx = glassAtEnd ? step : 0;
 
@@ -104,6 +105,31 @@ export function sawtoothRoof(footprint, top, { teeth = 7, height = 3.4 } = {}) {
     glassParts.push(glassGeometry.clone().applyMatrix4(m));
   }
   return { geometry: mergeGeometries(teethParts), glass: mergeGeometries(glassParts), height };
+}
+
+/**
+ * Barrel-vault roof (Cafeteria, Student Center, Library): a half-ellipse along the footprint's long side,
+ * sitting at height `top`. Returns { geometry, height }.
+ */
+export function vaultRoof(footprint, top, { rise = 0.3, maxHeight = 4.5 } = {}) {
+  const { cx, cz, length, width, u, v } = orientedBounds(footprint);
+  const h = Math.min(width * rise, maxHeight);
+  const shape = new THREE.Shape();
+  const steps = 14;
+  for (let i = 0; i <= steps; i++) {
+    const a = Math.PI - (Math.PI * i) / steps; // from the left edge over the top to the right edge
+    const x = (width / 2 + 0.3) * Math.cos(a), y = h * Math.sin(a);
+    if (i === 0) shape.moveTo(x, y);
+    else shape.lineTo(x, y);
+  }
+  shape.lineTo(-(width / 2 + 0.3), 0);
+  const geometry = new THREE.ExtrudeGeometry(shape, { depth: length, bevelEnabled: false });
+  // The shape's x runs across the building (v), its y up, and the extrusion along the long side (u).
+  const m = new THREE.Matrix4().makeBasis(new THREE.Vector3(v[0], 0, v[1]), new THREE.Vector3(0, 1, 0), new THREE.Vector3(u[0], 0, u[1]));
+  m.setPosition(cx - (u[0] * length) / 2, top, cz - (u[1] * length) / 2);
+  geometry.applyMatrix4(m);
+  geometry.computeVertexNormals();
+  return { geometry, height: h };
 }
 
 /** Tennis-court markings, drawn once into a small canvas texture. */
@@ -147,6 +173,59 @@ export function courtsLayout(footprint, top, { length = 20, width = 9, raise = 1
   return { courts, slab };
 }
 
+/**
+ * Outdoor courts on the ground (COURTS in the campus's site.js): [{ at: [x, z], size: [width, length], angle }].
+ * Returns, for each, the court plane and its concrete slab (a box), both lying on the ground at `at`.
+ */
+export function buildCourts(m) {
+  return (m.COURTS ?? []).map(({ at: [x, z], size: [w, l], angle = 0 }) => {
+    const y = m.heightAt(x, z);
+    const rotationY = Math.PI / 2 - (angle * Math.PI) / 180;
+    return {
+      court: { position: [x, y + 0.34, z], rotationY, size: [w, l] },
+      slab: { position: [x, y + 0.15, z], rotationY, size: [w + 2.4, 0.3, l + 2.4] },
+    };
+  });
+}
+
+/**
+ * White bay lines for the surface parking lots (PARKING in the campus's site.js; not the underground ones).
+ * A stripe every `spacing` metres across the lot's short side, cut to the lot's outline. Returns flat
+ * [x, y, z, ...] triangles lying just above the ground, or null.
+ */
+export function buildParkingLines(m, { spacing = 2.7, half = 0.07, inset = 1.2 } = {}) {
+  const positions = [];
+  for (const lot of m.PARKING) {
+    if (lot.underground) continue;
+    const { cx, cz, length, width, u, v } = orientedBounds(lot.area);
+    // Stripes run along v (the short side) at steps along u, leaving an aisle in the middle of wide lots.
+    for (let s = -length / 2 + spacing; s < length / 2 - 0.5; s += spacing) {
+      let runStart = null;
+      for (let t = -width / 2; t <= width / 2 + 0.01; t += 0.5) {
+        const x = cx + u[0] * s + v[0] * t, z = cz + u[1] * s + v[1] * t;
+        const inside = insidePolygon(lot.area, x, z);
+        if (inside && runStart === null) runStart = t;
+        if ((!inside || t >= width / 2) && runStart !== null) {
+          const a = runStart + inset, b = t - 0.5 - inset;
+          runStart = null;
+          if (b - a < 2) continue;
+          const p0 = [cx + u[0] * s + v[0] * a, cz + u[1] * s + v[1] * a], p1 = [cx + u[0] * s + v[0] * b, cz + u[1] * s + v[1] * b];
+          const lift = m.LIFTS?.bays ?? 0.36, y0 = m.heightAt(...p0) + lift, y1 = m.heightAt(...p1) + lift;
+          if (m.DRAPE_PARKING && Math.abs(y1 - y0) > 0.7) continue; // no bay lines up a slope
+          const ox = u[0] * half, oz = u[1] * half;
+          positions.push(p0[0] - ox, y0, p0[1] - oz, p1[0] - ox, y1, p1[1] - oz, p0[0] + ox, y0, p0[1] + oz,
+            p0[0] + ox, y0, p0[1] + oz, p1[0] - ox, y1, p1[1] - oz, p1[0] + ox, y1, p1[1] + oz);
+        }
+      }
+    }
+  }
+  if (!positions.length) return null;
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+  g.computeVertexNormals();
+  return g;
+}
+
 // ── Windows and bands ──
 
 /**
@@ -157,7 +236,8 @@ export function courtsLayout(footprint, top, { length = 20, width = 9, raise = 1
  * Styles with `bands: true` also get a coloured band (accent colour) under each floor.
  * Windows and glass strips have `lit: true` if they glow at night (see NIGHT_WINDOWS).
  */
-export function buildFacadeInstances() {
+export function buildFacadeInstances(m) {
+  const { BUILDINGS, STYLES, NIGHT_WINDOWS, heightAt } = m;
   const windows = []; // { position, rotationY, color, lit }
   const bands = [];   // { position, rotationY, length, height, color, lit }
   const rand = random(33);
@@ -168,7 +248,7 @@ export function buildFacadeInstances() {
       const mode = style.windows ?? 'grid';
       if (mode === 'none' && !style.bands) continue;
       const fh = part.floorHeight ?? FLOOR_HEIGHT;
-      const { top } = partHeights(part);
+      const { top } = partHeights(m, part);
 
       for (const e of edges(part.footprint)) {
         if (e.len < WINDOWS.minWall) continue;
@@ -221,23 +301,30 @@ function random(seed) {
   return () => ((s = (s * 1664525 + 1013904223) >>> 0) / 4294967296);
 }
 
-const insideAnyBuilding = (x, z) =>
-  BUILDINGS.some((b) => b.parts.some((p) => insidePolygon(p.footprint, x, z)));
+// Things trees and lamps must keep clear of, worked out once per campus.
+const derivedCache = new WeakMap();
+function derived(m) {
+  if (!derivedCache.has(m)) {
+    const { BUILDINGS, HANGOUT_DECOR, PATHS, STAIRS } = m;
+    // Every point where a hangout decoration stands (trees are kept away from these).
+    const decorPoints = Object.values(HANGOUT_DECOR).flatMap((d) => [
+      ...(d.benches ?? []).map(([x, z]) => [x, z]),
+      ...(d.shrubs ?? []),
+      ...[d.kiosk, d.fountain, d.featureTree, d.grass, d.catHouse, d.pergola, d.waterfall].filter(Boolean).map((o) => o.at),
+    ]);
+    // Paths and stairs as line segments.
+    const stairLines = STAIRS.map((st) => ({ width: st.width, points: [st.from, st.to] }));
+    derivedCache.set(m, {
+      insideAnyBuilding: (x, z) => BUILDINGS.some((bd) => bd.parts.some((p) => insidePolygon(p.footprint, x, z))),
+      nearDecor: (x, z, r = 4.5) => decorPoints.some(([dx, dz]) => Math.hypot(x - dx, z - dz) < r),
+      walkways: [...PATHS.map((p) => ({ width: p.width, points: p.points })), ...stairLines, ...(m.DRIVES ?? []), ...(m.TREE_KEEP_OUT ? m.osm.streets.map((st) => ({ width: st.width, points: st.points })) : [])], // trees keep off access roads (and, where TREE_KEEP_OUT, every road)
+      stairLines,
+    });
+  }
+  return derivedCache.get(m);
+}
 
-// Every point where a hangout decoration stands (trees are kept away from these).
-const decorPoints = Object.values(HANGOUT_DECOR).flatMap((d) => [
-  ...(d.benches ?? []).map(([x, z]) => [x, z]),
-  ...(d.shrubs ?? []),
-  ...[d.kiosk, d.fountain, d.featureTree, d.grass, d.catHouse, d.pergola, d.waterfall].filter(Boolean).map((o) => o.at),
-]);
-const nearDecor = (x, z, r = 4.5) => decorPoints.some(([dx, dz]) => Math.hypot(x - dx, z - dz) < r);
-
-// Paths and stairs as line segments, so trees can keep clear of them.
-const walkways = [
-  ...PATHS.map((p) => ({ width: p.width, points: p.points })),
-  ...STAIRS.map((st) => ({ width: st.width, points: [st.from, st.to] })),
-];
-function nearWalkway(x, z, margin = 1.5, lines = walkways) {
+function nearWalkway(lines, x, z, margin = 1.5) {
   return lines.some(({ width, points }) =>
     points.slice(0, -1).some(([ax, az], i) => {
       const [bx, bz] = points[i + 1];
@@ -249,11 +336,14 @@ function nearWalkway(x, z, margin = 1.5, lines = walkways) {
 }
 
 /** Tree positions and sizes from the clusters and rows in site.js. */
-export function buildTreeInstances() {
+export function buildTreeInstances(m) {
+  const { TREES, PATCHES, heightAt } = m;
+  const { insideAnyBuilding, nearDecor, walkways } = derived(m);
   const rand = random(7);
   const trees = [];
   const add = (x, z) => {
-    if (insideAnyBuilding(x, z) || nearDecor(x, z) || nearWalkway(x, z) || insideAnyPatch(x, z)) return;
+    if (insideAnyBuilding(x, z) || nearDecor(x, z) || nearWalkway(walkways, x, z) || PATCHES.some((p) => insidePolygon(p.points, x, z))) return;
+    if (m.TREE_KEEP_OUT && (m.PARKING.some((lot) => insidePolygon(lot.area, x, z)) || Math.hypot(heightAt(x + 1.5, z) - heightAt(x - 1.5, z), heightAt(x, z + 1.5) - heightAt(x, z - 1.5)) / 3 > 1.0)) return;
     const size = 0.8 + rand() * 0.5;
     trees.push({ position: [x, heightAt(x, z), z], size, shade: rand() });
   };
@@ -274,17 +364,17 @@ export function buildTreeInstances() {
 
 // ── Lamp posts ──
 
-const stairLines = STAIRS.map((st) => ({ width: st.width, points: [st.from, st.to] }));
-
 /**
  * Where the lamp posts stand: every LAMPS.spacing metres along each path, alternating sides,
  * plus one by each gate. Returns [x, z] pairs. Lamps never land in a building, on stairs, or
  * close to another lamp (paths cross, so this also stops doubles at junctions).
  */
-export function buildLampPositions() {
+export function buildLampPositions(m) {
+  const { PATHS, GATES, LAMPS } = m;
+  const { insideAnyBuilding, stairLines } = derived(m);
   const lamps = [];
   const add = (x, z) => {
-    if (insideAnyBuilding(x, z) || nearWalkway(x, z, 0.5, stairLines)) return;
+    if (insideAnyBuilding(x, z) || nearWalkway(stairLines, x, z, 0.5)) return;
     if (lamps.some(([lx, lz]) => Math.hypot(lx - x, lz - z) < LAMPS.spacing * 0.6)) return;
     lamps.push([x, z]);
   };
@@ -311,7 +401,9 @@ export function buildLampPositions() {
 // ── Terraces and amphitheater ──
 
 /** Stepped green terraces: one block per step, grass on top (group 0) and stone sides (group 1). */
-export function buildTerraces() {
+export function buildTerraces(m) {
+  const { TERRACES, heightAt } = m;
+  if (!TERRACES) return [];
   const { x: [x0, x1], z: [z0, z1], steps } = TERRACES;
   const depth = (z1 - z0) / steps;
   const parts = [];
@@ -331,7 +423,9 @@ export function buildTerraces() {
 }
 
 /** Half-round amphitheater: rising rings of seats around a small stage, open to the north. */
-export function buildAmphitheater() {
+export function buildAmphitheater(m) {
+  const { AMPHITHEATER, heightAt } = m;
+  if (!AMPHITHEATER) return null;
   const { center: [cx, cz], radius, tiers } = AMPHITHEATER;
   const ground = heightAt(cx, cz);
   const ring = radius / (tiers + 1);
@@ -374,7 +468,8 @@ export function benchGeometry() {
  *   benches / shrubs: instance lists (one InstancedMesh each)
  *   kiosk, awning, stone, water, trunk, crown: merged geometries (one mesh each)
  */
-export function buildHangoutDecor() {
+export function buildHangoutDecor(m) {
+  const { HANGOUT_DECOR, heightAt } = m;
   const benches = [], shrubs = [];
   const kiosk = [], awning = [], stone = [], water = [], trunk = [], crowns = [];
   const grass = [], catHouse = [], catRoof = [], wood = [], vine = [], rock = [];
@@ -383,6 +478,18 @@ export function buildHangoutDecor() {
       benches.push({ position: [x, heightAt(x, z), z], rotationY: (-angle * Math.PI) / 180 });
     }
     for (const [x, z] of d.shrubs ?? []) shrubs.push({ position: [x, heightAt(x, z), z] });
+    // Café tables: a round top on a pedestal, with four chairs round it.
+    for (const [x, z] of d.tables ?? []) {
+      const y = heightAt(x, z);
+      stone.push(new THREE.CylinderGeometry(0.06, 0.1, 0.72, 8).translate(x, y + 0.36, z));
+      stone.push(new THREE.CylinderGeometry(0.55, 0.55, 0.06, 14).translate(x, y + 0.75, z));
+      for (let k = 0; k < 4; k++) {
+        const a = (k / 4) * Math.PI * 2 + 0.4, cx = x + Math.cos(a) * 0.95, cz = z + Math.sin(a) * 0.95;
+        wood.push(box(0.4, 0.05, 0.4).rotateY(-a).translate(cx, y + 0.45, cz));
+        wood.push(box(0.05, 0.4, 0.4).rotateY(-a).translate(cx + Math.cos(a) * 0.2, y + 0.65, cz + Math.sin(a) * 0.2));
+        wood.push(box(0.05, 0.45, 0.05).translate(cx, y + 0.22, cz));
+      }
+    }
 
     if (d.kiosk) {
       const [x, z] = d.kiosk.at, y = heightAt(x, z), a = (-(d.kiosk.angle ?? 0) * Math.PI) / 180;
@@ -463,8 +570,8 @@ export function buildHangoutDecor() {
 }
 
 /** Roof/ground height of the tallest part of a building (for labels and "top" extras). */
-export function buildingTop(building) {
-  return Math.max(...building.parts.map((p) => partHeights(p).top));
+export function buildingTop(m, building) {
+  return Math.max(...building.parts.map((p) => partHeights(m, p).top));
 }
 
 export { centroid };
@@ -472,13 +579,10 @@ export { centroid };
 // ── Garden patches: bushes and flowers ──
 const FLOWER_COLORS = ['#e0455a', '#f2c230', '#f5f5f0', '#a259d1'];
 
-/** True if the point is inside (or just next to) one of the garden patches. */
-function insideAnyPatch(x, z) {
-  return PATCHES.some((p) => insidePolygon(p.points, x, z));
-}
-
 /** Bushes and flower clumps for every patch (same places on every load). */
-export function buildPatchPlants() {
+export function buildPatchPlants(m) {
+  const { PATCHES, heightAt } = m;
+  const { walkways } = derived(m);
   const rand = random(21);
   const shrubs = [], flowers = [];
   for (const patch of PATCHES) {
@@ -488,10 +592,36 @@ export function buildPatchPlants() {
     const spot = () => {
       for (let tries = 0; tries < 80; tries++) {
         const x = x0 + rand() * (x1 - x0), z = z0 + rand() * (z1 - z0);
-        if (insidePolygon(patch.points, x, z) && !nearWalkway(x, z, 0.8)) return [x, z];
+        if (insidePolygon(patch.points, x, z) && !nearWalkway(walkways, x, z, 0.8)) return [x, z];
       }
       return null;
     };
+    // A clipped hedge along the outer edge of a lawn that follows a path: bushes evenly spaced, a little inside the edge.
+    if (patch.hedge) {
+      const { inner, outer } = patch.hedge;
+      let walked = 0, next = 0;
+      for (let i = 0; i < outer.length - 1; i++) {
+        const len = Math.hypot(outer[i + 1][0] - outer[i][0], outer[i + 1][1] - outer[i][1]);
+        for (; next <= walked + len; next += 2.4) {
+          const t = (next - walked) / len;
+          const ox = outer[i][0] + (outer[i + 1][0] - outer[i][0]) * t, oz = outer[i][1] + (outer[i + 1][1] - outer[i][1]) * t;
+          const ix = inner[i][0] + (inner[i + 1][0] - inner[i][0]) * t, iz = inner[i][1] + (inner[i + 1][1] - inner[i][1]) * t;
+          const hx = ox + (ix - ox) * 0.08, hz = oz + (iz - oz) * 0.08;
+          if (!nearWalkway(walkways, hx, hz, 0.6)) shrubs.push({ position: [hx, heightAt(hx, hz), hz], size: 0.95, shade: 0.2 });
+        }
+        walked += len;
+      }
+    }
+    // The round flower bed in the middle of the lawn: a ring of red and yellow, a bush in the centre.
+    if (patch.bed) {
+      const [bx, bz] = patch.bed.at, r = patch.bed.radius;
+      shrubs.push({ position: [bx, heightAt(bx, bz), bz], size: 0.9, shade: 0.7 });
+      for (let k = 0; k < 18; k++) {
+        const a = (k / 18) * Math.PI * 2, color = k % 2 ? '#d6282f' : '#f2c230';
+        const px = bx + Math.cos(a) * r, pz = bz + Math.sin(a) * r;
+        for (let j = 0; j < 3; j++) flowers.push({ position: [px + (j - 1) * 0.25 * -Math.sin(a), heightAt(px, pz) + 0.3, pz + (j - 1) * 0.25 * Math.cos(a)], color });
+      }
+    }
     for (let i = 0; i < (patch.shrubs ?? 0); i++) {
       const p = spot();
       if (p) shrubs.push({ position: [p[0], heightAt(p[0], p[1]), p[1]], size: 0.7 + rand() * 0.5, shade: rand() });

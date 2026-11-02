@@ -6,7 +6,7 @@
 // The pin shows only its icon (so it stays small); the selected pin also shows a name.
 import { getCategory } from '../../data/categories.js';
 import { CategoryIcon } from '../CategoryIcon.jsx';
-import { LABELS } from '../../campus/site.js';
+import { LABELS } from '../../campus/common.js';
 import { getPlace } from '../../data/places.js';
 import { ManagedLabel } from './labels.jsx';
 

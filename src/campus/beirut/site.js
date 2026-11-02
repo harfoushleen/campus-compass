@@ -6,6 +6,9 @@
 // Area of the 3D scene (also limits how far the camera can pan).
 export const BOUNDS = { minX: -260, maxX: 140, minZ: -190, maxZ: 150 };
 
+// Settings shared with the other campuses (labels, light/dark scene, night lights...).
+export { LABELS, HANGOUT_COLORS, FLY_DURATION, SCENE, NIGHT_WINDOWS, LAMPS } from '../common.js';
+
 // ── Ground / hill ──
 // The campus climbs from the front street (north) up to Sage Hall and the
 // Upper Gate (south). Modelled as a smooth slope from `lowY` to `highY`
@@ -64,20 +67,6 @@ export const TERRACES = { x: [-16, 11], z: [6, 40], steps: 4, grass: '#6f8f4a', 
 // Amphitheater below the Upper Gate, open to the north.
 export const AMPHITHEATER = { center: [-4, 50], radius: 10, tiers: 5, color: '#b9a58a' };
 
-// ── Labels ──
-// Every label has a priority: 1 = main, 2 = secondary, 3 = minor. On small or
-// zoomed-out views only main labels show; the others appear as the user zooms in.
-// "Zoom" is measured as screen width (px) divided by camera distance (m):
-// a phone at the default view is about 0.8, a laptop at the default view about 3.5.
-// Labels that would overlap a more important label or a button are hidden.
-export const LABELS = {
-  showByDefault: true, // the "Labels" button turns building and gate labels off/on
-  zoomForPriority2: 1.0, // a phone shows these after zooming in a little (~1.3×)
-  zoomForPriority3: 1.8, // …and these after zooming in more (~2.3×)
-  gatePriority: 2,
-  hangoutPriority: 4,  // 4 = never shown as text: pins are icons, and show their name only when tapped
-};
-
 // ── Hangout spots: 3D touches ──
 // The spots themselves (name, position, features) are in places.json. This adds
 // small 3D details around them, keyed by place id. They are always drawn, whatever
@@ -131,21 +120,6 @@ export const HANGOUT_DECOR = {
     waterfall: { at: [-12.7, -7.7], angle: 135 },
   },
 };
-export const HANGOUT_COLORS = {
-  bench: '#8a6a4f',
-  kiosk: '#f2e6d0',
-  awning: '#d6336c',
-  fountainStone: '#cfc6b4',
-  water: '#2f8fe0',
-  wood: '#7a5a40',
-  vine: '#4f8a3a',
-  shrub: '#4f7a3a',
-  grass: '#74a64a',
-  catHouse: '#c98f5a',
-  catRoof: '#8b3a2b',
-  rock: '#8a8d8a',
-};
-
 // ── Paths and stairs ──
 // Paths: lines of [x, z] points laid on the ground, `width` in metres. All are concrete grey.
 // Stairs: from one point to another; the height gained follows the hill unless you
@@ -252,8 +226,6 @@ export const OFFSCREEN_MARKERS = [
     viewDistance: 300,
   },
 ];
-export const FLY_DURATION = 1.2; // seconds
-
 // ── Gates ──
 // `position`: where the gatehouse stands. `labelHeight`: how high its label floats
 // (the Middle Gate's label sits above Orme-Gray, like on the official map).
@@ -336,35 +308,4 @@ export const COLORS = {
   path: '#a6a9a7',   // concrete grey
   patch: '#6e9a4a',  // garden patches
   stairs: '#c2c5c3', // lighter concrete grey
-};
-
-// ── Scene light and dark ──
-// The 3D scene follows the theme: the background (the "sky" and the ground beyond the campus)
-// and the lighting fade between these values. Dark = a soft evening: dimmer light with a cool tint.
-// (Labels and pins are normal page elements, so they stay readable in both.)
-// `lights` is how bright the night lights are (lit windows, lamps): 0 = off, 1 = full.
-export const SCENE = {
-  light: { background: '#3d4a45', sky: '#ffffff', ground: '#8a8f7a', hemi: 1.6, sun: 1.6, sunColor: '#ffffff', lights: 0 },
-  dark: { background: '#101615', sky: '#9db3dc', ground: '#2a323d', hemi: 0.62, sun: 0.55, sunColor: '#b5c3e6', lights: 1 },
-};
-
-// ── Night lights ── (only visible in the dark scene)
-// Windows: a share of them glow warm. Which ones is random but the same on every load.
-export const NIGHT_WINDOWS = {
-  color: '#ffd596',
-  litShare: 0.55,   // of the windows on the grid-style facades
-  litShareRibbon: 0.75, // of the glass strips on ribbon-style facades (Gezairi)
-};
-// Lamp posts along the paths (and one by each gate), each with a halo and a pool of light on the ground.
-export const LAMPS = {
-  spacing: 16,       // metres between lamps along a path
-  sideOffset: 0.8,   // metres from the path's edge; lamps alternate sides
-  height: 4,         // metres
-  poleColor: '#4a4f4d',
-  offColor: '#d8d4c8', // the lamp head in daylight
-  color: '#ffd596',  // the lamp head and its light at night
-  haloSize: 5,       // metres across
-  poolSize: 9,       // metres across
-  poolOpacity: 0.5,
-  gateOffset: [3.6, 0], // a lamp stands this far (x, z) from each gatehouse
 };

@@ -1,0 +1,620 @@
+[
+  {
+    "check": "network",
+    "what": "road '249222125' climbs 200% (limit 22%): needs stairs, a ramp, or a regraded slope",
+    "where": "(112.25, 87.03)",
+    "extra": ""
+  },
+  {
+    "check": "network",
+    "what": "road '314071252' climbs 65% (limit 22%): needs stairs, a ramp, or a regraded slope",
+    "where": "(-370.85, -94.95)",
+    "extra": ""
+  },
+  {
+    "check": "network",
+    "what": "road '431634969' climbs 25% (limit 22%): needs stairs, a ramp, or a regraded slope",
+    "where": "(-428.67, 23)",
+    "extra": ""
+  },
+  {
+    "check": "network",
+    "what": "road '708713250' climbs 32% (limit 22%): needs stairs, a ramp, or a regraded slope",
+    "where": "(19.02, -87.55)",
+    "extra": ""
+  },
+  {
+    "check": "network",
+    "what": "road '708713250-lower' climbs 150% (limit 22%): needs stairs, a ramp, or a regraded slope",
+    "where": "(-282.53, 5.6)",
+    "extra": ""
+  },
+  {
+    "check": "network",
+    "what": "road '777277639' climbs 128% (limit 22%): needs stairs, a ramp, or a regraded slope",
+    "where": "(158.07, 86.83)",
+    "extra": ""
+  },
+  {
+    "check": "network",
+    "what": "road '777277640' climbs 106% (limit 22%): needs stairs, a ramp, or a regraded slope",
+    "where": "(106.1, 61.18)",
+    "extra": ""
+  },
+  {
+    "check": "network",
+    "what": "road '777277642' climbs 38% (limit 22%): needs stairs, a ramp, or a regraded slope",
+    "where": "(73.2, -28.7)",
+    "extra": ""
+  },
+  {
+    "check": "network",
+    "what": "road '992652059' climbs 94% (limit 22%): needs stairs, a ramp, or a regraded slope",
+    "where": "(112.7, 53)",
+    "extra": ""
+  },
+  {
+    "check": "network",
+    "what": "road '992652061' climbs 37% (limit 22%): needs stairs, a ramp, or a regraded slope",
+    "where": "(138.29, -62.37)",
+    "extra": ""
+  },
+  {
+    "check": "network",
+    "what": "road '992652062' climbs 55% (limit 22%): needs stairs, a ramp, or a regraded slope",
+    "where": "(184.08, 84.15)",
+    "extra": ""
+  },
+  {
+    "check": "network",
+    "what": "road '992652063' climbs 33% (limit 22%): needs stairs, a ramp, or a regraded slope",
+    "where": "(-46.23, 78.65)",
+    "extra": ""
+  },
+  {
+    "check": "network",
+    "what": "road '992652066' climbs 68% (limit 22%): needs stairs, a ramp, or a regraded slope",
+    "where": "(-73.83, -20.1)",
+    "extra": ""
+  },
+  {
+    "check": "network",
+    "what": "road '992652068' climbs 62% (limit 22%): needs stairs, a ramp, or a regraded slope",
+    "where": "(-296.95, -27.37)",
+    "extra": ""
+  },
+  {
+    "check": "network",
+    "what": "road '992652069' climbs 111% (limit 22%): needs stairs, a ramp, or a regraded slope",
+    "where": "(-301.5, -35.7)",
+    "extra": ""
+  },
+  {
+    "check": "network",
+    "what": "road '1191749363' climbs 31% (limit 22%): needs stairs, a ramp, or a regraded slope",
+    "where": "(159, -74.15)",
+    "extra": ""
+  },
+  {
+    "check": "network",
+    "what": "path 'scienceFront' climbs 39% (limit 35%): needs stairs, a ramp, or a regraded slope",
+    "where": "(3.2, -22)",
+    "extra": ""
+  },
+  {
+    "check": "network",
+    "what": "path 'upperRoad' climbs 49% (limit 35%): needs stairs, a ramp, or a regraded slope",
+    "where": "(-0.8, 17.6)",
+    "extra": ""
+  },
+  {
+    "check": "network",
+    "what": "path 'eastPromenade' climbs 126% (limit 35%): needs stairs, a ramp, or a regraded slope",
+    "where": "(103.6, 1.2)",
+    "extra": ""
+  },
+  {
+    "check": "network",
+    "what": "path 'engineering' climbs 93% (limit 35%): needs stairs, a ramp, or a regraded slope",
+    "where": "(201.2, 62.4)",
+    "extra": ""
+  },
+  {
+    "check": "network",
+    "what": "path 'blockA' climbs 260% (limit 35%): needs stairs, a ramp, or a regraded slope",
+    "where": "(-26.67, -65.33)",
+    "extra": ""
+  },
+  {
+    "check": "network",
+    "what": "stairs 'scienceUp' climbs 498% (limit 62%)",
+    "where": "(-1.71, -28.57)",
+    "extra": ""
+  },
+  {
+    "check": "network",
+    "what": "stairs 'cafeDown' climbs 194% (limit 62%)",
+    "where": "(-2, 22)",
+    "extra": ""
+  },
+  {
+    "check": "network",
+    "what": "stairs 'lowerGateUp' climbs 134% (limit 62%)",
+    "where": "(-28.31, -45.85)",
+    "extra": ""
+  },
+  {
+    "check": "network",
+    "what": "stairs 'scienceUp' have 34 steps for 24 m: 0.71 m per step (limit 0.25)",
+    "where": "(-4, -26)",
+    "extra": ""
+  },
+  {
+    "check": "network",
+    "what": "stairs 'cafeDown' have 22 steps for 9.22 m: 0.42 m per step (limit 0.25)",
+    "where": "(-2, 22)",
+    "extra": ""
+  },
+  {
+    "check": "network",
+    "what": "road '1191749363' cannot be reached from any gate",
+    "where": "(152.5, -81.4)",
+    "extra": ""
+  },
+  {
+    "check": "network",
+    "what": "building BA has no entrance (set 'entrance: [x, z]' in buildings.js)",
+    "where": "BA",
+    "extra": ""
+  },
+  {
+    "check": "network",
+    "what": "building RHB has no entrance (set 'entrance: [x, z]' in buildings.js)",
+    "where": "RHB",
+    "extra": ""
+  },
+  {
+    "check": "network",
+    "what": "building RHC has no entrance (set 'entrance: [x, z]' in buildings.js)",
+    "where": "RHC",
+    "extra": ""
+  },
+  {
+    "check": "network",
+    "what": "building LIB has no entrance (set 'entrance: [x, z]' in buildings.js)",
+    "where": "LIB",
+    "extra": ""
+  },
+  {
+    "check": "network",
+    "what": "building RNCA has no entrance (set 'entrance: [x, z]' in buildings.js)",
+    "where": "RNCA",
+    "extra": ""
+  },
+  {
+    "check": "network",
+    "what": "building SCI has no entrance (set 'entrance: [x, z]' in buildings.js)",
+    "where": "SCI",
+    "extra": ""
+  },
+  {
+    "check": "network",
+    "what": "building TR has no entrance (set 'entrance: [x, z]' in buildings.js)",
+    "where": "TR",
+    "extra": ""
+  },
+  {
+    "check": "network",
+    "what": "building ARC has no entrance (set 'entrance: [x, z]' in buildings.js)",
+    "where": "ARC",
+    "extra": ""
+  },
+  {
+    "check": "network",
+    "what": "building ZH has no entrance (set 'entrance: [x, z]' in buildings.js)",
+    "where": "ZH",
+    "extra": ""
+  },
+  {
+    "check": "network",
+    "what": "building BSL has no entrance (set 'entrance: [x, z]' in buildings.js)",
+    "where": "BSL",
+    "extra": ""
+  },
+  {
+    "check": "network",
+    "what": "building FCC has no entrance (set 'entrance: [x, z]' in buildings.js)",
+    "where": "FCC",
+    "extra": ""
+  },
+  {
+    "check": "network",
+    "what": "building CHSC has no entrance (set 'entrance: [x, z]' in buildings.js)",
+    "where": "CHSC",
+    "extra": ""
+  },
+  {
+    "check": "network",
+    "what": "building ELRC has no entrance (set 'entrance: [x, z]' in buildings.js)",
+    "where": "ELRC",
+    "extra": ""
+  },
+  {
+    "check": "network",
+    "what": "building STC has no entrance (set 'entrance: [x, z]' in buildings.js)",
+    "where": "STC",
+    "extra": ""
+  },
+  {
+    "check": "network",
+    "what": "building SC has no entrance (set 'entrance: [x, z]' in buildings.js)",
+    "where": "SC",
+    "extra": ""
+  },
+  {
+    "check": "network",
+    "what": "building CAF has no entrance (set 'entrance: [x, z]' in buildings.js)",
+    "where": "CAF",
+    "extra": ""
+  },
+  {
+    "check": "network",
+    "what": "building HC has no entrance (set 'entrance: [x, z]' in buildings.js)",
+    "where": "HC",
+    "extra": ""
+  },
+  {
+    "check": "network",
+    "what": "building AF has no entrance (set 'entrance: [x, z]' in buildings.js)",
+    "where": "AF",
+    "extra": ""
+  },
+  {
+    "check": "network",
+    "what": "building WT has no entrance (set 'entrance: [x, z]' in buildings.js)",
+    "where": "WT",
+    "extra": ""
+  },
+  {
+    "check": "network",
+    "what": "building INF has no entrance (set 'entrance: [x, z]' in buildings.js)",
+    "where": "INF",
+    "extra": ""
+  },
+  {
+    "check": "network",
+    "what": "building UGP has no entrance (set 'entrance: [x, z]' in buildings.js)",
+    "where": "UGP",
+    "extra": ""
+  },
+  {
+    "check": "network",
+    "what": "road '249222125' start is a dead end: it meets no road, path, plaza, gate, building or parking lot (nearest: stairs 'engineeringUp', 25.66 m)",
+    "where": "(260.6, 45.2)",
+    "extra": ""
+  },
+  {
+    "check": "network",
+    "what": "road '314071252' start is a dead end: it meets no road, path, plaza, gate, building or parking lot (nearest: road '708713250-lower', 209.76 m)",
+    "where": "(-442.1, -236.8)",
+    "extra": ""
+  },
+  {
+    "check": "network",
+    "what": "road '431634969' start is a dead end: it meets no road, path, plaza, gate, building or parking lot (nearest: road '314071252', 101.2 m)",
+    "where": "(-438.5, 151.2)",
+    "extra": ""
+  },
+  {
+    "check": "network",
+    "what": "road '708713249' start is a dead end: it meets no road, path, plaza, gate, building or parking lot (nearest: road '1042555430', 3.86 m)",
+    "where": "(-451, -3.6)",
+    "extra": ""
+  },
+  {
+    "check": "network",
+    "what": "road '708713249' end is a dead end: it meets no road, path, plaza, gate, building or parking lot (nearest: road '1042555430', 3.86 m)",
+    "where": "(-451, -3.6)",
+    "extra": ""
+  },
+  {
+    "check": "network",
+    "what": "road '708713250' start is a dead end: it meets no road, path, plaza, gate, building or parking lot (nearest: path 'blockAFront', 31.77 m)",
+    "where": "(59.6, -135.2)",
+    "extra": ""
+  },
+  {
+    "check": "network",
+    "what": "road '992652059' start is a dead end: it meets no road, path, plaza, gate, building or parking lot (nearest: road '777277640', 7.71 m)",
+    "where": "(109.5, 43.3)",
+    "extra": ""
+  },
+  {
+    "check": "network",
+    "what": "road '992652059' end is a dead end: it meets no road, path, plaza, gate, building or parking lot (nearest: road '777277640', 7.71 m)",
+    "where": "(109.5, 43.3)",
+    "extra": ""
+  },
+  {
+    "check": "network",
+    "what": "road '992652061' start is a dead end: it meets no road, path, plaza, gate, building or parking lot (nearest: road '1191749363', 27.18 m)",
+    "where": "(122.7, -74.1)",
+    "extra": ""
+  },
+  {
+    "check": "network",
+    "what": "road '992652063' end is a dead end: it meets no road, path, plaza, gate, building or parking lot (nearest: road '249222125', 26.37 m)",
+    "where": "(-0.9, 88.3)",
+    "extra": ""
+  },
+  {
+    "check": "network",
+    "what": "road '1191749363' start is a dead end: it meets no road, path, plaza, gate, building or parking lot (nearest: road '992652061', 21.25 m)",
+    "where": "(152.5, -81.4)",
+    "extra": ""
+  },
+  {
+    "check": "network",
+    "what": "road '1191749363' end is a dead end: it meets no road, path, plaza, gate, building or parking lot (nearest: road '992652061', 20.35 m)",
+    "where": "(194.1, -42.4)",
+    "extra": ""
+  },
+  {
+    "check": "network",
+    "what": "path 'upperRoad' start is a dead end: it meets no road, path, plaza, gate, building or parking lot (nearest: stairs 'cafeDown', 9.66 m)",
+    "where": "(4, 12)",
+    "extra": ""
+  },
+  {
+    "check": "network",
+    "what": "path 'bassil' end is a dead end: it meets no road, path, plaza, gate, building or parking lot (nearest: path 'plazaToFountain', 17.56 m)",
+    "where": "(92, 28)",
+    "extra": ""
+  },
+  {
+    "check": "network",
+    "what": "stairs 'engineeringUp' start is a dead end: it meets no road, path, plaza, gate, building or parking lot (nearest: path 'engineering', 7.06 m)",
+    "where": "(226, 56)",
+    "extra": ""
+  },
+  {
+    "check": "floating",
+    "what": "building RHC: the ground under its edge varies by 6.97 m (the pad is not level: one side sinks into the hill)",
+    "where": "(-428.86, -81.14)",
+    "extra": ""
+  },
+  {
+    "check": "floating",
+    "what": "building LIB: the ground under its edge varies by 3.6 m (the pad is not level: one side sinks into the hill)",
+    "where": "(63, -119.9)",
+    "extra": ""
+  },
+  {
+    "check": "floating",
+    "what": "building RNCA: the ground under its edge varies by 1.87 m (the pad is not level: one side sinks into the hill)",
+    "where": "(75.5, -57.7)",
+    "extra": ""
+  },
+  {
+    "check": "floating",
+    "what": "building SCI: the ground under its edge varies by 24 m (the pad is not level: one side sinks into the hill)",
+    "where": "(-54.9, 14.8)",
+    "extra": ""
+  },
+  {
+    "check": "floating",
+    "what": "building ARC: the ground under its edge varies by 1.69 m (the pad is not level: one side sinks into the hill)",
+    "where": "(1, 38.5)",
+    "extra": ""
+  },
+  {
+    "check": "floating",
+    "what": "building ZH: the ground under its edge varies by 1.85 m (the pad is not level: one side sinks into the hill)",
+    "where": "(78.07, 70.79)",
+    "extra": ""
+  },
+  {
+    "check": "floating",
+    "what": "building CHSC: the ground under its edge varies by 1.66 m (the pad is not level: one side sinks into the hill)",
+    "where": "(96.3, -46.3)",
+    "extra": ""
+  },
+  {
+    "check": "floating",
+    "what": "building ELRC: the ground under its edge varies by 3.11 m (the pad is not level: one side sinks into the hill)",
+    "where": "(238.9, 59.4)",
+    "extra": ""
+  },
+  {
+    "check": "floating",
+    "what": "building STC: the ground under its edge varies by 5.05 m (the pad is not level: one side sinks into the hill)",
+    "where": "(-4.8, -10.5)",
+    "extra": ""
+  },
+  {
+    "check": "floating",
+    "what": "road 'blockADrive': 5 vertices sink into the ground (down to -0.06 m), the ground cuts it",
+    "where": "(10.94, -74.82)",
+    "extra": ""
+  },
+  {
+    "check": "floating",
+    "what": "path 'mainPromenade': 6 vertices sink into the ground (down to -0.53 m), the ground cuts it",
+    "where": "(53.28, -16.2)",
+    "extra": ""
+  },
+  {
+    "check": "floating",
+    "what": "path 'scienceFront': 29 vertices sink into the ground (down to -7.71 m), the ground cuts it",
+    "where": "(-30.44, -2.33)",
+    "extra": ""
+  },
+  {
+    "check": "floating",
+    "what": "path 'scienceFront': 28 vertices float above the ground (up to 1.58 m)",
+    "where": "(-26.1, -5.5)",
+    "extra": ""
+  },
+  {
+    "check": "floating",
+    "what": "path 'upperRoad': 14 vertices sink into the ground (down to -4.34 m), the ground cuts it",
+    "where": "(5.63, 12.41)",
+    "extra": ""
+  },
+  {
+    "check": "floating",
+    "what": "path 'upperRoad': 10 vertices float above the ground (up to 3.48 m)",
+    "where": "(3.35, 10.45)",
+    "extra": ""
+  },
+  {
+    "check": "floating",
+    "what": "path 'architecture': 2 vertices sink into the ground (down to -0.37 m), the ground cuts it",
+    "where": "(18.59, 19.1)",
+    "extra": ""
+  },
+  {
+    "check": "floating",
+    "what": "path 'architecture': 1 vertices float above the ground (up to 1.15 m)",
+    "where": "(20.13, 21.67)",
+    "extra": ""
+  },
+  {
+    "check": "floating",
+    "what": "path 'bassil': 14 vertices sink into the ground (down to -1.01 m), the ground cuts it",
+    "where": "(96.73, 16.71)",
+    "extra": ""
+  },
+  {
+    "check": "floating",
+    "what": "path 'bassil': 11 vertices float above the ground (up to 1.47 m)",
+    "where": "(99.33, 18.2)",
+    "extra": ""
+  },
+  {
+    "check": "floating",
+    "what": "path 'eastPromenade': 4 vertices sink into the ground (down to -3.1 m), the ground cuts it",
+    "where": "(105.93, -0.35)",
+    "extra": ""
+  },
+  {
+    "check": "floating",
+    "what": "path 'eastPromenade': 1 vertices float above the ground (up to 3.98 m)",
+    "where": "(104.07, 4.35)",
+    "extra": ""
+  },
+  {
+    "check": "floating",
+    "what": "path 'engineering': 17 vertices sink into the ground (down to -1.28 m), the ground cuts it",
+    "where": "(201.44, 64.06)",
+    "extra": ""
+  },
+  {
+    "check": "floating",
+    "what": "path 'engineering': 6 vertices float above the ground (up to 1.46 m)",
+    "where": "(200.01, 63.59)",
+    "extra": ""
+  },
+  {
+    "check": "floating",
+    "what": "path 'blockA': 2 vertices sink into the ground (down to -6.82 m), the ground cuts it",
+    "where": "(-31.25, -65.11)",
+    "extra": ""
+  },
+  {
+    "check": "floating",
+    "what": "path 'blockA': 4 vertices float above the ground (up to 15.75 m)",
+    "where": "(-26.81, -63.66)",
+    "extra": ""
+  },
+  {
+    "check": "floating",
+    "what": "stairs 'scienceUp': 98 treads do not follow the slope (up to -15.99 m off the ground)",
+    "where": "(-5.41, -27.73)",
+    "extra": ""
+  },
+  {
+    "check": "floating",
+    "what": "stairs 'cafeDown': 59 treads do not follow the slope (up to 7.53 m off the ground)",
+    "where": "(-1.46, 23.67)",
+    "extra": ""
+  },
+  {
+    "check": "floating",
+    "what": "stairs 'lowerGateUp': 414 treads do not follow the slope (up to 7.46 m off the ground)",
+    "where": "(-50.65, -31.66)",
+    "extra": ""
+  },
+  {
+    "check": "floating",
+    "what": "1 trees stand off the ground",
+    "where": "(-275, 14.4)",
+    "extra": ""
+  },
+  {
+    "check": "floating",
+    "what": "6 trees grow on a road, path, stair, parking lot or building",
+    "where": "(32.49, -22.62)",
+    "extra": ""
+  },
+  {
+    "check": "floating",
+    "what": "lot A is drawn flat 17.76 m above the ground at its edge (floats)",
+    "where": "(-406.7, -12.5)",
+    "extra": ""
+  },
+  {
+    "check": "floating",
+    "what": "lot B is drawn flat 37.3 m above the ground at its edge (floats)",
+    "where": "(-327, -36.8)",
+    "extra": ""
+  },
+  {
+    "check": "floating",
+    "what": "lot C is drawn flat 24 m below the ground at its edge (sinks)",
+    "where": "(-3.9, -50.1)",
+    "extra": ""
+  },
+  {
+    "check": "floating",
+    "what": "lot G is drawn flat 11.42 m above the ground at its edge (floats)",
+    "where": "(7, -18)",
+    "extra": ""
+  },
+  {
+    "check": "floating",
+    "what": "lot H is drawn flat 4.08 m above the ground at its edge (floats)",
+    "where": "(-215, 39)",
+    "extra": ""
+  },
+  {
+    "check": "floating",
+    "what": "lot J is drawn flat 1.2 m below the ground at its edge (sinks)",
+    "where": "(55.58, 76.69)",
+    "extra": ""
+  },
+  {
+    "check": "flicker",
+    "what": "roads and paths are drawn only 0.07 m apart: they flicker when zoomed out",
+    "where": "scene-wide",
+    "extra": "fix: raise the lifts or turn on LAYER_OFFSET"
+  },
+  {
+    "check": "flicker",
+    "what": "roads and garden patches are drawn only 0.02 m apart: they flicker when zoomed out",
+    "where": "scene-wide",
+    "extra": "fix: raise the lifts or turn on LAYER_OFFSET"
+  },
+  {
+    "check": "flicker",
+    "what": "the ground and roads are drawn only 0.08 m apart: they flicker when zoomed out",
+    "where": "scene-wide",
+    "extra": "fix: raise the lifts or turn on LAYER_OFFSET"
+  },
+  {
+    "check": "flicker",
+    "what": "the ground and garden patches are drawn only 0.1 m apart: they flicker when zoomed out",
+    "where": "scene-wide",
+    "extra": "fix: raise the lifts or turn on LAYER_OFFSET"
+  }
+]

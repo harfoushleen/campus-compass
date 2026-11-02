@@ -1,9 +1,10 @@
 // Small 3D touches around the hangout spots (benches, kiosk, fountain, a standout tree, shrubs...),
-// from HANGOUT_DECOR in site.js. They are always drawn.
+// from HANGOUT_DECOR in the campus's site.js. They are always drawn.
 import { useMemo } from 'react';
 import * as THREE from 'three';
-import { HANGOUT_COLORS, HANGOUT_DECOR } from '../../campus/site.js';
+import { HANGOUT_COLORS } from '../../campus/common.js';
 import { benchGeometry, buildHangoutDecor } from '../../campus/details.js';
+import { useModel } from './model.js';
 
 const noRaycast = () => null;
 const lambert = (color) => new THREE.MeshLambertMaterial({ color });
@@ -25,8 +26,9 @@ function instances(geometry, material, items) {
 
 /** The static 3D decorations. Built once; a handful of draw calls in total. */
 function Decor() {
+  const m = useModel();
   const objects = useMemo(() => {
-    const d = buildHangoutDecor();
+    const d = buildHangoutDecor(m);
     const list = [];
     if (d.benches.length) list.push(instances(benchGeometry(), lambert(HANGOUT_COLORS.bench), d.benches));
     if (d.shrubs.length) {
@@ -51,10 +53,10 @@ function Decor() {
     mesh(d.stone, HANGOUT_COLORS.fountainStone);
     mesh(d.water, HANGOUT_COLORS.water);
     mesh(d.trunk, '#6b4f3a');
-    const tree = Object.values(HANGOUT_DECOR).find((x) => x.featureTree)?.featureTree;
+    const tree = Object.values(m.HANGOUT_DECOR).find((x) => x.featureTree)?.featureTree;
     mesh(d.crown, tree?.color ?? '#7fb04a');
     return list;
-  }, []);
+  }, [m]);
 
   return objects.map((o, i) => <primitive key={i} object={o} />);
 }
