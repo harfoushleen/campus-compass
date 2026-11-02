@@ -59,7 +59,7 @@ function buildingView(m, id, distance) {
 
 const ease = (t) => (t < 0.5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2); // ease in-out
 
-function Controls({ m, controlsRef, flyRef }) {
+function Controls({ m, controlsRef, flyRef, active }) {
   const { CAMERA } = m;
   const { BOUNDS } = m;
   const { size, invalidate, gl } = useThree();
@@ -90,14 +90,14 @@ function Controls({ m, controlsRef, flyRef }) {
   // Development only: lets the screenshot scripts set the camera, window.__setCamera([x, y, z, tx, ty, tz]),
   // and read it back, window.__getCamera() -> { position, target }.
   useEffect(() => {
-    if (!import.meta.env.DEV) return undefined;
+    if (!import.meta.env.DEV || !active) return undefined;
     window.__setCamera = ([x, y, z, tx, ty, tz]) => flyRef.current([x, y, z], [tx, ty, tz]);
     window.__getCamera = () => ({ position: controlsRef.current.object.position.toArray(), target: controlsRef.current.target.toArray() });
     return () => {
       delete window.__setCamera;
       delete window.__getCamera;
     };
-  }, [flyRef, controlsRef]);
+  }, [flyRef, controlsRef, active]);
 
   useFrame(() => {
     const f = flight.current, controls = controlsRef.current;
@@ -172,6 +172,15 @@ export default function CampusView({ campus, active = true, places, allPlaces, c
   const [labelRegistry] = useState(createLabelRegistry);
   const toolbarRef = useRef();
   const [showLabels, setShowLabels] = useState(LABELS.showByDefault);
+  // The grey blocks round the campus can be hidden, to see the campus alone (campuses that draw them). Remembered between visits.
+  const hasCity = Boolean(m.SURROUNDINGS);
+  const [showCity, setShowCity] = useState(() => {
+    try { return localStorage.getItem('campus-city') !== 'off'; } catch { return true; }
+  });
+  const toggleCity = () => setShowCity((v) => {
+    try { localStorage.setItem('campus-city', v ? 'off' : 'on'); } catch { /* private mode: not remembered */ }
+    return !v;
+  });
   const controlsRef = useRef();
   const flyRef = useRef(() => {});
   const wrapperRef = useRef();
@@ -261,8 +270,8 @@ export default function CampusView({ campus, active = true, places, allPlaces, c
           <SceneTheme theme={theme} />
           <LabelContext.Provider value={{ registry: labelRegistry, portal: labelsRef }}>
             <Refresh active={active} />
-            <Controls m={m} controlsRef={controlsRef} flyRef={flyRef} />
-            <Site showLabels={showLabels} />
+            <Controls m={m} controlsRef={controlsRef} flyRef={flyRef} active={active} />
+            <Site showLabels={showLabels} showCity={showCity} />
             <Horizon />
             <Details />
             <Lamps />
@@ -323,6 +332,11 @@ export default function CampusView({ campus, active = true, places, allPlaces, c
         >
           {t('labels')}
         </button>
+        {hasCity && (
+          <button type="button" className={`campus-button ${showCity ? 'active' : ''}`} aria-pressed={showCity} onClick={toggleCity}>
+            {t('cityBlocks')}
+          </button>
+        )}
         <button type="button" className="campus-button" onClick={defaultView}>
           {t('resetView')}
         </button>

@@ -320,3 +320,141 @@ export function buildWalls(m) {
   };
   return { top: make(top), face: make(face) };
 }
+
+// ── The city around a campus, for show ──
+// A campus with SURROUNDINGS.city gets a plain grey city: the OpenStreetMap blocks of its osm-surroundings.json, and more blocks filled in
+// where OpenStreetMap has none (the real neighbourhood is dense). They are all grey, with window rows, so nobody takes them for LAU
+// buildings. Everything is deterministic (the same on every load) and merged into two meshes: walls (textured, see cityTexture.js) and roofs.
+const mulberry = (seed) => () => {
+  seed = (seed + 0x6d2b79f5) | 0;
+  let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+  t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+  return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+};
+
+/** { walls, roofs } geometries of the grey city (or null). `walls` has UVs in window cells: u = bays along the wall, v = floors. */
+export function buildCity(m) {
+  const { SURROUNDINGS: S, BUILDINGS, CAMPUS_OUTLINE, PARKING = [], heightAt, osm } = m;
+  const C = S?.city;
+  if (!C) return null;
+  const rand = mulberry(C.seed ?? 11);
+  const pick = (list) => list[Math.floor(rand() * list.length)];
+
+  // Polygons to keep clear of, with their bounding boxes so that most are ruled out by a comparison.
+  const withBox = (points) => ({ points, x0: Math.min(...points.map((p) => p[0])), x1: Math.max(...points.map((p) => p[0])), z0: Math.min(...points.map((p) => p[1])), z1: Math.max(...points.map((p) => p[1])) });
+  const clearOf = ({ points, x0, x1, z0, z1 }, [x, z], margin) => x < x0 - margin || x > x1 + margin || z < z0 - margin || z > z1 + margin || distanceToPolygon(points, x, z) > margin;
+  const lau = [CAMPUS_OUTLINE, ...BUILDINGS.flatMap((b) => b.parts.map((p) => p.footprint)), ...PARKING.map((l) => l.area)].map(withBox);
+  const osmFootprints = osm.buildings.map((b) => b.points);
+  const osmBoxes = osmFootprints.map(withBox);
+  // Every street segment once, as plain numbers: [ax, az, bx, bz, half width].
+  const segments = osm.streets.flatMap((s) => s.points.slice(1).map(([bx, bz], i) => [s.points[i][0], s.points[i][1], bx, bz, s.width / 2]));
+  const segmentDistance = ([ax, az, bx, bz], x, z) => {
+    const dx = bx - ax, dz = bz - az, t = Math.max(0, Math.min(1, ((x - ax) * dx + (z - az) * dz) / (dx * dx + dz * dz || 1)));
+    return Math.hypot(x - (ax + t * dx), z - (az + t * dz));
+  };
+  const streetClearance = (x, z) => {
+    let best = Infinity;
+    for (const seg of segments) best = Math.min(best, segmentDistance(seg, x, z) - seg[4]);
+    return best;
+  };
+  const nearestStreetAngle = (x, z) => {
+    let best = Infinity, angle = null;
+    for (const seg of segments) {
+      const d = segmentDistance(seg, x, z);
+      if (d < best) { best = d; angle = Math.atan2(seg[3] - seg[1], seg[2] - seg[0]); }
+    }
+    return best < 70 ? angle : null;
+  };
+
+  // How tall a block is: low beside the campus (so the view of it stays clear), taller further out, a few towers far away.
+  const floorsFor = (x, z, levels) => {
+    if (levels) return Math.min(levels, C.maxFloors);
+    const d = distanceToPolygon(CAMPUS_OUTLINE, x, z);
+    if (d < C.lowNear) return 3 + Math.floor(rand() * 2);
+    if (d > C.towerFrom && rand() < 0.1) return 11 + Math.floor(rand() * 6);
+    return 4 + Math.floor(rand() * 5);
+  };
+
+  // 1. The blocks to build: OpenStreetMap's, then new ones in the gaps.
+  const blocks = osmFootprints.map((points, i) => {
+    const [cx, cz] = centroid(points);
+    return { points, floors: floorsFor(cx, cz, osm.buildings[i].levels), r: Math.max(...points.map(([x, z]) => Math.hypot(x - cx, z - cz))), cx, cz };
+  });
+  const [x0, x1, z0, z1] = C.area;
+  for (let gz = z0; gz < z1; gz += C.cell) for (let gx = x0; gx < x1; gx += C.cell) {
+    const cx = gx + (rand() - 0.5) * C.cell * 0.5, cz = gz + (rand() - 0.5) * C.cell * 0.5;
+    const w = C.size[0] + rand() * (C.size[1] - C.size[0]), d = C.size[0] + rand() * (C.size[1] - C.size[0]) * 0.9;
+    const a = nearestStreetAngle(cx, cz) ?? Math.floor(rand() * 6) * (Math.PI / 6);
+    const cos = Math.cos(a), sin = Math.sin(a);
+    const corner = (u, v) => [cx + u * cos - v * sin, cz + u * sin + v * cos];
+    const points = [corner(-w / 2, -d / 2), corner(w / 2, -d / 2), corner(w / 2, d / 2), corner(-w / 2, d / 2)];
+    const radius = Math.hypot(w, d) / 2;
+    // sample points: the corners, edge midpoints and centre, pushed out a little
+    const samples = [];
+    for (const u of [-0.5, 0, 0.5]) for (const v of [-0.5, 0, 0.5]) samples.push(corner(u * (w + 3), v * (d + 3)));
+    // cheapest tests first: most candidates fail the first one
+    const ok = blocks.every((b) => Math.hypot(b.cx - cx, b.cz - cz) > b.r * 0.8 + radius * 0.8 + 3)
+      && samples.every(([x, z]) => streetClearance(x, z) > 2.5)
+      && lau.every((poly) => samples.every((p) => clearOf(poly, p, 4)))
+      && osmBoxes.every((poly) => samples.every((p) => clearOf(poly, p, 2.5)));
+    if (ok) blocks.push({ points, floors: floorsFor(cx, cz, null), r: radius, cx, cz });
+  }
+
+  // 2. Geometry.
+  const wall = { position: [], normal: [], uv: [], color: [] };
+  const roof = { position: [], normal: [], color: [] };
+  for (const b of blocks) {
+    const { points, floors } = b;
+    const ground = Math.min(...points.map(([x, z]) => heightAt(x, z)));
+    const base = ground - 3, top = ground + floors * 3.2;
+    const tint = new THREE.Color(pick(C.tones));
+    const roofTint = tint.clone().multiplyScalar(0.86);
+    points.forEach(([ax, az], i) => {
+      const [bx, bz] = points[(i + 1) % points.length], len = Math.hypot(bx - ax, bz - az);
+      if (len < 0.5) return;
+      const ex = (bx - ax) / len, ez = (bz - az) / len;
+      let nx = ez, nz = -ex; // outward normal
+      if (insidePolygon(points, (ax + bx) / 2 + nx * 0.4, (az + bz) / 2 + nz * 0.4)) { nx = -nx; nz = -nz; }
+      const bays = Math.max(1, Math.round(len / 3.6)), floorsUp = (top - base) / 3.2;
+      const A = [ax, base, az], B = [bx, base, bz], Cc = [bx, top, bz], D = [ax, top, az];
+      const uvA = [0, 0], uvB = [bays, 0], uvC = [bays, floorsUp], uvD = [0, floorsUp];
+      // the winding that faces outward: (A, B, Cc) faces (-ez, 0, ex)
+      const flip = nx * -ez + nz * ex < 0;
+      const tri = flip
+        ? [[A, uvA], [Cc, uvC], [B, uvB], [A, uvA], [D, uvD], [Cc, uvC]]
+        : [[A, uvA], [B, uvB], [Cc, uvC], [A, uvA], [Cc, uvC], [D, uvD]];
+      for (const [p, uv] of tri) {
+        wall.position.push(...p); wall.normal.push(nx, 0, nz); wall.uv.push(...uv); wall.color.push(tint.r, tint.g, tint.b);
+      }
+    });
+    // flat roof
+    const flat = new THREE.ShapeGeometry(new THREE.Shape(points.map(([x, z]) => new THREE.Vector2(x, -z)))).toNonIndexed();
+    flat.rotateX(-Math.PI / 2);
+    flat.translate(0, top, 0);
+    const pos = flat.attributes.position;
+    for (let i = 0; i < pos.count; i++) {
+      roof.position.push(pos.getX(i), pos.getY(i), pos.getZ(i)); roof.normal.push(0, 1, 0); roof.color.push(roofTint.r, roofTint.g, roofTint.b);
+    }
+    flat.dispose();
+    // a water tank or lift house on some roofs
+    if (rand() < 0.45) {
+      const [cx, cz] = centroid(points), tw = 2 + rand() * 2, th = 1.2 + rand() * 1.2;
+      const boxG = new THREE.BoxGeometry(tw, th, tw).toNonIndexed();
+      boxG.translate(cx, top + th / 2, cz);
+      const bp = boxG.attributes.position, bn = boxG.attributes.normal, dark = roofTint.clone().multiplyScalar(0.9);
+      for (let i = 0; i < bp.count; i++) {
+        roof.position.push(bp.getX(i), bp.getY(i), bp.getZ(i)); roof.normal.push(bn.getX(i), bn.getY(i), bn.getZ(i)); roof.color.push(dark.r, dark.g, dark.b);
+      }
+      boxG.dispose();
+    }
+  }
+  const make = (data, keys) => {
+    const g = new THREE.BufferGeometry();
+    for (const [name, size] of keys) g.setAttribute(name, new THREE.Float32BufferAttribute(data[name], size));
+    return g;
+  };
+  return {
+    walls: make(wall, [['position', 3], ['normal', 3], ['uv', 2], ['color', 3]]),
+    roofs: make(roof, [['position', 3], ['normal', 3], ['color', 3]]),
+  };
+}

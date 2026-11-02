@@ -46,6 +46,7 @@ export default {
   parking: 'Parking',
   resetView: 'Default view',
   labels: 'Labels',
+  cityBlocks: 'City',
   loading3d: 'Loading 3D campus…',
   'marker.gezairi': 'Gezairi',
   'marker.rhc': 'Residence C',

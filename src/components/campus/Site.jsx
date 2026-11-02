@@ -1,12 +1,13 @@
 // Everything around the LAU buildings: ground, streets, neighbouring blocks and gates.
 import { useMemo } from 'react';
 import * as THREE from 'three';
-import { buildPaths, buildStairs, buildStreets, buildSurroundings, buildTerrain, buildWalls } from '../../campus/geometry.js';
+import { buildCity, buildPaths, buildStairs, buildStreets, buildSurroundings, buildTerrain, buildWalls } from '../../campus/geometry.js';
+import { cityTexture } from './cityTexture.js';
 import { LABELS } from '../../campus/common.js';
 import { ManagedLabel } from './labels.jsx';
 import { useModel } from './model.js';
 
-export default function Site({ showLabels }) {
+export default function Site({ showLabels, showCity = true }) {
   const m = useModel();
   const { COLORS, GATES, heightAt } = m;
   // Each of these is a single merged mesh, so the whole city costs only a few draw calls.
@@ -14,7 +15,8 @@ export default function Site({ showLabels }) {
   const streets = useMemo(() => buildStreets(m), [m]);
   const paths = useMemo(() => buildPaths(m), [m]);
   const stairs = useMemo(() => buildStairs(m), [m]);
-  const surroundings = useMemo(() => buildSurroundings(m), [m]);
+  const city = useMemo(() => buildCity(m), [m]);
+  const surroundings = useMemo(() => (city ? null : buildSurroundings(m)), [m, city]);
   const walls = useMemo(() => buildWalls(m), [m]);
   // Flat sheets over the ground (roads, paths) are pulled a little toward the camera so they never flicker against it (campuses with LAYER_OFFSET).
   const sheet = m.LAYER_OFFSET ? { polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 } : {};
@@ -46,7 +48,17 @@ export default function Site({ showLabels }) {
           <meshLambertMaterial color={COLORS.stairs} />
         </mesh>
       )}
-      {surroundings && (
+      {city && showCity && (
+        <>
+          <mesh geometry={city.walls} raycast={() => null}>
+            <meshLambertMaterial vertexColors map={cityTexture()} />
+          </mesh>
+          <mesh geometry={city.roofs} raycast={() => null}>
+            <meshLambertMaterial vertexColors />
+          </mesh>
+        </>
+      )}
+      {surroundings && showCity && (
         <mesh geometry={surroundings} raycast={() => null}>
           <meshLambertMaterial color={COLORS.surrounding} />
         </mesh>
