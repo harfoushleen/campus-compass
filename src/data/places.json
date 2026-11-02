@@ -2115,30 +2115,6 @@
     "subtitle": "9 floors underground"
   },
   {
-    "id": "SHELTER-SH",
-    "name": "Sage Hall Shelter",
-    "campus": "beirut",
-    "category": "shelters",
-    "building": "",
-    "near": "SH",
-    "description": "For use in case of an emergency.",
-    "hours": "",
-    "contact": "",
-    "link": "",
-    "keywords": [
-      "shelter",
-      "underground",
-      "basement",
-      "bunker",
-      "emergency",
-      "safe"
-    ],
-    "position": [
-      -39,
-      34
-    ]
-  },
-  {
     "id": "SHELTER-GB",
     "name": "Gezairi Shelter",
     "campus": "beirut",

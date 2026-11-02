@@ -13,6 +13,7 @@ import * as THREE from 'three';
 import { useFrame, useThree } from '@react-three/fiber';
 import { Html } from '@react-three/drei';
 import { LABELS } from '../../campus/common.js';
+import { visibleRange } from './viewport.js';
 
 export const LabelContext = createContext(null);
 
@@ -88,13 +89,14 @@ export function LabelLayout({ obstacles, container }) {
   const { registry } = useContext(LabelContext);
   const invalidate = useThree((s) => s.invalidate);
 
-  useFrame(({ camera, size, controls }) => {
+  useFrame(({ camera, size, controls, gl }) => {
     const box = container.current?.getBoundingClientRect();
     if (!box) return;
+    const [viewLeft, viewRight] = visibleRange(gl.domElement, size.width); // the sidebar may cover the start of the canvas
 
     // How zoomed in the view is: screen width per metre of camera distance.
     const distance = controls ? camera.position.distanceTo(controls.target) : 300;
-    const zoom = size.width / distance;
+    const zoom = (viewRight - viewLeft) / distance;
     const maxPriority = zoom >= LABELS.zoomForPriority3 ? 3 : zoom >= LABELS.zoomForPriority2 ? 2 : 1;
 
     // Rectangles already taken: buttons and markers that are showing.
@@ -137,7 +139,7 @@ export function LabelLayout({ obstacles, container }) {
       const { cx, cy } = screen.get(item);
       return { left: cx - w / 2, right: cx + w / 2, top: cy - h / 2 + shift, bottom: cy + h / 2 + shift };
     };
-    const onScreen = (r) => r.left >= 0 && r.right <= size.width && r.top >= 0 && r.bottom <= size.height;
+    const onScreen = (r) => r.left >= viewLeft && r.right <= viewRight && r.top >= 0 && r.bottom <= size.height;
     const free = (r, against = placed) => !against.some((p) => overlaps(r, p));
     const todo = [...screen.keys()];
     const wantsText = (item) => item.pinned || item.priority <= maxPriority;

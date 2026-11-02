@@ -2,8 +2,8 @@
 // This file (and everything it imports, including Three.js) is loaded separately
 // from the rest of the app, so the sidebar appears before the 3D view is ready.
 //
-// One campus is shown at a time. `campus` picks its model (src/campus/index.js); App remounts
-// this component when the campus changes, so nothing is carried over from the other one.
+// `campus` picks the model (src/campus/index.js). App keeps one of these mounted per campus and shows one at a time
+// (`active`), so switching campus is instant: the other scene is already built and drawn.
 import { useEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
@@ -27,6 +27,7 @@ import SceneTheme from './SceneTheme.jsx';
 import { ModelContext } from './model.js';
 import { groupPins, placeFocus } from '../../campus/pins.js';
 import { LabelContext, LabelLayout, createLabelRegistry } from './labels.jsx';
+import { visibleRange } from './viewport.js';
 
 const reduceMotion = () => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
 
@@ -61,9 +62,13 @@ const ease = (t) => (t < 0.5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2); // ea
 function Controls({ m, controlsRef, flyRef }) {
   const { CAMERA } = m;
   const { BOUNDS } = m;
-  const { size, invalidate } = useThree();
-  // Computed once on mount, so resizing the window doesn't undo the user's camera moves.
-  const [initial] = useState(() => initialView(m, size.width / size.height));
+  const { size, invalidate, gl } = useThree();
+  // Computed once on mount, so resizing the window doesn't undo the user's camera moves. The aspect is that of the part of
+  // the canvas that is on screen (the sidebar may cover the start of it).
+  const [initial] = useState(() => {
+    const [from, to] = visibleRange(gl.domElement, size.width);
+    return initialView(m, (to - from) / size.height);
+  });
   const flight = useRef(null);
   const [minY, maxY] = CAMERA.targetHeight ?? [0, 40]; // how high or low the orbit point may go
 
@@ -135,15 +140,33 @@ function Controls({ m, controlsRef, flyRef }) {
   );
 }
 
+/** Redraws when the sidebar opens or closes (the canvas keeps its size, but the labels and markers care which part is visible),
+ *  and when this scene becomes the visible one. */
+function Refresh({ active }) {
+  const { gl, invalidate } = useThree();
+  const activeRef = useRef(active);
+  activeRef.current = active;
+  useEffect(() => {
+    const content = gl.domElement.closest('.content');
+    if (!content || !window.ResizeObserver) return undefined;
+    const ro = new ResizeObserver(() => { if (activeRef.current) invalidate(); }); // the campus that is hidden stays as it is
+    ro.observe(content);
+    return () => ro.disconnect();
+  }, [gl, invalidate]);
+  useEffect(() => { if (active) invalidate(); }, [active, invalidate]);
+  return null;
+}
+
 /**
  * campus         id of the campus to show ('beirut', 'byblos')
+ * active         whether this is the campus on screen (the other stays loaded, with its first frame drawn, and is hidden)
  * places         the places of the open sidebar category (their pins show while nothing is picked)
  * allPlaces      every place on this campus
  * category       the open sidebar category, or null
  * selectedPlace  the picked place: only its pin shows
  * focus          { id, n }: when `n` changes, fly the camera to place `id`
  */
-export default function CampusView({ campus, places, allPlaces, category, selectedPlace, focus, theme, onSelect, onBackgroundClick }) {
+export default function CampusView({ campus, active = true, places, allPlaces, category, selectedPlace, focus, theme, onSelect, onBackgroundClick, onReady }) {
   const { t, localize } = useI18n();
   const m = useMemo(() => getModel(campus), [campus]);
   const [labelRegistry] = useState(createLabelRegistry);
@@ -212,8 +235,9 @@ export default function CampusView({ campus, places, allPlaces, category, select
   }, [focus?.n]);
 
   const defaultView = () => {
-    const { clientWidth, clientHeight } = wrapperRef.current;
-    const view = initialView(m, clientWidth / clientHeight);
+    const canvas = wrapperRef.current.querySelector('canvas');
+    const [from, to] = visibleRange(canvas, wrapperRef.current.clientWidth);
+    const view = initialView(m, (to - from) / wrapperRef.current.clientHeight);
     flyRef.current(view.position, view.target);
   };
 
@@ -230,10 +254,13 @@ export default function CampusView({ campus, places, allPlaces, category, select
         dpr={[1, 1.75]}
         gl={{ antialias: true, powerPreference: 'high-performance' }}
         onPointerMissed={onBackgroundClick}
+        // Tell the app when the first frame is on screen (it fades the campus-switch veil out then).
+        onCreated={() => requestAnimationFrame(() => requestAnimationFrame(() => onReady?.()))}
       >
         <ModelContext.Provider value={m}>
           <SceneTheme theme={theme} />
           <LabelContext.Provider value={{ registry: labelRegistry, portal: labelsRef }}>
+            <Refresh active={active} />
             <Controls m={m} controlsRef={controlsRef} flyRef={flyRef} />
             <Site showLabels={showLabels} />
             <Horizon />

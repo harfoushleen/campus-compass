@@ -74,7 +74,6 @@ html.theme-fade *::after {
 .content {
   position: absolute;
   inset: 0;
-  transition: inset-inline-start var(--t) var(--ease);
 }
 
 /* Sidebar: slides in from the start edge. Closed = moved off-screen. */
@@ -124,7 +123,45 @@ html.theme-fade *::after {
 @media (min-width: 720px) {
   /* The map moves over to make room for the open sidebar (on phones it is a drawer over the map). */
   .app.sidebar-open .content { inset-inline-start: var(--sidebar-w); }
+  /* The 3D canvas keeps its full width whatever the sidebar does, so it is never resized or redrawn for it: --map-inset widens the
+     canvas box by half the sidebar on each side, which keeps it centred on the part the sidebar leaves free. The map is moved over
+     at once, then slid from where it was, which only moves a finished picture. The sidebar slides over the gap. */
+  .app.sidebar-open { --map-inset: calc(var(--sidebar-w) / 2); }
+  .app.map-in .campus { animation: map-in var(--t) var(--ease); }
+  .app.map-out .campus { animation: map-out var(--t) var(--ease); }
+  [dir='rtl'] .app.map-in .campus { animation-name: map-in-rtl; }
+  [dir='rtl'] .app.map-out .campus { animation-name: map-out-rtl; }
 }
+@keyframes map-in { from { transform: translateX(calc(var(--sidebar-w) / -2)); } }
+@keyframes map-out { from { transform: translateX(calc(var(--sidebar-w) / 2)); } }
+@keyframes map-in-rtl { from { transform: translateX(calc(var(--sidebar-w) / 2)); } }
+@keyframes map-out-rtl { from { transform: translateX(calc(var(--sidebar-w) / -2)); } }
+
+/* One 3D scene per campus, stacked; the current one fades in over the other. */
+.scene {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.25s ease, visibility 0s linear 0.25s;
+}
+.scene.active { opacity: 1; visibility: visible; pointer-events: auto; z-index: 1; transition: opacity 0.25s ease, visibility 0s; }
+
+/* Covers the map until the scene on screen has drawn its first frame. */
+.campus-veil {
+  position: absolute;
+  inset: 0;
+  z-index: 29;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--map-bg);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+.campus-veil.on { opacity: 1; pointer-events: auto; }
 
 /* Sidebar header */
 .sb-header { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
@@ -497,7 +534,8 @@ html.theme-fade *::after {
 
 .campus {
   position: absolute;
-  inset: 0;
+  inset-block: 0;
+  inset-inline: calc(var(--map-inset, 0px) * -1);
   z-index: 0; /* keeps the 3D labels below the side panel and the bottom sheet */
   background: var(--map-bg);
   touch-action: none; /* let the 3D view handle pinch and drag */
@@ -540,7 +578,7 @@ html.theme-fade *::after {
 .campus-attribution {
   position: absolute;
   bottom: 5px;
-  inset-inline-start: 12px;
+  inset-inline-start: calc(12px + var(--map-inset, 0px));
   margin: 0;
   font-size: 0.62rem;
   color: rgb(255 255 255 / 0.7);
