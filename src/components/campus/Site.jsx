@@ -1,11 +1,39 @@
 // Everything around the LAU buildings: ground, streets, neighbouring blocks and gates.
-import { useMemo } from 'react';
+import { useMemo, useRef } from 'react';
 import * as THREE from 'three';
+import { useFrame } from '@react-three/fiber';
 import { buildCity, buildPaths, buildStairs, buildStreets, buildSurroundings, buildTerrain, buildWalls } from '../../campus/geometry.js';
 import { cityTexture } from './cityTexture.js';
 import { LABELS } from '../../campus/common.js';
 import { ManagedLabel } from './labels.jsx';
 import { useModel } from './model.js';
+
+const reduceMotion = () => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+const CITY_SECONDS = 0.55; // how long the blocks take to rise out of the ground or sink back
+
+/** The neighbouring blocks. When `show` changes they grow up from the ground (or shrink back into it), then are hidden for good. */
+function CityLayer({ show, children }) {
+  const group = useRef();
+  const t = useRef(show ? 1 : 0); // 0 = flat on the ground and hidden, 1 = full height
+  useFrame(({ invalidate }, delta) => {
+    const g = group.current;
+    if (!g) return;
+    const target = show ? 1 : 0;
+    if (t.current !== target) {
+      t.current = reduceMotion() ? target : Math.min(1, Math.max(0, t.current + Math.sign(target - t.current) * (delta / CITY_SECONDS)));
+      if (Math.abs(t.current - target) < 1e-3) t.current = target;
+      invalidate(); // keep drawing until it has arrived
+    }
+    const e = t.current * t.current * (3 - 2 * t.current); // ease in and out
+    g.scale.y = Math.max(e, 1e-4);
+    g.visible = t.current > 0;
+  });
+  return (
+    <group ref={group}>
+      {children}
+    </group>
+  );
+}
 
 export default function Site({ showLabels, showCity = true }) {
   const m = useModel();
@@ -48,7 +76,8 @@ export default function Site({ showLabels, showCity = true }) {
           <meshLambertMaterial color={COLORS.stairs} />
         </mesh>
       )}
-      {city && showCity && (
+      <CityLayer show={showCity}>
+      {city && (
         <>
           <mesh geometry={city.walls} raycast={() => null}>
             <meshLambertMaterial vertexColors map={cityTexture()} />
@@ -58,11 +87,12 @@ export default function Site({ showLabels, showCity = true }) {
           </mesh>
         </>
       )}
-      {surroundings && showCity && (
+      {surroundings && (
         <mesh geometry={surroundings} raycast={() => null}>
           <meshLambertMaterial color={COLORS.surrounding} />
         </mesh>
       )}
+      </CityLayer>
 
       {GATES.map((gate) => {
         const [x, z] = gate.position;
