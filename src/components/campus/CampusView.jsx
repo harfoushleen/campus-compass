@@ -252,14 +252,14 @@ export default function CampusView({ campus, active = true, places, allPlaces, c
     flyRef.current(view.position, view.target);
   };
 
-  // Each time this campus is switched to, the camera flies (quickly) from wherever it was left to the default view.
+  // Each time this campus is switched to, the camera flies from wherever it was left to the default view.
   const wasActive = useRef(active);
   useEffect(() => {
     if (active && !wasActive.current) {
       const canvas = wrapperRef.current.querySelector('canvas');
       const [from, to] = visibleRange(canvas, wrapperRef.current.clientWidth);
       const view = initialView(m, (to - from) / wrapperRef.current.clientHeight);
-      flyRef.current(view.position, view.target, 0.7);
+      flyRef.current(view.position, view.target); // same speed as the Default view button
     }
     wasActive.current = active;
     // eslint-disable-next-line react-hooks/exhaustive-deps
