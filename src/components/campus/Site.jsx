@@ -1,12 +1,52 @@
 // Everything around the LAU buildings: ground, streets, neighbouring blocks and gates.
-import { useMemo } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import * as THREE from 'three';
-import { buildPaths, buildStairs, buildStreets, buildSurroundings, buildTerrain, buildWalls } from '../../campus/geometry.js';
+import { useFrame, useThree } from '@react-three/fiber';
+import { buildCity, buildPaths, buildStairs, buildStreets, buildSurroundings, buildTerrain, buildWalls } from '../../campus/geometry.js';
+import { cityTexture } from './cityTexture.js';
 import { LABELS } from '../../campus/common.js';
 import { ManagedLabel } from './labels.jsx';
 import { useModel } from './model.js';
 
-export default function Site({ showLabels }) {
+const reduceMotion = () => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+const CITY_SECONDS = 0.55; // how long the blocks take to rise out of the ground or sink back
+
+/**
+ * The neighbouring blocks. When `show` changes they grow up from the ground (or shrink back into it), then are hidden for good.
+ * Timed with the clock, not with frame deltas: the canvas only draws when asked, so the first delta after an idle spell is huge.
+ */
+function CityLayer({ show, children }) {
+  const group = useRef();
+  const invalidate = useThree((state) => state.invalidate);
+  const level = useRef(show ? 1 : 0); // 0 = flat on the ground and hidden, 1 = full height
+  const move = useRef(null); // { from, to, start, seconds } while it is moving
+
+  // A change of `show` is not a change of anything in the scene, so ask for a redraw ourselves.
+  useEffect(() => {
+    const to = show ? 1 : 0, from = level.current;
+    if (from === to) return;
+    move.current = { from, to, start: performance.now(), seconds: reduceMotion() ? 0.001 : CITY_SECONDS * Math.abs(to - from) };
+    invalidate();
+  }, [show, invalidate]);
+
+  useFrame(({ invalidate: again }) => {
+    const g = group.current;
+    if (!g) return;
+    const mv = move.current;
+    if (mv) {
+      const k = Math.min(1, (performance.now() - mv.start) / (mv.seconds * 1000));
+      level.current = mv.from + (mv.to - mv.from) * k;
+      if (k < 1) again(); // keep drawing until it has arrived
+      else move.current = null;
+    }
+    const x = level.current, eased = x * x * (3 - 2 * x); // ease in and out
+    g.scale.y = Math.max(eased, 1e-4);
+    g.visible = x > 0;
+  });
+  return <group ref={group}>{children}</group>;
+}
+
+export default function Site({ showLabels, showCity = true }) {
   const m = useModel();
   const { COLORS, GATES, heightAt } = m;
   // Each of these is a single merged mesh, so the whole city costs only a few draw calls.
@@ -14,7 +54,8 @@ export default function Site({ showLabels }) {
   const streets = useMemo(() => buildStreets(m), [m]);
   const paths = useMemo(() => buildPaths(m), [m]);
   const stairs = useMemo(() => buildStairs(m), [m]);
-  const surroundings = useMemo(() => buildSurroundings(m), [m]);
+  const city = useMemo(() => buildCity(m), [m]);
+  const surroundings = useMemo(() => (city ? null : buildSurroundings(m)), [m, city]);
   const walls = useMemo(() => buildWalls(m), [m]);
   // Flat sheets over the ground (roads, paths) are pulled a little toward the camera so they never flicker against it (campuses with LAYER_OFFSET).
   const sheet = m.LAYER_OFFSET ? { polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 } : {};
@@ -46,11 +87,23 @@ export default function Site({ showLabels }) {
           <meshLambertMaterial color={COLORS.stairs} />
         </mesh>
       )}
+      <CityLayer show={showCity}>
+      {city && (
+        <>
+          <mesh geometry={city.walls} raycast={() => null}>
+            <meshLambertMaterial vertexColors map={cityTexture()} />
+          </mesh>
+          <mesh geometry={city.roofs} raycast={() => null}>
+            <meshLambertMaterial vertexColors />
+          </mesh>
+        </>
+      )}
       {surroundings && (
         <mesh geometry={surroundings} raycast={() => null}>
           <meshLambertMaterial color={COLORS.surrounding} />
         </mesh>
       )}
+      </CityLayer>
 
       {GATES.map((gate) => {
         const [x, z] = gate.position;

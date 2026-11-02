@@ -39,6 +39,18 @@ export const SURROUNDINGS = {
   floorHeight: 3.2,
   maxDistance: 35,       // only buildings within this many metres of the campus are drawn…
   alsoNear: ['GB'],      // …or of these LAU buildings outside the campus
+  // A grey city around the campus, for show (buildCity in geometry.js): every OpenStreetMap block, drawn grey with window rows, and more
+  // blocks filled in where OpenStreetMap has none. Grey, so nobody takes them for LAU buildings. When this is set, the settings above are not used.
+  city: {
+    seed: 11,
+    area: [-420, 300, -330, 290],  // where to fill in: [west, east, north, south] in metres
+    cell: 26,                      // grid spacing of the new blocks
+    size: [13, 24],                // width and depth range of a new block
+    lowNear: 45,                   // within this many metres of the campus blocks stay low (3 to 4 floors), so the campus stays in view
+    towerFrom: 140,                // beyond this, one block in ten is a tower
+    maxFloors: 12,                 // cap on the floors of an OpenStreetMap block
+    tones: ['#c4c7ca', '#b9bdc1', '#aeb2b7', '#cfd1d3', '#a3a8ad'],
+  },
 };
 
 // ── Landscaping ──

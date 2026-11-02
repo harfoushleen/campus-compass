@@ -2,8 +2,8 @@
 // This file (and everything it imports, including Three.js) is loaded separately
 // from the rest of the app, so the sidebar appears before the 3D view is ready.
 //
-// One campus is shown at a time. `campus` picks its model (src/campus/index.js); App remounts
-// this component when the campus changes, so nothing is carried over from the other one.
+// `campus` picks the model (src/campus/index.js). App keeps one of these mounted per campus and shows one at a time
+// (`active`), so switching campus is instant: the other scene is already built and drawn.
 import { useEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
@@ -27,6 +27,7 @@ import SceneTheme from './SceneTheme.jsx';
 import { ModelContext } from './model.js';
 import { groupPins, placeFocus } from '../../campus/pins.js';
 import { LabelContext, LabelLayout, createLabelRegistry } from './labels.jsx';
+import { visibleRange } from './viewport.js';
 
 const reduceMotion = () => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
 
@@ -58,22 +59,26 @@ function buildingView(m, id, distance) {
 
 const ease = (t) => (t < 0.5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2); // ease in-out
 
-function Controls({ m, controlsRef, flyRef }) {
+function Controls({ m, controlsRef, flyRef, active }) {
   const { CAMERA } = m;
   const { BOUNDS } = m;
-  const { size, invalidate } = useThree();
-  // Computed once on mount, so resizing the window doesn't undo the user's camera moves.
-  const [initial] = useState(() => initialView(m, size.width / size.height));
+  const { size, invalidate, gl } = useThree();
+  // Computed once on mount, so resizing the window doesn't undo the user's camera moves. The aspect is that of the part of
+  // the canvas that is on screen (the sidebar may cover the start of it).
+  const [initial] = useState(() => {
+    const [from, to] = visibleRange(gl.domElement, size.width);
+    return initialView(m, (to - from) / size.height);
+  });
   const flight = useRef(null);
   const [minY, maxY] = CAMERA.targetHeight ?? [0, 40]; // how high or low the orbit point may go
 
-  // flyRef.current(position, target): smoothly moves the camera to a new view.
-  flyRef.current = (position, target) => {
+  // flyRef.current(position, target, seconds?): smoothly moves the camera to a new view.
+  flyRef.current = (position, target, seconds) => {
     const controls = controlsRef.current;
     if (!controls) return;
     flight.current = {
       start: performance.now(),
-      duration: reduceMotion() ? 1 : FLY_DURATION * 1000, // "reduce motion": jump straight there
+      duration: reduceMotion() ? 1 : (seconds ?? FLY_DURATION) * 1000, // "reduce motion": jump straight there
       fromPos: controls.object.position.clone(),
       fromTarget: controls.target.clone(),
       toPos: new THREE.Vector3(...position),
@@ -85,14 +90,16 @@ function Controls({ m, controlsRef, flyRef }) {
   // Development only: lets the screenshot scripts set the camera, window.__setCamera([x, y, z, tx, ty, tz]),
   // and read it back, window.__getCamera() -> { position, target }.
   useEffect(() => {
-    if (!import.meta.env.DEV) return undefined;
-    window.__setCamera = ([x, y, z, tx, ty, tz]) => flyRef.current([x, y, z], [tx, ty, tz]);
-    window.__getCamera = () => ({ position: controlsRef.current.object.position.toArray(), target: controlsRef.current.target.toArray() });
+    if (!import.meta.env.DEV || !active) return undefined;
+    const set = ([x, y, z, tx, ty, tz]) => flyRef.current([x, y, z], [tx, ty, tz]);
+    const get = () => ({ position: controlsRef.current.object.position.toArray(), target: controlsRef.current.target.toArray() });
+    window.__setCamera = set;
+    window.__getCamera = get;
     return () => {
-      delete window.__setCamera;
-      delete window.__getCamera;
+      if (window.__setCamera === set) delete window.__setCamera; // (the campus that takes over may already have set its own)
+      if (window.__getCamera === get) delete window.__getCamera;
     };
-  }, [flyRef, controlsRef]);
+  }, [flyRef, controlsRef, active]);
 
   useFrame(() => {
     const f = flight.current, controls = controlsRef.current;
@@ -135,20 +142,47 @@ function Controls({ m, controlsRef, flyRef }) {
   );
 }
 
+/** Redraws when the sidebar opens or closes (the canvas keeps its size, but the labels and markers care which part is visible),
+ *  and when this scene becomes the visible one. */
+function Refresh({ active }) {
+  const { gl, invalidate } = useThree();
+  const activeRef = useRef(active);
+  activeRef.current = active;
+  useEffect(() => {
+    const content = gl.domElement.closest('.content');
+    if (!content || !window.ResizeObserver) return undefined;
+    const ro = new ResizeObserver(() => { if (activeRef.current) invalidate(); }); // the campus that is hidden stays as it is
+    ro.observe(content);
+    return () => ro.disconnect();
+  }, [gl, invalidate]);
+  useEffect(() => { if (active) invalidate(); }, [active, invalidate]);
+  return null;
+}
+
 /**
  * campus         id of the campus to show ('beirut', 'byblos')
+ * active         whether this is the campus on screen (the other stays loaded, with its first frame drawn, and is hidden)
  * places         the places of the open sidebar category (their pins show while nothing is picked)
  * allPlaces      every place on this campus
  * category       the open sidebar category, or null
  * selectedPlace  the picked place: only its pin shows
  * focus          { id, n }: when `n` changes, fly the camera to place `id`
  */
-export default function CampusView({ campus, places, allPlaces, category, selectedPlace, focus, theme, onSelect, onBackgroundClick }) {
+export default function CampusView({ campus, active = true, places, allPlaces, category, selectedPlace, focus, theme, onSelect, onBackgroundClick, onReady }) {
   const { t, localize } = useI18n();
   const m = useMemo(() => getModel(campus), [campus]);
   const [labelRegistry] = useState(createLabelRegistry);
   const toolbarRef = useRef();
   const [showLabels, setShowLabels] = useState(LABELS.showByDefault);
+  // The grey blocks round the campus can be hidden, to see the campus alone (campuses that draw them). Remembered between visits.
+  const hasCity = Boolean(m.SURROUNDINGS);
+  const [showCity, setShowCity] = useState(() => {
+    try { return localStorage.getItem('campus-city') !== 'off'; } catch { return true; }
+  });
+  const toggleCity = () => setShowCity((v) => {
+    try { localStorage.setItem('campus-city', v ? 'off' : 'on'); } catch { /* private mode: not remembered */ }
+    return !v;
+  });
   const controlsRef = useRef();
   const flyRef = useRef(() => {});
   const wrapperRef = useRef();
@@ -212,10 +246,24 @@ export default function CampusView({ campus, places, allPlaces, category, select
   }, [focus?.n]);
 
   const defaultView = () => {
-    const { clientWidth, clientHeight } = wrapperRef.current;
-    const view = initialView(m, clientWidth / clientHeight);
+    const canvas = wrapperRef.current.querySelector('canvas');
+    const [from, to] = visibleRange(canvas, wrapperRef.current.clientWidth);
+    const view = initialView(m, (to - from) / wrapperRef.current.clientHeight);
     flyRef.current(view.position, view.target);
   };
+
+  // Each time this campus is switched to, the camera flies from wherever it was left to the default view.
+  const wasActive = useRef(active);
+  useEffect(() => {
+    if (active && !wasActive.current) {
+      const canvas = wrapperRef.current.querySelector('canvas');
+      const [from, to] = visibleRange(canvas, wrapperRef.current.clientWidth);
+      const view = initialView(m, (to - from) / wrapperRef.current.clientHeight);
+      flyRef.current(view.position, view.target); // same speed as the Default view button
+    }
+    wasActive.current = active;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [active]);
 
   const goToBuilding = (marker) => {
     const view = buildingView(m, marker.buildingId, marker.viewDistance);
@@ -230,12 +278,15 @@ export default function CampusView({ campus, places, allPlaces, category, select
         dpr={[1, 1.75]}
         gl={{ antialias: true, powerPreference: 'high-performance' }}
         onPointerMissed={onBackgroundClick}
+        // Tell the app when the first frame is on screen (it fades the campus-switch veil out then).
+        onCreated={() => requestAnimationFrame(() => requestAnimationFrame(() => onReady?.()))}
       >
         <ModelContext.Provider value={m}>
           <SceneTheme theme={theme} />
           <LabelContext.Provider value={{ registry: labelRegistry, portal: labelsRef }}>
-            <Controls m={m} controlsRef={controlsRef} flyRef={flyRef} />
-            <Site showLabels={showLabels} />
+            <Refresh active={active} />
+            <Controls m={m} controlsRef={controlsRef} flyRef={flyRef} active={active} />
+            <Site showLabels={showLabels} showCity={showCity} />
             <Horizon />
             <Details />
             <Lamps />
@@ -296,6 +347,11 @@ export default function CampusView({ campus, places, allPlaces, category, select
         >
           {t('labels')}
         </button>
+        {hasCity && (
+          <button type="button" className={`campus-button ${showCity ? 'active' : ''}`} aria-pressed={showCity} onClick={toggleCity}>
+            {t('cityBlocks')}
+          </button>
+        )}
         <button type="button" className="campus-button" onClick={defaultView}>
           {t('resetView')}
         </button>
