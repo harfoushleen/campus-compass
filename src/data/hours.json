@@ -1,5 +1,5 @@
 {
-  "updated": "2026-10-26",
+  "updated": "2026-11-02",
   "entries": {
     "registrar": {
       "hours": "8:30–12:00 and 13:00–15:00 (summer 8:30–13:00)",
@@ -15,7 +15,7 @@
     },
     "isp": {
       "hours": "10:00–15:00, Monday to Friday (except holidays)",
-      "checked": "2026-10-26",
+      "checked": "2026-11-02",
       "source": "https://studyabroad.lau.edu.lb/contact.php",
       "stale": false
     },
@@ -49,17 +49,17 @@
       "source": "https://athletics.lau.edu.lb/facility/swimming-pool/",
       "stale": true
     },
-    "fitness-center-byblos": {
-      "hours": "Mon–Fri 7:00–18:00",
-      "checked": "2026-10-27",
-      "source": "https://athletics.lau.edu.lb/facility/fitness-center-byblos/",
-      "stale": false
-    },
     "basketball-outdoor-byblos": {
       "hours": "Mon–Fri 8:00–20:00",
       "checked": "2026-10-27",
       "source": "https://athletics.lau.edu.lb/facility/basketball-outdoor-court/",
-      "stale": false
+      "stale": true
+    },
+    "fitness-center-byblos": {
+      "hours": "Mon–Fri 7:00–18:00",
+      "checked": "2026-10-27",
+      "source": "https://athletics.lau.edu.lb/facility/fitness-center-byblos/",
+      "stale": true
     }
   }
 }
