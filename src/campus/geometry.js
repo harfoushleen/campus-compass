@@ -376,9 +376,20 @@ export function buildCity(m) {
   };
 
   // 1. The blocks to build: OpenStreetMap's, then new ones in the gaps.
-  const blocks = osmFootprints.map((points, i) => {
+  // OpenStreetMap also has small buildings inside the campus (wings and sheds of Sage Hall, Gezairi...): those are LAU's, not the city's,
+  // so a block that touches the campus outline or an LAU building is left out.
+  const segmentsCross = (a, b, c, d) => {
+    const side = (p, q, r) => Math.sign((q[0] - p[0]) * (r[1] - p[1]) - (q[1] - p[1]) * (r[0] - p[0]));
+    return side(a, b, c) !== side(a, b, d) && side(c, d, a) !== side(c, d, b);
+  };
+  const touches = (A, B) =>
+    A.some(([x, z]) => insidePolygon(B, x, z)) || B.some(([x, z]) => insidePolygon(A, x, z))
+    || A.some((p, i) => B.some((q, j) => segmentsCross(p, A[(i + 1) % A.length], q, B[(j + 1) % B.length])));
+  const campusAreas = [CAMPUS_OUTLINE, ...BUILDINGS.flatMap((b) => b.parts.map((p) => p.footprint))];
+  const blocks = osmFootprints.flatMap((points, i) => {
+    if (campusAreas.some((area) => touches(points, area))) return [];
     const [cx, cz] = centroid(points);
-    return { points, floors: floorsFor(cx, cz, osm.buildings[i].levels), r: Math.max(...points.map(([x, z]) => Math.hypot(x - cx, z - cz))), cx, cz };
+    return [{ points, osm: true, id: osm.buildings[i].id, floors: floorsFor(cx, cz, osm.buildings[i].levels), r: Math.max(...points.map(([x, z]) => Math.hypot(x - cx, z - cz))), cx, cz }];
   });
   const [x0, x1, z0, z1] = C.area;
   for (let gz = z0; gz < z1; gz += C.cell) for (let gx = x0; gx < x1; gx += C.cell) {
@@ -456,5 +467,6 @@ export function buildCity(m) {
   return {
     walls: make(wall, [['position', 3], ['normal', 3], ['uv', 2], ['color', 3]]),
     roofs: make(roof, [['position', 3], ['normal', 3], ['color', 3]]),
+    blocks, // for checks and tests
   };
 }
