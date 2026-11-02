@@ -1,5 +1,49 @@
 # LAU Byblos campus: 3D layout plan
 
+> **Update (access and level ground).** Where this box disagrees with anything below it, this box is right.
+>
+> **Camera** (both campuses, `src/campus/cameraGuard.js`, used in `CampusView.jsx`): after every camera move (orbit, pan, zoom, camera flights) the
+> orbit point is lifted onto the ground if it is under it (the camera rises by the same amount, so the view keeps its shape), and the camera
+> is kept at least 6 m above the highest ground within 4 m of it. It only ever pushes up, so the camera slides along a slope. Tested in the
+> running app on both campuses: 14 random flights to views under the ground each, then a mouse orbit, pan and zoom, with the clearance
+> measured every frame: never below 0 m for the target, never below 6 m for the camera. (There is no "Sea view" button: the sea was removed in stage 2. Place and
+> category flights go through the same code.) Beirut's default view is pixel-identical to before, in light and dark.
+>
+> **Level ground**: every road now has level ground under it. OpenStreetMap roads follow the ground's own height, smoothed over 10 m each way;
+> the ground is exactly level across the road and 5 m beyond each edge, then melts into the slope over 5 m. Terraces and building pads keep their level (a road never cuts into one).
+> The drawn ground now has a vertex every 3 m, the same as the height grid (it was 4 m), which is what stopped road edges looking
+> jagged (`BOUNDS.maxX` went from 420 to 419 so the width is a multiple of 3). Building time for the height field: about 90 ms (was about 60 ms).
+>
+> **Block A and Residence B were cut off.** From the master plan (`lau-byblos-masterplan.pdf`, matched to the model by the two buildings' positions) and the 3D map:
+> - **Block A**: the entrance is at the south-west end of its south-east face, on a paved forecourt level with the main plaza (63 m). The round stone
+>   drum between the two blocks stands on that forecourt (it is filled like a building on the master plan; drawn as a 3.5 m drum, guess). The road from the main plaza junction runs
+>   along the south-east face (the OpenStreetMap road, now graded: level at 63 m past the entrance, then easing down about 15% to its end at (60, -135)).
+>   New: forecourt and apron pad at 63 m, a 6 m entrance drive from that road, a paved walk along the face, and a 30 m long embankment on the hillside side instead of the old 36 m cliff.
+> - **Residence B**: the entrance is in the middle of its south-east face, level with the Lower Gate road (35 m). New: the Lower Gate road is graded level (35 m) along the building,
+>   a 6 m entrance drive, a walk along the face, a drive to the outdoor Parking D at the west end, and a 16 m embankment on the north side.
+> - **Lower Gate to the main plaza**: the OpenStreetMap road climbs 27 m in about 50 m between them (the model's terraces are 28 m apart), which no road can do. That stretch of road
+>   is cut and replaced by a flight of stairs (150 steps, 6 m wide) from the end of the Lower Gate road to the plaza. **Vehicles reach the plaza and Block A by the road past Block A's south-east face, not from the Lower Gate.**
+> - Parking C's two aisle roads used to run up the foot of the 24 m cliff below the plaza; they now stop at the foot.
+>
+> **Everything else, checked the same way** (nearest road or path, height difference, steepest grade between, how level the pad is; run on the final model):
+>
+> | Building | Finding | Needs the same fix? |
+> |---|---|---|
+> | Residence Hall C | nearest road 28.5 m away and 42 m lower than its pad (the pad is raised 36 m above the hill) | **yes** |
+> | Water Tank | nearest road 50 m away | **yes** (a service track) |
+> | Infrastructure Plants | nearest road 32 m away and 12 m above the plant platform | **yes** (a ramp or switchback drive) |
+> | Zakhem Hall | no path from the fountain plaza; the ring road is 8 m away and 10 m lower | **yes** (a path from the plaza, stairs down to the ring road) |
+> | Architecture Hall | the path ends 2.8 m below its edge | a few steps |
+> | Bassil Hall | the path is 6.7 m away and 2.6 m lower | a few steps |
+> | Library | corner of its pad 3.5 m low on the cliff side; the vehicle road beside it is 7 m below (the path is level) | a wider embankment (as for Block A) |
+> | Science Building / Student Center | their footprints overlap, so the Science Building stands on two levels (39 m and 55 m) | a data fix (the footprints), not an access one |
+> | Engineering center | the road is 7.7 m above; the path is level | no |
+> | Chagoury, Frem, Cafeteria, Tohme-Rizk, Service Center, Health Clinic, Animal Facility, Underground Parking drum, Central Administration | reachable on the level (road or path within 6 m, or an open plaza) | no |
+>
+> **New guesses**: 25. the entrance positions on both buildings (about 10 m); 26. the round drum's shape and height; 27. the heights of the Block A road (63 m falling to 50 m);
+> 28. the stairs standing in for the cut road (the real connection between the Lower Gate and the main gate is not in the sources); 29. the embankment widths (30 m and 16 m); 30. Residence B's underground parking E entrance is not drawn.
+> Terrace levels are unchanged. Screenshots: `docs/screenshots/byblos-access-*.png` (before and after for Block A and Residence B, desktop and phone in light and dark, top-down, the stairs).
+
 > **Update (stage 3): detail added.** Where this box disagrees with anything below it, this box is right.
 >
 > **Lower-parking strip** (your request): the official map draws the long strip of Lower Parking A and B, and the road
