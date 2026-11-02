@@ -72,13 +72,13 @@ function Controls({ m, controlsRef, flyRef, active }) {
   const flight = useRef(null);
   const [minY, maxY] = CAMERA.targetHeight ?? [0, 40]; // how high or low the orbit point may go
 
-  // flyRef.current(position, target): smoothly moves the camera to a new view.
-  flyRef.current = (position, target) => {
+  // flyRef.current(position, target, seconds?): smoothly moves the camera to a new view.
+  flyRef.current = (position, target, seconds) => {
     const controls = controlsRef.current;
     if (!controls) return;
     flight.current = {
       start: performance.now(),
-      duration: reduceMotion() ? 1 : FLY_DURATION * 1000, // "reduce motion": jump straight there
+      duration: reduceMotion() ? 1 : (seconds ?? FLY_DURATION) * 1000, // "reduce motion": jump straight there
       fromPos: controls.object.position.clone(),
       fromTarget: controls.target.clone(),
       toPos: new THREE.Vector3(...position),
@@ -91,11 +91,13 @@ function Controls({ m, controlsRef, flyRef, active }) {
   // and read it back, window.__getCamera() -> { position, target }.
   useEffect(() => {
     if (!import.meta.env.DEV || !active) return undefined;
-    window.__setCamera = ([x, y, z, tx, ty, tz]) => flyRef.current([x, y, z], [tx, ty, tz]);
-    window.__getCamera = () => ({ position: controlsRef.current.object.position.toArray(), target: controlsRef.current.target.toArray() });
+    const set = ([x, y, z, tx, ty, tz]) => flyRef.current([x, y, z], [tx, ty, tz]);
+    const get = () => ({ position: controlsRef.current.object.position.toArray(), target: controlsRef.current.target.toArray() });
+    window.__setCamera = set;
+    window.__getCamera = get;
     return () => {
-      delete window.__setCamera;
-      delete window.__getCamera;
+      if (window.__setCamera === set) delete window.__setCamera; // (the campus that takes over may already have set its own)
+      if (window.__getCamera === get) delete window.__getCamera;
     };
   }, [flyRef, controlsRef, active]);
 
@@ -249,6 +251,19 @@ export default function CampusView({ campus, active = true, places, allPlaces, c
     const view = initialView(m, (to - from) / wrapperRef.current.clientHeight);
     flyRef.current(view.position, view.target);
   };
+
+  // Each time this campus is switched to, the camera flies (quickly) from wherever it was left to the default view.
+  const wasActive = useRef(active);
+  useEffect(() => {
+    if (active && !wasActive.current) {
+      const canvas = wrapperRef.current.querySelector('canvas');
+      const [from, to] = visibleRange(canvas, wrapperRef.current.clientWidth);
+      const view = initialView(m, (to - from) / wrapperRef.current.clientHeight);
+      flyRef.current(view.position, view.target, 0.7);
+    }
+    wasActive.current = active;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [active]);
 
   const goToBuilding = (marker) => {
     const view = buildingView(m, marker.buildingId, marker.viewDistance);
