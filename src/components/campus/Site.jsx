@@ -1,7 +1,7 @@
 // Everything around the LAU buildings: ground, streets, neighbouring blocks and gates.
-import { useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import * as THREE from 'three';
-import { useFrame } from '@react-three/fiber';
+import { useFrame, useThree } from '@react-three/fiber';
 import { buildCity, buildPaths, buildStairs, buildStreets, buildSurroundings, buildTerrain, buildWalls } from '../../campus/geometry.js';
 import { cityTexture } from './cityTexture.js';
 import { LABELS } from '../../campus/common.js';
@@ -11,28 +11,39 @@ import { useModel } from './model.js';
 const reduceMotion = () => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
 const CITY_SECONDS = 0.55; // how long the blocks take to rise out of the ground or sink back
 
-/** The neighbouring blocks. When `show` changes they grow up from the ground (or shrink back into it), then are hidden for good. */
+/**
+ * The neighbouring blocks. When `show` changes they grow up from the ground (or shrink back into it), then are hidden for good.
+ * Timed with the clock, not with frame deltas: the canvas only draws when asked, so the first delta after an idle spell is huge.
+ */
 function CityLayer({ show, children }) {
   const group = useRef();
-  const t = useRef(show ? 1 : 0); // 0 = flat on the ground and hidden, 1 = full height
-  useFrame(({ invalidate }, delta) => {
+  const invalidate = useThree((state) => state.invalidate);
+  const level = useRef(show ? 1 : 0); // 0 = flat on the ground and hidden, 1 = full height
+  const move = useRef(null); // { from, to, start, seconds } while it is moving
+
+  // A change of `show` is not a change of anything in the scene, so ask for a redraw ourselves.
+  useEffect(() => {
+    const to = show ? 1 : 0, from = level.current;
+    if (from === to) return;
+    move.current = { from, to, start: performance.now(), seconds: reduceMotion() ? 0.001 : CITY_SECONDS * Math.abs(to - from) };
+    invalidate();
+  }, [show, invalidate]);
+
+  useFrame(({ invalidate: again }) => {
     const g = group.current;
     if (!g) return;
-    const target = show ? 1 : 0;
-    if (t.current !== target) {
-      t.current = reduceMotion() ? target : Math.min(1, Math.max(0, t.current + Math.sign(target - t.current) * (delta / CITY_SECONDS)));
-      if (Math.abs(t.current - target) < 1e-3) t.current = target;
-      invalidate(); // keep drawing until it has arrived
+    const mv = move.current;
+    if (mv) {
+      const k = Math.min(1, (performance.now() - mv.start) / (mv.seconds * 1000));
+      level.current = mv.from + (mv.to - mv.from) * k;
+      if (k < 1) again(); // keep drawing until it has arrived
+      else move.current = null;
     }
-    const e = t.current * t.current * (3 - 2 * t.current); // ease in and out
-    g.scale.y = Math.max(e, 1e-4);
-    g.visible = t.current > 0;
+    const x = level.current, eased = x * x * (3 - 2 * x); // ease in and out
+    g.scale.y = Math.max(eased, 1e-4);
+    g.visible = x > 0;
   });
-  return (
-    <group ref={group}>
-      {children}
-    </group>
-  );
+  return <group ref={group}>{children}</group>;
 }
 
 export default function Site({ showLabels, showCity = true }) {
