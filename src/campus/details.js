@@ -210,7 +210,8 @@ export function buildParkingLines(m, { spacing = 2.7, half = 0.07, inset = 1.2 }
           runStart = null;
           if (b - a < 2) continue;
           const p0 = [cx + u[0] * s + v[0] * a, cz + u[1] * s + v[1] * a], p1 = [cx + u[0] * s + v[0] * b, cz + u[1] * s + v[1] * b];
-          const y0 = m.heightAt(...p0) + 0.36, y1 = m.heightAt(...p1) + 0.36;
+          const lift = m.LIFTS?.bays ?? 0.36, y0 = m.heightAt(...p0) + lift, y1 = m.heightAt(...p1) + lift;
+          if (m.DRAPE_PARKING && Math.abs(y1 - y0) > 0.7) continue; // no bay lines up a slope
           const ox = u[0] * half, oz = u[1] * half;
           positions.push(p0[0] - ox, y0, p0[1] - oz, p1[0] - ox, y1, p1[1] - oz, p0[0] + ox, y0, p0[1] + oz,
             p0[0] + ox, y0, p0[1] + oz, p1[0] - ox, y1, p1[1] - oz, p1[0] + ox, y1, p1[1] + oz);
@@ -316,7 +317,7 @@ function derived(m) {
     derivedCache.set(m, {
       insideAnyBuilding: (x, z) => BUILDINGS.some((bd) => bd.parts.some((p) => insidePolygon(p.footprint, x, z))),
       nearDecor: (x, z, r = 4.5) => decorPoints.some(([dx, dz]) => Math.hypot(x - dx, z - dz) < r),
-      walkways: [...PATHS.map((p) => ({ width: p.width, points: p.points })), ...stairLines],
+      walkways: [...PATHS.map((p) => ({ width: p.width, points: p.points })), ...stairLines, ...(m.DRIVES ?? []), ...(m.TREE_KEEP_OUT ? m.osm.streets.map((st) => ({ width: st.width, points: st.points })) : [])], // trees keep off access roads (and, where TREE_KEEP_OUT, every road)
       stairLines,
     });
   }
@@ -342,6 +343,7 @@ export function buildTreeInstances(m) {
   const trees = [];
   const add = (x, z) => {
     if (insideAnyBuilding(x, z) || nearDecor(x, z) || nearWalkway(walkways, x, z) || PATCHES.some((p) => insidePolygon(p.points, x, z))) return;
+    if (m.TREE_KEEP_OUT && (m.PARKING.some((lot) => insidePolygon(lot.area, x, z)) || Math.hypot(heightAt(x + 1.5, z) - heightAt(x - 1.5, z), heightAt(x, z + 1.5) - heightAt(x, z - 1.5)) / 3 > 1.0)) return;
     const size = 0.8 + rand() * 0.5;
     trees.push({ position: [x, heightAt(x, z), z], size, shade: rand() });
   };
@@ -476,6 +478,18 @@ export function buildHangoutDecor(m) {
       benches.push({ position: [x, heightAt(x, z), z], rotationY: (-angle * Math.PI) / 180 });
     }
     for (const [x, z] of d.shrubs ?? []) shrubs.push({ position: [x, heightAt(x, z), z] });
+    // Café tables: a round top on a pedestal, with four chairs round it.
+    for (const [x, z] of d.tables ?? []) {
+      const y = heightAt(x, z);
+      stone.push(new THREE.CylinderGeometry(0.06, 0.1, 0.72, 8).translate(x, y + 0.36, z));
+      stone.push(new THREE.CylinderGeometry(0.55, 0.55, 0.06, 14).translate(x, y + 0.75, z));
+      for (let k = 0; k < 4; k++) {
+        const a = (k / 4) * Math.PI * 2 + 0.4, cx = x + Math.cos(a) * 0.95, cz = z + Math.sin(a) * 0.95;
+        wood.push(box(0.4, 0.05, 0.4).rotateY(-a).translate(cx, y + 0.45, cz));
+        wood.push(box(0.05, 0.4, 0.4).rotateY(-a).translate(cx + Math.cos(a) * 0.2, y + 0.65, cz + Math.sin(a) * 0.2));
+        wood.push(box(0.05, 0.45, 0.05).translate(cx, y + 0.22, cz));
+      }
+    }
 
     if (d.kiosk) {
       const [x, z] = d.kiosk.at, y = heightAt(x, z), a = (-(d.kiosk.angle ?? 0) * Math.PI) / 180;
@@ -582,6 +596,32 @@ export function buildPatchPlants(m) {
       }
       return null;
     };
+    // A clipped hedge along the outer edge of a lawn that follows a path: bushes evenly spaced, a little inside the edge.
+    if (patch.hedge) {
+      const { inner, outer } = patch.hedge;
+      let walked = 0, next = 0;
+      for (let i = 0; i < outer.length - 1; i++) {
+        const len = Math.hypot(outer[i + 1][0] - outer[i][0], outer[i + 1][1] - outer[i][1]);
+        for (; next <= walked + len; next += 2.4) {
+          const t = (next - walked) / len;
+          const ox = outer[i][0] + (outer[i + 1][0] - outer[i][0]) * t, oz = outer[i][1] + (outer[i + 1][1] - outer[i][1]) * t;
+          const ix = inner[i][0] + (inner[i + 1][0] - inner[i][0]) * t, iz = inner[i][1] + (inner[i + 1][1] - inner[i][1]) * t;
+          const hx = ox + (ix - ox) * 0.08, hz = oz + (iz - oz) * 0.08;
+          if (!nearWalkway(walkways, hx, hz, 0.6)) shrubs.push({ position: [hx, heightAt(hx, hz), hz], size: 0.95, shade: 0.2 });
+        }
+        walked += len;
+      }
+    }
+    // The round flower bed in the middle of the lawn: a ring of red and yellow, a bush in the centre.
+    if (patch.bed) {
+      const [bx, bz] = patch.bed.at, r = patch.bed.radius;
+      shrubs.push({ position: [bx, heightAt(bx, bz), bz], size: 0.9, shade: 0.7 });
+      for (let k = 0; k < 18; k++) {
+        const a = (k / 18) * Math.PI * 2, color = k % 2 ? '#d6282f' : '#f2c230';
+        const px = bx + Math.cos(a) * r, pz = bz + Math.sin(a) * r;
+        for (let j = 0; j < 3; j++) flowers.push({ position: [px + (j - 1) * 0.25 * -Math.sin(a), heightAt(px, pz) + 0.3, pz + (j - 1) * 0.25 * Math.cos(a)], color });
+      }
+    }
     for (let i = 0; i < (patch.shrubs ?? 0); i++) {
       const p = spot();
       if (p) shrubs.push({ position: [p[0], heightAt(p[0], p[1]), p[1]], size: 0.7 + rand() * 0.5, shade: rand() });

@@ -1,6 +1,7 @@
 // Everything around the LAU buildings: ground, streets, neighbouring blocks and gates.
 import { useMemo } from 'react';
-import { buildPaths, buildStairs, buildStreets, buildSurroundings, buildTerrain } from '../../campus/geometry.js';
+import * as THREE from 'three';
+import { buildPaths, buildStairs, buildStreets, buildSurroundings, buildTerrain, buildWalls } from '../../campus/geometry.js';
 import { LABELS } from '../../campus/common.js';
 import { ManagedLabel } from './labels.jsx';
 import { useModel } from './model.js';
@@ -14,6 +15,9 @@ export default function Site({ showLabels }) {
   const paths = useMemo(() => buildPaths(m), [m]);
   const stairs = useMemo(() => buildStairs(m), [m]);
   const surroundings = useMemo(() => buildSurroundings(m), [m]);
+  const walls = useMemo(() => buildWalls(m), [m]);
+  // Flat sheets over the ground (roads, paths) are pulled a little toward the camera so they never flicker against it (campuses with LAYER_OFFSET).
+  const sheet = m.LAYER_OFFSET ? { polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 } : {};
 
   return (
     <group>
@@ -22,11 +26,21 @@ export default function Site({ showLabels }) {
         <meshLambertMaterial vertexColors />
       </mesh>
       <mesh geometry={streets} raycast={() => null}>
-        <meshLambertMaterial color={COLORS.street} />
+        <meshLambertMaterial color={COLORS.street} {...sheet} />
       </mesh>
       <mesh geometry={paths} raycast={() => null}>
-        <meshLambertMaterial color={COLORS.path} />
+        <meshLambertMaterial color={COLORS.path} {...sheet} />
       </mesh>
+      {walls && (
+        <>
+          <mesh geometry={walls.face} raycast={() => null}>
+            <meshLambertMaterial color={m.WALLS.color} side={THREE.DoubleSide} />
+          </mesh>
+          <mesh geometry={walls.top} raycast={() => null}>
+            <meshLambertMaterial color={m.WALLS.cap} side={THREE.DoubleSide} />
+          </mesh>
+        </>
+      )}
       {stairs && (
         <mesh geometry={stairs} raycast={() => null}>
           <meshLambertMaterial color={COLORS.stairs} />

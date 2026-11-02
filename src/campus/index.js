@@ -16,11 +16,10 @@ import beirutOsm from './beirut/osm-surroundings.json';
 import * as byblosBuildings from './byblos/buildings.js';
 import * as byblosSite from './byblos/site.js';
 import * as byblosGeo from './byblos/geo.js';
-import byblosOsm from './byblos/osm-surroundings.json';
 
 const MODELS = {
   beirut: { id: 'beirut', ...beirutBuildings, ...beirutSite, osm: beirutOsm, geo: beirutGeo },
-  byblos: { id: 'byblos', ...byblosBuildings, ...byblosSite, osm: byblosOsm, geo: byblosGeo },
+  byblos: { id: 'byblos', ...byblosBuildings, ...byblosSite, osm: byblosSite.OSM, geo: byblosGeo }, // OSM: the roads from osm-surroundings.json, edited in byblos/site.js
 };
 
 /** The 3D model of a campus ('beirut' or 'byblos'). */

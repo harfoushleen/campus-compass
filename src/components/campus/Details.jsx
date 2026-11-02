@@ -89,7 +89,7 @@ export default function Details() {
     <group>
       {/* Green garden patches along the main path */}
       <mesh geometry={patches} raycast={noRaycast}>
-        <meshLambertMaterial color={COLORS.patch} />
+        <meshLambertMaterial color={COLORS.patch} {...(m.LAYER_OFFSET ? { polygonOffset: true, polygonOffsetFactor: -3, polygonOffsetUnits: -3 } : {})} />
       </mesh>
       {meshes.map((mesh, i) => (
         <primitive key={i} object={mesh} />

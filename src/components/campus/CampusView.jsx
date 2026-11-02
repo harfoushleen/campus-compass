@@ -11,6 +11,7 @@ import { OrbitControls, PerspectiveCamera } from '@react-three/drei';
 import { getModel } from '../../campus/index.js';
 import { FLY_DURATION, LABELS } from '../../campus/common.js';
 import { centroid } from '../../campus/geometry.js';
+import { keepAboveGround } from '../../campus/cameraGuard.js';
 import { buildingTop } from '../../campus/details.js';
 import { useI18n } from '../../i18n/index.jsx';
 import Buildings from './Buildings.jsx';
@@ -81,12 +82,17 @@ function Controls({ m, controlsRef, flyRef }) {
     invalidate();
   };
 
-  // Development only: lets the screenshot scripts set the camera, window.__setCamera([x, y, z, tx, ty, tz]).
+  // Development only: lets the screenshot scripts set the camera, window.__setCamera([x, y, z, tx, ty, tz]),
+  // and read it back, window.__getCamera() -> { position, target }.
   useEffect(() => {
     if (!import.meta.env.DEV) return undefined;
     window.__setCamera = ([x, y, z, tx, ty, tz]) => flyRef.current([x, y, z], [tx, ty, tz]);
-    return () => delete window.__setCamera;
-  }, [flyRef]);
+    window.__getCamera = () => ({ position: controlsRef.current.object.position.toArray(), target: controlsRef.current.target.toArray() });
+    return () => {
+      delete window.__setCamera;
+      delete window.__getCamera;
+    };
+  }, [flyRef, controlsRef]);
 
   useFrame(() => {
     const f = flight.current, controls = controlsRef.current;
@@ -112,13 +118,17 @@ function Controls({ m, controlsRef, flyRef }) {
         minPolarAngle={CAMERA.minPolarAngle}
         maxPolarAngle={CAMERA.maxPolarAngle}
         onStart={() => (flight.current = null)} // a touch cancels any camera flight
-        // Keep the point the camera orbits around inside the scene, so users can't pan away.
+        // Keep the point the camera orbits around inside the scene, so users can't pan away, and keep it and the
+        // camera above the ground. This runs after every controls update, so it covers orbiting, panning, zooming
+        // and camera flights alike.
         onChange={(e) => {
-          const t = e?.target?.target;
+          const controls = e?.target;
+          const t = controls?.target;
           if (!t) return;
           t.x = Math.min(BOUNDS.maxX, Math.max(BOUNDS.minX, t.x));
           t.z = Math.min(BOUNDS.maxZ, Math.max(BOUNDS.minZ, t.z));
           t.y = Math.min(maxY, Math.max(minY, t.y));
+          keepAboveGround(m.heightAt, controls.object, t);
         }}
       />
     </>
