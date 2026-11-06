@@ -1,6 +1,6 @@
 // The buttons floating at the top of the map: the sidebar button, a search button that expands
 // into a search bar (with results in a dropdown), the light/dark button and the info (credits) button.
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useI18n } from '../i18n/index.jsx';
 import { placeSubtitle } from '../data/places.js';
@@ -82,7 +82,7 @@ function SearchBox({ open, onOpen, onClose, query, onQuery, results, onPick }) {
 }
 
 // The "i" button: opens the Credits panel (who made the app) at the side of the map.
-function CreditsDialog({ onClose }) {
+function CreditsDialog({ open, onClose }) {
   const { t } = useI18n();
   const cardRef = useRef(null);
   useEffect(() => {
@@ -101,7 +101,7 @@ function CreditsDialog({ onClose }) {
 
   return createPortal(
     <div className="credits-overlay">
-      <div className="credits-card" ref={cardRef} role="dialog" aria-label={t('creditsTitle')}>
+      <div className={`credits-card ${open ? '' : 'closing'}`} ref={cardRef} role="dialog" aria-label={t('creditsTitle')}>
         <header className="credits-head">
           <img className="credits-logo" src={lauLogo} alt="Lebanese American University" width="110" height="35" />
           <button type="button" className="credits-close" onClick={onClose} aria-label={t('closeSearch')} title={t('closeSearch')}>
@@ -143,12 +143,22 @@ function CreditsDialog({ onClose }) {
 function InfoButton() {
   const { t } = useI18n();
   const [open, setOpen] = useState(false);
+  const [shown, setShown] = useState(false); // stays mounted for the slide-out animation
+  const close = useCallback(() => setOpen(false), []);
+  useEffect(() => {
+    if (open) {
+      setShown(true);
+      return undefined;
+    }
+    const id = window.setTimeout(() => setShown(false), 240);
+    return () => window.clearTimeout(id);
+  }, [open]);
   return (
     <div className="info-box">
       <button type="button" className="fab" onClick={() => setOpen((v) => !v)} aria-label={t('info')} title={t('info')} aria-expanded={open}>
         <InfoIcon />
       </button>
-      {open && <CreditsDialog onClose={() => setOpen(false)} />}
+      {(open || shown) && <CreditsDialog open={open} onClose={close} />}
     </div>
   );
 }

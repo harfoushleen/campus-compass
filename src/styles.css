@@ -516,6 +516,7 @@ html.theme-fade *::after {
   animation: credits-in 0.22s var(--ease);
 }
 .credits-card::-webkit-scrollbar { display: none; }
+.credits-card.closing { animation: credits-out 0.22s var(--ease) forwards; pointer-events: none; }
 .credits-head {
   position: relative;
   padding: 18px 20px 22px;
@@ -552,6 +553,7 @@ html.theme-fade *::after {
 .credits-foot .credits-foot-name { font-weight: 700; }
 .credits-foot .credits-line { font-size: 0.72rem; }
 .credits-card a { color: inherit; }
+@keyframes credits-out { from { opacity: 1; transform: none; } to { opacity: 0; transform: translateX(16px); } }
 @keyframes credits-in { from { opacity: 0; transform: translateX(16px); } to { opacity: 1; transform: none; } }
 
 @media (max-width: 719px) {
