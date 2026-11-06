@@ -47,6 +47,7 @@ export default {
   resetView: 'Default view',
   labels: 'Labels',
   cityBlocks: 'City',
+  creditsByline: 'Idea, development, execution and deployment by Leen Harfoush, Creative Space Assistant at LAU',
   loading3d: 'Loading 3D campus…',
   'marker.gezairi': 'Gezairi',
   'marker.rhc': 'Residence C',
