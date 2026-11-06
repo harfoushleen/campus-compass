@@ -46,3 +46,9 @@ export const SunIcon = make(
   </>
 );
 export const MoonIcon = make(<path d="M21 12.8A8.5 8.5 0 1 1 11.2 3a6.8 6.8 0 0 0 9.8 9.8z" />);
+export const InfoIcon = make(
+  <>
+    <circle cx="12" cy="12" r="9" />
+    <path d="M12 11v5.5M12 7.8v.1" />
+  </>
+);

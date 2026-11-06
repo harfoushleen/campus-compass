@@ -496,8 +496,67 @@ html.theme-fade *::after {
 .theme-icon { position: absolute; inset: 0; display: grid; place-items: center; opacity: 0; transform: rotate(-80deg) scale(0.4); transition: opacity 0.25s ease, transform 0.35s var(--ease); }
 .theme-icon.on { opacity: 1; transform: none; }
 
+/* Info button and the Credits card. */
+.info-box { flex: none; transition: max-width var(--t) var(--ease), margin var(--t) var(--ease), opacity 0.2s ease; max-width: 44px; }
+.credits-overlay { position: fixed; inset: 0; z-index: 200; pointer-events: none; } /* the card is a side panel; the map stays usable */
+.credits-card {
+  position: absolute;
+  inset-block: 68px 12px;
+  inset-inline-end: 12px;
+  width: min(380px, calc(100% - 24px));
+  overflow-y: auto;
+  scrollbar-width: none; /* no scroll bar; it still scrolls */
+  border-radius: var(--radius);
+  background: var(--bg);
+  color: var(--text);
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border);
+  text-align: center;
+  pointer-events: auto;
+  animation: credits-in 0.22s var(--ease);
+}
+.credits-card::-webkit-scrollbar { display: none; }
+.credits-head {
+  position: relative;
+  padding: 18px 20px 22px;
+  background: linear-gradient(180deg, #144b34 0%, #0e3a29 100%);
+  color: #fff;
+  border-bottom: 1px solid var(--border);
+}
+.credits-logo { position: absolute; inset-block-start: 16px; inset-inline-start: 16px; display: block; }
+.credits-close {
+  position: absolute;
+  inset-block-start: 14px;
+  inset-inline-end: 14px;
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border: 1.5px solid rgb(255 255 255 / 0.6);
+  border-radius: 50%;
+  background: transparent;
+  color: #fff;
+}
+.credits-eyebrow { margin: 52px 0 6px; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: #8fe0bc; }
+.credits-title { margin: 0; font-size: 2.1rem; font-weight: 300; letter-spacing: 0.01em; color: #7df0b4; }
+.credits-title strong { font-weight: 800; color: #fff; }
+.credits-about { margin: 10px auto 0; max-width: 420px; font-size: 0.85rem; line-height: 1.45; color: rgb(255 255 255 / 0.88); }
+.credits-body { padding: 4px 20px; }
+.credits-item { padding: 16px 0; border-bottom: 1px solid var(--border); }
+.credits-item:last-child { border-bottom: 0; }
+.credits-item h3 { margin: 0 0 6px; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--link); }
+.credits-name { margin: 0 0 3px; font-size: 1.05rem; font-weight: 700; }
+.credits-line { margin: 0; font-size: 0.82rem; color: var(--muted); }
+.credits-foot { padding: 16px 20px 18px; border-top: 1px solid var(--border); font-size: 0.82rem; }
+.credits-foot p { margin: 0 0 3px; }
+.credits-foot .credits-foot-name { font-weight: 700; }
+.credits-foot .credits-line { font-size: 0.72rem; }
+.credits-card a { color: inherit; }
+@keyframes credits-in { from { opacity: 0; transform: translateX(16px); } to { opacity: 1; transform: none; } }
+
 @media (max-width: 719px) {
   /* On a phone the open search bar takes the whole row. */
+  .topbar.search-open .info-box { max-width: 0; margin-inline-start: -10px; opacity: 0; pointer-events: none; }
   .topbar.search-open .fab-theme { max-width: 0; margin-inline-start: -10px; opacity: 0; pointer-events: none; }
 }
 

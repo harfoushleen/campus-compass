@@ -1,10 +1,13 @@
 // The buttons floating at the top of the map: the sidebar button, a search button that expands
-// into a search bar (with results in a dropdown), and the light/dark button.
-import { useEffect, useRef } from 'react';
+// into a search bar (with results in a dropdown), the light/dark button and the info (credits) button.
+import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useI18n } from '../i18n/index.jsx';
 import { placeSubtitle } from '../data/places.js';
+import { ABOUT, CREDITS } from '../data/credits.js';
+import lauLogo from '../assets/lau-logo.png';
 import { CategoryBadge } from './CategoryIcon.jsx';
-import { CloseIcon, MenuIcon, MoonIcon, SearchIcon, SunIcon } from './icons.jsx';
+import { CloseIcon, InfoIcon, MenuIcon, MoonIcon, SearchIcon, SunIcon } from './icons.jsx';
 
 function SearchBox({ open, onOpen, onClose, query, onQuery, results, onPick }) {
   const { t, localize } = useI18n();
@@ -78,6 +81,78 @@ function SearchBox({ open, onOpen, onClose, query, onQuery, results, onPick }) {
   );
 }
 
+// The "i" button: opens the Credits panel (who made the app) at the side of the map.
+function CreditsDialog({ onClose }) {
+  const { t } = useI18n();
+  const cardRef = useRef(null);
+  useEffect(() => {
+    const onKey = (e) => e.key === 'Escape' && onClose();
+    // Tapping outside closes it (the "i" button itself toggles, so it is left alone).
+    const onPointerDown = (e) => {
+      if (!cardRef.current?.contains(e.target) && !e.target.closest?.('.info-box')) onClose();
+    };
+    document.addEventListener('keydown', onKey);
+    document.addEventListener('pointerdown', onPointerDown);
+    return () => {
+      document.removeEventListener('keydown', onKey);
+      document.removeEventListener('pointerdown', onPointerDown);
+    };
+  }, [onClose]);
+
+  return createPortal(
+    <div className="credits-overlay">
+      <div className="credits-card" ref={cardRef} role="dialog" aria-label={t('creditsTitle')}>
+        <header className="credits-head">
+          <img className="credits-logo" src={lauLogo} alt="Lebanese American University" width="110" height="35" />
+          <button type="button" className="credits-close" onClick={onClose} aria-label={t('closeSearch')} title={t('closeSearch')}>
+            <CloseIcon size={16} />
+          </button>
+          <p className="credits-eyebrow">University Libraries · Creative Space</p>
+          <h2 className="credits-title">
+            <strong>LAURA</strong> UNIT
+          </h2>
+          <p className="credits-about">{ABOUT}</p>
+        </header>
+
+        <div className="credits-body">
+          {CREDITS.map((c) => (
+            <section key={c.name} className="credits-item">
+              <h3>{c.label}</h3>
+              <p className="credits-name">{c.name}</p>
+              {c.lines.map((line) => (
+                <p key={line} className="credits-line">{line}</p>
+              ))}
+            </section>
+          ))}
+        </div>
+
+        <footer className="credits-foot">
+          <p className="credits-foot-name">LAU Libraries – Creative Space</p>
+          <p>Lebanese American University</p>
+          <p className="credits-line">© {new Date().getFullYear()} Lebanese American University. All Rights Reserved.</p>
+          <p className="credits-line">
+            Map data © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">OpenStreetMap</a> contributors
+          </p>
+        </footer>
+      </div>
+    </div>,
+    document.body
+  );
+}
+
+function InfoButton() {
+  const { t } = useI18n();
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="info-box">
+      <button type="button" className="fab" onClick={() => setOpen((v) => !v)} aria-label={t('info')} title={t('info')} aria-expanded={open}>
+        <InfoIcon />
+      </button>
+      {open && <CreditsDialog onClose={() => setOpen(false)} />}
+    </div>
+  );
+}
+
 export default function TopControls({ sidebarOpen, onMenu, theme, onToggleTheme, search }) {
   const { t } = useI18n();
   const label = theme === 'dark' ? t('themeToLight') : t('themeToDark');
@@ -94,6 +169,8 @@ export default function TopControls({ sidebarOpen, onMenu, theme, onToggleTheme,
         <span className={`theme-icon ${theme === 'dark' ? 'on' : ''}`}><SunIcon /></span>
         <span className={`theme-icon ${theme === 'light' ? 'on' : ''}`}><MoonIcon /></span>
       </button>
+
+      <InfoButton />
     </div>
   );
 }

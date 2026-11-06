@@ -358,8 +358,6 @@ export default function CampusView({ campus, active = true, places, allPlaces, c
       </div>
 
       <p className="campus-attribution">
-        {t('creditsByline')}
-        <br />
         © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">OpenStreetMap</a> contributors
       </p>
     </div>
