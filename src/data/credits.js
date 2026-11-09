@@ -3,7 +3,7 @@ export const CREDITS = [
   {
     label: 'Application design, development & implementation',
     name: 'Leen Harfoush',
-    lines: ['Creative Space Assistant, LAU', 'Original idea and execution'],
+    lines: ['Computer Science Major', 'Creative Space Assistant, LAU', 'Original idea and execution'],
   },
   { label: 'Concept design, creative direction & workflow development', name: 'Mr. Saad Salloum', lines: ['Lead Creative Space Supervisor'] },
   { label: 'Under the leadership of', name: 'Mr. Hani Salem', lines: ['Lead Library Technologies & Innovation Manager', 'University Libraries'] },

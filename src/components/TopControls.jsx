@@ -109,7 +109,7 @@ function CreditsDialog({ open, onClose }) {
           </button>
           <p className="credits-eyebrow">University Libraries · Creative Space</p>
           <h2 className="credits-title">
-            <strong>LAURA</strong> UNIT
+            <strong>LAURA</strong> Campus Compass
           </h2>
           <p className="credits-about">{ABOUT}</p>
         </header>
