@@ -1,5 +1,5 @@
 {
-  "updated": "2026-11-02",
+  "updated": "2026-11-09",
   "entries": {
     "registrar": {
       "hours": "8:30–12:00 and 13:00–15:00 (summer 8:30–13:00)",
@@ -15,7 +15,7 @@
     },
     "isp": {
       "hours": "10:00–15:00, Monday to Friday (except holidays)",
-      "checked": "2026-11-02",
+      "checked": "2026-11-09",
       "source": "https://studyabroad.lau.edu.lb/contact.php",
       "stale": false
     },
