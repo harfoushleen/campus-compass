@@ -29,7 +29,10 @@ function noServiceWorker() {
 
 export default defineConfig(({ mode }) => {
   const offline = mode === 'offline';
+  // GitHub Pages serves the app from a subfolder; the deploy workflow sets VITE_BASE. Everywhere else it is '/'.
+  const base = offline ? '/' : process.env.VITE_BASE || '/';
   return {
+    base,
     build: { outDir: offline ? 'dist-offline' : 'dist' },
     plugins: [
       react(),
@@ -46,7 +49,8 @@ export default defineConfig(({ mode }) => {
               theme_color: '#00573f',
               background_color: '#e9efeb',
               display: 'standalone',
-              start_url: '/',
+              start_url: base,
+              scope: base,
               icons: [
                 { src: 'icon-192.png', sizes: '192x192', type: 'image/png' },
                 { src: 'icon-512.png', sizes: '512x512', type: 'image/png' },
