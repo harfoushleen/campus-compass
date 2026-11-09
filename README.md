@@ -3,8 +3,6 @@
 A free, mobile-first web app that helps LAU students find facilities and resources on a 3D model of the campus.
 Built with React + Vite + Three.js (react-three-fiber). No API keys or paid assets, installable as a PWA, and it works offline after the first visit.
 
-**Live app:** https://campus-compass-nine-chi.vercel.app
-
 ## Run locally
 
 Requires [Node.js](https://nodejs.org) 20.19+ or 22.12+.
